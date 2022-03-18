@@ -16,18 +16,23 @@ foreach(module ${modules})
             # Add directory and library target within
             set(MOD_SOURCES "")
             set(MOD_DEPENDS "")
+            set(MOD_AVAIL ON)
             add_subdirectory(${module})
             list(TRANSFORM MOD_SOURCES PREPEND "${module}/")
 
-            add_library(yloc-${module} STATIC
-                        ${MOD_SOURCES})
-            target_link_libraries(yloc-${module}
-                        ${MOD_DEPENDS})
-            message(STATUS "Prepared module yloc-${module} for building")
+            if(MOD_AVAIL)
+                add_library(yloc-${module} STATIC
+                            ${MOD_SOURCES})
+                target_link_libraries(yloc-${module}
+                            ${MOD_DEPENDS})
+                message(STATUS "Prepared module yloc-${module} for building")
 
-            list(APPEND YLOC_MODULES "yloc-${module}")
+                list(APPEND YLOC_MODULES "yloc-${module}")
+            else()
+                message(STATUS "Module yloc-${module} is not available")
+            endif()
         else()
-            message(STATUS "Not building module yloc-${module}")
+            message(STATUS "Not building module yloc-${module} (ENABLE_${MOD_VAR} is ${ENABLE_${MOD_VAR}})")
         endif()
     endif()
 endforeach()
