@@ -14,25 +14,18 @@ foreach(module ${modules})
         # Check variable from cache to allow disabling of unwanted modules
         if(${ENABLE_${MOD_VAR}})
             # Add directory and library target within
-            set(MOD_SOURCES "")
-            set(MOD_DEPENDS "")
-            set(MOD_AVAIL ON)
+            set(MOD_TARGET "yloc-${module}")
             add_subdirectory(${module})
-            list(TRANSFORM MOD_SOURCES PREPEND "${module}/")
 
-            if(MOD_AVAIL)
-                add_library(yloc-${module} STATIC
-                            ${MOD_SOURCES})
-                target_link_libraries(yloc-${module}
-                            ${MOD_DEPENDS})
-                message(STATUS "Prepared module yloc-${module} for building")
+            if(TARGET ${MOD_TARGET})    # todo check for target type == library
+                message(STATUS "Prepared module ${MOD_TARGET} for building")
 
-                list(APPEND YLOC_MODULES "yloc-${module}")
+                list(APPEND YLOC_MODULES "${MOD_TARGET}")
             else()
-                message(STATUS "Module yloc-${module} is not available")
+                message(STATUS "Module ${MOD_TARGET} is not available")
             endif()
         else()
-            message(STATUS "Not building module yloc-${module} (ENABLE_${MOD_VAR} is ${ENABLE_${MOD_VAR}})")
+            message(STATUS "Not building module ${MOD_TARGET} (ENABLE_${MOD_VAR} is ${ENABLE_${MOD_VAR}})")
         endif()
     endif()
 endforeach()
