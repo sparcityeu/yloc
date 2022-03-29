@@ -1,0 +1,6 @@
+
+#include <interface.h>
+
+#include "interface_impl.h"
+
+auto @MOD_CPPNAME@ = new ExampleModule();

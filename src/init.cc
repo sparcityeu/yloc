@@ -7,6 +7,7 @@ int yloc_init(yloc_init_flags_t _flags) {
     // todo flag logic (probably combined with module logic)
 
     // store result of module init in global variable
+    return 0;
 }
 
 int yloc_finalize() {
@@ -14,7 +15,7 @@ int yloc_finalize() {
 
     // exit threads of ongoing modules
 
-    return;
+    return 0;
 }
 
 
@@ -28,4 +29,5 @@ int yloc_update() {
     // This function could also be called by an auto-update thread from the outer library,
     // but it is probably better to split the threads, so there is one thread per module.
     // More fine granualar thread functions would allow different timings.
+    return 0;
 }
