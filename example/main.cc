@@ -1,7 +1,11 @@
 
 
 //#include <mpi.h>
-#include <yloc.h>
+
+// Todo create combined header
+//#include <yloc.h>
+#include <init.h>
+#include <modules.h>
 
 int main(int arc, char *argv[]) {
     // MPI_Init(&argc, &argv);

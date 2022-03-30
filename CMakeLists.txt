@@ -5,3 +5,5 @@ project(yloc CXX)
 add_subdirectory(modules)
 
 add_subdirectory(src)
+
+add_subdirectory(example)
