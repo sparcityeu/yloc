@@ -3,4 +3,4 @@
 
 #include "interface_impl.h"
 
-auto @MOD_CPPNAME@ = new ExampleModule();
+YlocModule * @MOD_CPPNAME@ = new ExampleModule();

@@ -1,5 +1,13 @@
 
-void list_modules();
+#include <vector>
+
+#include <modules/interface.h>
+
+
+YlocModule *main_module();
+
+std::vector<YlocModule *> list_modules();
+
 
 
 // COM like module selection?
