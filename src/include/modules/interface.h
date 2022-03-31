@@ -1,6 +1,8 @@
 #pragma once
 
-typedef void* graph_t; // Boost graph here? Yes actual type here, probably Boost graph containing a map.
+// Moved to graph_type.h
+//typedef void* graph_t; // Boost graph here? Yes actual type here, probably Boost graph containing a map.
+#include <graph_type.h>
 
 class YlocModule {
 
