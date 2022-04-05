@@ -6,6 +6,12 @@
 # Build directory
 build
 
+# CMake Generated Files
+CMakeFiles
+CMakeCache.txt
+*.cmake
+Makefile
+
 # Compiled Object files
 *.slo
 *.lo
