@@ -30,9 +30,8 @@ int main(int arc, char *argv[]) {
 // https://github.com/jakubo87/myLoq
 int sample_usage_myloq() {
 
-    graph_t *_g;
-    main_module()->init_graph(_g);
-    graph_t &g = *_g;
+    graph_t g;
+    main_module()->init_graph(&g);
 
   make_dotfile(g, "new.dot");
 

@@ -19,7 +19,7 @@ public:
     // Specifies wheter init_graph is implemented and if the module can be used standalone // todo better comment
     // Todo better module capability system
     bool is_main_module() {
-        return true;
+        return false;
     }
 
     // optional function, not ever module requires this

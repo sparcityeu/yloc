@@ -13,8 +13,7 @@ public:
 
     void init_graph(graph_t * graph) {               // init complete graph
         // Todo proper lifetime of this object
-        static graph_t _graph = init_graph_myloq("0"); // Todo use namespaces
-        graph = &_graph;
+        *graph = init_graph_myloq("0"); // Todo use namespaces
         return;
     }
 
