@@ -2,12 +2,14 @@
 
 //#include <mpi.h>
 
+#include <fstream>
+#include <boost/graph/graphviz.hpp>
+
 // Todo create combined header
 //#include <yloc.h>
-#include <init.h>
-#include <modules.h>
-
-#include "output_graph.h"
+#include "init.h"
+#include "modules.h"
+#include "graph_type.h"
 #include "query_graph.h"
 #include "algo.h"
 #include "distances.h"
@@ -16,6 +18,7 @@ int sample_usage_myloq();
 
 
 int main(int arc, char *argv[]) {
+
     // MPI_Init(&argc, &argv);
     yloc_init(YLOC_FULL | YLOC_ONGOING);
 
@@ -30,9 +33,21 @@ int main(int arc, char *argv[]) {
 // https://github.com/jakubo87/myLoq
 int sample_usage_myloq() {
 
+    using namespace boost;
     graph_t g;
     main_module()->init_graph(&g);
 
+    std::string dot_file_name{"graph.dot"};
+    std::ofstream ofs{dot_file_name};
+
+    // write graph with labels to file
+    // get interal property map for Vertex::type to write labels to graph vertices
+    write_graphviz(ofs, g, make_label_writer(get(&Vertex::type, g)));
+
+    // for external property map use:
+    // make_label_writer(boost::make_assoc_property_map(external_property_map_name))
+
+#if 0
   make_dotfile(g, "new.dot");
 
   //###################################################################
@@ -306,6 +321,6 @@ int sample_usage_myloq() {
 
   make_dotfile_nolabel(g,"totalnl.dot");
   make_dotfile(g,"total.dot");
-
-  return 0;
+#endif
+  return EXIT_SUCCESS;
 }

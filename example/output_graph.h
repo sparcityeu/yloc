@@ -1,5 +1,6 @@
-#pragma once
+#if DEPRECATED_DELETE_ME
 
+#pragma once
 // Adopted from myloq by Jakub Orlowski (jakubo87)
 // https://github.com/jakubo87/myLoq
 
@@ -52,3 +53,4 @@ void make_dotfile_nolabel(const G& g, const std::string& dotf = "out.dot"){
   std::cout << "Graph has been written to dotfile: " << dotf << std::endl;
 }
 
+#endif
