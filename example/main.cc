@@ -2,22 +2,25 @@
 
 //#include <mpi.h>
 
-#include <fstream>
 #include <boost/graph/graphviz.hpp>
+#include <boost/property_map/property_map.hpp>
+#include <fstream>
+#include <hwloc.h>
+#include <unordered_map>
 
 // Todo create combined header
 //#include <yloc.h>
+// #include "algo.h"
+#include "distances.h"
+#include "graph_type.h"
 #include "init.h"
 #include "modules.h"
-#include "graph_type.h"
 #include "query_graph.h"
-#include "algo.h"
-#include "distances.h"
 
 int sample_usage_myloq();
 
-
-int main(int arc, char *argv[]) {
+int main(int arc, char *argv[])
+{
 
     // MPI_Init(&argc, &argv);
     yloc_init(YLOC_FULL | YLOC_ONGOING);
@@ -28,12 +31,13 @@ int main(int arc, char *argv[]) {
     // MPI_Finalize();
 }
 
+typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
+extern std::unordered_map<VD, hwloc_obj_t> hwloc_property_map;
 
 // Adopted from myloq by Jakub Orlowski (jakubo87)
 // https://github.com/jakubo87/myLoq
-int sample_usage_myloq() {
-
-    using namespace boost;
+int sample_usage_myloq()
+{
     graph_t g;
     main_module()->init_graph(&g);
 
@@ -42,10 +46,88 @@ int sample_usage_myloq() {
 
     // write graph with labels to file
     // get interal property map for Vertex::type to write labels to graph vertices
-    write_graphviz(ofs, g, make_label_writer(get(&Vertex::type, g)));
+    // boost::write_graphviz(ofs, g, boost::make_label_writer(get(&Vertex::type, g)));
 
-    // for external property map use:
-    // make_label_writer(boost::make_assoc_property_map(external_property_map_name))
+    // example of using an external property map:
+    {
+        std::unordered_map<VD, std::string> hwloc_string_property_map;
+
+        // build new string property map from hwloc objects to write labels of hwloc object attributes:
+        for (auto kv : hwloc_property_map) {
+            hwloc_obj_t hwloc_object = kv.second;
+            std::stringstream ss;
+
+            ss << hwloc_obj_type_string(kv.second->type);
+
+#define USE_LONG_ATTRIBUTE_DESCRIPTION 1
+#if USE_LONG_ATTRIBUTE_DESCRIPTION
+            ss << std::endl;
+            char buf[1024];
+            hwloc_obj_attr_snprintf(buf, 1024, hwloc_object, "\n", 1);
+            ss << buf;
+#else
+            if (hwloc_object->attr != NULL) {
+                // attr points to a union hwloc_obj_attr_u of type-specific attribute structures
+                ss << std::endl;
+
+                if (hwloc_obj_type_is_cache(kv.second->type)) {
+                    ss << kv.second->attr->cache.size / 1024 << "kB"
+                       << " "
+                       << kv.second->attr->cache.associativity << "-way";
+                }
+
+                if (hwloc_obj_type_is_memory(kv.second->type)) {
+                    ss << kv.second->attr->numanode.local_memory / 1024 / 1024 << "MB";
+                }
+
+                if (hwloc_obj_type_is_io(kv.second->type)) {
+                    if (hwloc_compare_types(kv.second->type, HWLOC_OBJ_OS_DEVICE) == 0) {
+                        // TODO: convert osdev type to meaningful string
+                        ss << kv.second->attr->osdev.type;
+
+                        /*
+
+HWLOC_OBJ_OSDEV_BLOCK Operating system block device, or non-volatile memory device. For
+instance "sda" or "dax2.0" on Linux.
+
+HWLOC_OBJ_OSDEV_GPU Operating system GPU device. For instance ":0.0" for a GL display,
+"card0" for a Linux DRM device.
+
+HWLOC_OBJ_OSDEV_NETWORK Operating system network device. For instance the "eth0" interface
+on Linux.
+
+HWLOC_OBJ_OSDEV_OPENFABRICS Operating system openfabrics device. For instance the "mlx4_0"
+InfiniBand HCA, or "hfi1_0" Omni-Path interface on Linux.
+
+HWLOC_OBJ_OSDEV_DMA Operating system dma engine device. For instance the
+"dma0chan0" DMA channel on Linux.
+
+HWLOC_OBJ_OSDEV_COPROC Operating system co-processor device. For instance "opencl0d0"
+for a OpenCL device, "cuda0" for a CUDA device.
+
+                        */
+                    }
+                }
+            }
+
+            if (hwloc_object->subtype != NULL) {
+                ss << std::endl
+                   << hwloc_object->subtype;
+            }
+
+            if (hwloc_object->name != NULL) {
+                ss << std::endl
+                   << hwloc_object->name;
+            }
+#endif
+
+            hwloc_string_property_map[kv.first] = ss.str();
+        }
+
+        auto pm = boost::make_assoc_property_map(hwloc_string_property_map);
+
+        write_graphviz(ofs, g, boost::make_label_writer(pm));
+    }
 
 #if 0
   make_dotfile(g, "new.dot");
@@ -322,5 +404,5 @@ int sample_usage_myloq() {
   make_dotfile_nolabel(g,"totalnl.dot");
   make_dotfile(g,"total.dot");
 #endif
-  return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

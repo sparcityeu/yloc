@@ -16,9 +16,8 @@
 // see man hwlocality_object_types and hwlocality_configuration
 // control with hwloc_topology_set_flags()
 
-std::unordered_map<VD, hwloc_obj_t> property_map;
-
 typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
+std::unordered_map<VD, hwloc_obj_t> hwloc_property_map;
 
 /**
  * @brief Build boost graph from hwloc (sub)tree.
@@ -36,9 +35,9 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t
     boost::put(&Vertex::index, g, vd, obj->logical_index);
     boost::put(&Vertex::depth, g, vd, obj->depth);
     // ... and add vertex properties to external property map instead:
-    property_map[vd] = obj;
+    hwloc_property_map[vd] = obj;
     // or maybe use BGL property map:
-    // put(hwloc_obj_t, g, vd, obj);
+    // boost::put(hwloc_obj_t, g, vd, obj);
 
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
@@ -73,7 +72,7 @@ graph_t init_graph_myloq(const char *file)
     assert(root->type == HWLOC_OBJ_MACHINE);
 
     graph_t g;
-    printf("making hwloc graph...\n");
+    // printf("making hwloc graph...\n");
     auto root_vd = add_vertex(g);
     make_hwloc_graph(g, t, root_vd, root);
 
