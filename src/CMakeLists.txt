@@ -11,8 +11,6 @@ list(JOIN YLOC_MODULES_CPPNAMES ", " YLOC_MODULES_CPPNAMES)
 
 configure_file("modules.cc.in" "modules.cc")
 
-# Todo include boost properly
-
 # Main library
 add_library(yloc "init.cc" "include/init.h"
     "${CMAKE_CURRENT_BINARY_DIR}/modules.cc" "include/modules.h" "include/modules/interface.h" "include/modules/graph_type.h")
@@ -22,3 +20,9 @@ target_link_libraries(yloc ${YLOC_MODULES})
 target_include_directories(yloc PRIVATE "include" "include/modules")
 
 #set_property(TARGET yloc PROPERTY CXX_STANDARD 17)
+
+# Add Boost graph to the include directories
+find_package(Boost REQUIRED COMPONENTS graph)
+
+target_include_directories(yloc PUBLIC ${Boost_INCLUDE_DIRS})
+target_include_directories(yloc-module-interface INTERFACE ${Boost_INCLUDE_DIRS})
