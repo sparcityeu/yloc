@@ -13,6 +13,7 @@
 //#include <yloc.h>
 #include "graph_type.h"
 #include "init.h"
+#include "print.h"
 #include "modules.h"
 #include "query_graph.h"
 
