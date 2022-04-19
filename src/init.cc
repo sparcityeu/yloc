@@ -1,6 +1,6 @@
 
 #include <init.h>
-#include <modules/interface.h>
+#include <modules.h>
 
 int yloc_init(yloc_init_flags_t _flags) {
     // todo module logic
