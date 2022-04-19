@@ -17,7 +17,15 @@
 // control with hwloc_topology_set_flags()
 
 typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
-std::unordered_map<VD, hwloc_obj_t> hwloc_property_map;
+std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;
+// const auto pm = boost::make_assoc_property_map(std::unordered_map<VD, hwloc_obj_t>{});
+
+// TODO: DELETE ME
+static VID getmax_vid(graph_t &g)
+{
+    static VID maxVID;
+    return maxVID++;
+}
 
 /**
  * @brief Build boost graph from hwloc (sub)tree.
@@ -35,7 +43,7 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t
     boost::put(&Vertex::index, g, vd, obj->logical_index);
     boost::put(&Vertex::depth, g, vd, obj->depth);
     // ... and add vertex properties to external property map instead:
-    hwloc_property_map[vd] = obj;
+    vertex2hwloc_map[vd] = obj;
     // or maybe use BGL property map:
     // boost::put(hwloc_obj_t, g, vd, obj);
 
