@@ -1,8 +1,9 @@
 
-
 //#include <mpi.h>
 
-#include <boost/graph/graphviz.hpp>
+#include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/graph_utility.hpp> // print_graph
+#include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
 #include <fstream>
 #include <hwloc.h>
@@ -10,8 +11,6 @@
 
 // Todo create combined header
 //#include <yloc.h>
-// #include "algo.h"
-#include "distances.h"
 #include "graph_type.h"
 #include "init.h"
 #include "modules.h"
