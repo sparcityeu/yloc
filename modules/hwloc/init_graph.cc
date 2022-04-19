@@ -58,8 +58,25 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t
     }
 }
 
+/* runtime check for matching hwloc abi from hwloc documentation */
+static void check_hwloc_api_version()
+{
+    // TODO: probably move that piece of code to constructor of hwloc module
+    unsigned version = hwloc_get_api_version();
+    if ((version >> 16) != (HWLOC_API_VERSION >> 16)) {
+        fprintf(stderr,
+           "%s compiled for hwloc API 0x%x but running on library API 0x%x.\n"
+           "You may need to point LD_LIBRARY_PATH to the right hwloc library.\n"
+           "Aborting since the new ABI is not backward compatible.\n",
+           __func__, HWLOC_API_VERSION, version);
+        exit(EXIT_FAILURE);
+    }
+}
+
 graph_t init_graph_myloq(const char *file)
 {
+    check_hwloc_api_version();
+
     // hwloc_init
     hwloc_topology_t t;
     hwloc_topology_init(&t); // initialization
