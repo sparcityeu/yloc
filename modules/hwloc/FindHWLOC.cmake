@@ -2,7 +2,7 @@
 #
 # Usage of this module:
 #
-#  find_package(hwloc)
+#  find_package(HWLOC)
 #
 # Variables defined by this module:
 #
@@ -13,6 +13,7 @@
 find_path(
   HWLOC_PREFIX
   NAMES include/hwloc.h
+  PATHS ENV HWLOC_ROOT
 )
 
 if (NOT HWLOC_PREFIX AND NOT $ENV{HWLOC_BASE} STREQUAL "")

@@ -15,7 +15,7 @@ target_include_directories(${MOD_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(${MOD_TARGET} yloc-module-interface)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-find_package(hwloc REQUIRED)
+find_package(HWLOC REQUIRED)
 
 target_include_directories(${MOD_TARGET} PRIVATE ${HWLOC_INCLUDE_DIRS})
 target_link_libraries(${MOD_TARGET} ${HWLOC_LIBRARIES})
