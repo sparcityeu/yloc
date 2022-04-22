@@ -1,31 +1,15 @@
 
-// Adopted from myloq by Jakub Orlowski (jakubo87)
-// https://github.com/jakubo87/myLoq
-
-#include "interface_impl.h"
-
 #include <hwloc.h>
 #include <iostream>
 
+#include "interface_impl.h"
 #include "init_graph.h"
-#include "query_graph.h"
 
 // machine -> numanode -> package -> cache -> core -> pu
-
-// some object types are filtered by default
-// see man hwlocality_object_types and hwlocality_configuration
-// control with hwloc_topology_set_flags()
 
 typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
 std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;
 // const auto pm = boost::make_assoc_property_map(std::unordered_map<VD, hwloc_obj_t>{});
-
-// TODO: DELETE ME
-static VID getmax_vid(graph_t &g)
-{
-    static VID maxVID;
-    return maxVID++;
-}
 
 /**
  * @brief Build boost graph from hwloc (sub)tree.
@@ -38,10 +22,8 @@ static VID getmax_vid(graph_t &g)
 static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t obj)
 {
     // TODO: remove this code and also the whole Vertex class property? ...
-    boost::put(&Vertex::vid, g, vd, getmax_vid(g)); // get new highest global index
-    boost::put(&Vertex::type, g, vd, hwloc_obj_type_string(obj->type));
-    boost::put(&Vertex::index, g, vd, obj->logical_index);
-    boost::put(&Vertex::depth, g, vd, obj->depth);
+    // boost::put(&Vertex::type, g, vd, hwloc_obj_type_string(obj->type));
+
     // ... and add vertex properties to external property map instead:
     vertex2hwloc_map[vd] = obj;
     // or maybe use BGL property map:
@@ -51,8 +33,8 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
         auto child_vd = add_vertex(g);
-        auto ret = add_edge(vd, child_vd, g);
-        ret = add_edge(child_vd, vd, g);
+        auto ret = add_edge(vd, child_vd, {YLOC_EDGE_TYPE_PARENT}, g);
+        ret = add_edge(child_vd, vd, {YLOC_EDGE_TYPE_CHILD}, g);
         make_hwloc_graph(g, t, child_vd, child);
         child = hwloc_get_next_child(t, obj, child);
     }
@@ -80,10 +62,16 @@ graph_t init_graph_myloq(const char *file)
     // hwloc_init
     hwloc_topology_t t;
     hwloc_topology_init(&t); // initialization
-    // hwloc_topology_set_io_types_filter(t, HWLOC_TYPE_FILTER_KEEP_ALL); // for all the devices, or...
-    // hwloc_topology_set_io_types_filter(t,HWLOC_TYPE_FILTER_KEEP_IMPORTANT);
 
-    hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_ALL);
+
+    // some object types are filtered by default
+    // see man hwlocality_object_types and hwlocality_configuration
+    // control with hwloc_topology_set_flags() or 
+    // hwloc_topology_set_..._filter()
+
+    // hwloc_topology_set_io_types_filter(t, HWLOC_TYPE_FILTER_KEEP_ALL);
+    // hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_ALL);
+    
     hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_IMPORTANT);
 
     if (*file != '0') { // FIXME: check for NULL instead? review interface ...

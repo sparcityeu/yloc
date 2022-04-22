@@ -7,11 +7,7 @@
 
 #include <interface.h>
 
-graph_t init_graph_myloq(const char* t);
+graph_t init_graph_myloq(const char *t);
 
-template<typename G, typename V>
-using Distance = std::function<double(V,V,const G&)>;
-
-///enumerating combinatorics
-std::vector<std::vector<int>>
-comb(const int k, const std::vector<int>& vec);
+template <typename G, typename V>
+using Distance = std::function<double(V, V, const G &)>;

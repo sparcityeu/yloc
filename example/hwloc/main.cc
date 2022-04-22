@@ -35,9 +35,13 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
     // how to transform the values to string labels. 
     // this is implemented using make_transform_value_property_map()
     // before using a label writer for the transformed property map
-    auto pmt = boost::make_transform_value_property_map(
+    auto vpmt = boost::make_transform_value_property_map(
         [](hwloc_obj_t const &obj) { return hwloc_string(obj); }, pm);
-    boost::write_graphviz(ofs, g, boost::make_label_writer(pmt));
+
+    auto epmt = boost::make_transform_value_property_map(
+        [](yloc_edge_type const &edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; }, boost::get(&Edge::type, g));
+
+    boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
 
 /* example of a filter graph query */
