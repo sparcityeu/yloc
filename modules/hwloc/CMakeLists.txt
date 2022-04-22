@@ -4,8 +4,7 @@ string(REPLACE "-" "_" MOD_CPPNAME "${MOD_TARGET}")
 configure_file("interface_impl.cc.in" "interface_impl.cc")
 
 set(MOD_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/interface_impl.cc" "interface_impl.h"
-    "init_graph.cc" "init_graph.h"
-    "query_graph.h" "predicates.h" "visitors.h")
+    "init_graph.cc" "init_graph.h")
 
 add_library(${MOD_TARGET} "${MOD_SOURCES}")
 
