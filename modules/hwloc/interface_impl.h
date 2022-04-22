@@ -7,6 +7,12 @@
 // todo probably use centralized structure to maintain compatibility between modules
 //typedef graph_t void *;
 
+// enum aliases for backwards compatibility from hwloc documentation
+#if HWLOC_API_VERSION < 0x00010b00
+    #define HWLOC_OBJ_NUMANODE HWLOC_OBJ_NODE
+    #define HWLOC_OBJ_PACKAGE HWLOC_OBJ_SOCKET
+#endif /* HWLOC_API_VERSION */
+
 class YlocHwloc : public YlocModule {
 
 public:
