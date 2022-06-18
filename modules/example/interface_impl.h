@@ -1,11 +1,11 @@
 
 #include <interface.h>
 
-// actually used graph type by this module
-// todo probably use centralized structure to maintain compatibility between modules
-//typedef graph_t void *;
+using yloc::graph_t;
+using yloc::YlocModule;
 
-class ExampleModule : public YlocModule {
+class ExampleModule : public YlocModule
+{
 
 public:
 
@@ -32,8 +32,7 @@ public:
 
     void update_graph(graph_t * graph) {
         return;
-    };
+    }
 
 private:
-
 };

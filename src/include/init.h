@@ -1,6 +1,7 @@
 #pragma once
 
-typedef enum {
+typedef enum
+{
     YLOC_MINIMAL    = 0b00000000,   // bare minimum
     YLOC_LIGHT      = 0b00000001,   // run light microbenchmarks
     YLOC_FULL       = 0b00000011,   // run everything, for usage as a tool instead of a library
@@ -13,7 +14,14 @@ inline yloc_init_flags_t operator|(yloc_init_flags_t a, yloc_init_flags_t b) {
     return static_cast<yloc_init_flags_t>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+namespace yloc
+{
+    using init_flags_t = yloc_init_flags_t;
 
-int yloc_init(yloc_init_flags_t _flags);
+    // TODO: set_options
 
-int yloc_finalize();
+    // TODO: export as yloc_init for C-interface
+    int init(init_flags_t _flags);
+
+    int finalize();
+}

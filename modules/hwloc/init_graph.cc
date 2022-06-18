@@ -5,7 +5,9 @@
 #include "interface_impl.h"
 #include "init_graph.h"
 
-// machine -> numanode -> package -> cache -> core -> pu
+using graph_t = yloc::graph_t;
+
+// hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 
 typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
 std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;

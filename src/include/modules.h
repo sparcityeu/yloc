@@ -3,11 +3,12 @@
 
 #include <modules/interface.h>
 
+namespace yloc
+{
+    YlocModule *main_module();
 
-YlocModule *main_module();
-
-std::vector<YlocModule *> list_modules();
-
+    std::vector<YlocModule *> list_modules();
+}
 
 
 // COM like module selection?

@@ -3,4 +3,7 @@
 
 #include "interface_impl.h"
 
-YlocModule * @MOD_CPPNAME@ = new ExampleModule();
+namespace yloc
+{
+    YlocModule * @MOD_CPPNAME@ = new ExampleModule();
+}

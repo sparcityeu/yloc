@@ -7,7 +7,8 @@
 
 #include <interface.h>
 
+using yloc::graph_t;
 graph_t init_graph_myloq(const char *t);
 
-template <typename G, typename V>
-using Distance = std::function<double(V, V, const G &)>;
+// template <typename G, typename V>
+// using Distance = std::function<double(V, V, const G &)>;
