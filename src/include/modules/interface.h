@@ -7,18 +7,13 @@ namespace yloc
     class YlocModule
     {
     public:
-        virtual void init_graph(graph_t * graph) = 0;               // init complete graph
-        virtual void init_graph_secondary(graph_t * graph) = 0;     // init of secondary module (if graph already is initialized by another module)
+        virtual void init_graph(graph_t &graph) = 0; // init module subgraph
 
-        // Specifies wheter init_graph is implemented and if the module can be used standalone // todo better comment
-        // Todo better module capability system, main, export, minimal, full
-        virtual bool is_main_module() = 0;
-
-        virtual void export_graph(graph_t * graph, void ** output) = 0;
+        virtual void export_graph(graph_t &graph, void **output) = 0;
         // optional function, not ever module requires this
         // it is recommended that every module that can init a graph on its own also provides this function.
 
-        virtual void update_graph(graph_t * graph) = 0;
+        virtual void update_graph(graph_t &graph) = 0;
         // Manual(?) trigger for an update on the graph
         // Thread logic in module or in init?
         // Probably both, modules that require push logic need internal threads.
@@ -26,6 +21,8 @@ namespace yloc
         //
         // An alternative would be to add a auto-update function to the interface,
         // this would be a good place to add an per-module interval
+
+        //virtual graph_t & subgraph() = 0;
     };
 }
 

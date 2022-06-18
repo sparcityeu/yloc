@@ -9,7 +9,8 @@ using graph_t = yloc::graph_t;
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 
-typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
+using VD = yloc::vertex_descriptor_t;
+
 std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;
 // const auto pm = boost::make_assoc_property_map(std::unordered_map<VD, hwloc_obj_t>{});
 

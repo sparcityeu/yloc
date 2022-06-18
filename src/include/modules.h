@@ -5,8 +5,6 @@
 
 namespace yloc
 {
-    YlocModule *main_module();
-
     std::vector<YlocModule *> list_modules();
 }
 

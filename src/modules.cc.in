@@ -8,13 +8,6 @@ namespace yloc
 {
     extern YlocModule *@YLOC_MODULES_DECLARATIONS@;
 
-    YlocModule *main_module() {
-        // Todo C++20 would allow virtual constexpr-functions, this would allow this check.
-        //static_assert(@MAIN_MODULE_CPPNAME@->is_main_module(),"Specified main module is no valid main module.");
-        assert(@MAIN_MODULE_CPPNAME@->is_main_module()); //,"Specified main module is no valid main module.");
-        return @MAIN_MODULE_CPPNAME@;
-    }
-
     std::vector<YlocModule *> list_modules() {
         return {@YLOC_MODULES_CPPNAMES@};
     }
