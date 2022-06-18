@@ -12,11 +12,15 @@
 // Todo create combined header
 //#include <yloc.h>
 #include "graph_type.h"
+#include "graph_object.h"
 #include "init.h"
 #include "print.h"
 #include "modules.h"
 
-typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
+using yloc::graph_t;
+using VD = yloc::vertex_descriptor_t;
+
+// typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
 
 extern std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;
 static auto pm = boost::make_assoc_property_map(vertex2hwloc_map);
@@ -39,7 +43,7 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
         [](hwloc_obj_t const &obj) { return hwloc_string(obj); }, pm);
 
     auto epmt = boost::make_transform_value_property_map(
-        [](yloc_edge_type const &edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; }, boost::get(&Edge::type, g));
+        [](yloc::edge_type const &edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; }, boost::get(&yloc::Edge::type, g));
 
     boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
@@ -147,20 +151,20 @@ static void find_distances(graph_t &g)
 
 int main(int argc, char *argv[])
 {
+    //yloc::set_options/configure/...
+
     // MPI_Init(&argc, &argv);
-    yloc_init(YLOC_FULL | YLOC_ONGOING);
+    yloc::init(YLOC_FULL | YLOC_ONGOING);
 
-    graph_t g;
-    main_module()->init_graph(&g);
+    graph_t g = yloc::get_graph();
 
-    std::string dot_file_name{"graph.dot"};
-    write_graph_dot_file(g, dot_file_name);
+    write_graph_dot_file(g, std::string{"graph.dot"});
 
     filter_graph_example(g);
 
     find_distances(g);
 
-    yloc_finalize();
+    yloc::finalize();
     // MPI_Finalize();
 
     return EXIT_SUCCESS;
