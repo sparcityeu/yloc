@@ -1,12 +1,26 @@
 
 #include <init.h>
 #include <modules.h>
+#include <graph_type.h>
+#include <graph_object.h>
 
 namespace yloc
 {
+    static graph_t g_graph;
+
+    graph_t &get_graph() {
+        return g_graph;
+    }
+    
     int init(init_flags_t _flags) {
-        // todo module logic
         // todo flag logic (probably combined with module logic)
+
+        //initialize static graph
+        graph_t & graph = get_graph();
+
+        for(auto *m : list_modules()) {
+            m->init_graph(graph);
+        }
 
         // store result of module init in global variable
         return 0;
