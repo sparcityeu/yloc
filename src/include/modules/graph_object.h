@@ -4,5 +4,5 @@
 
 namespace yloc
 {
-    graph_t &get_graph();
+    graph_t &root_graph();
 };

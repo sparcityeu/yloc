@@ -7,5 +7,5 @@
 
 #include <interface.h>
 
-using yloc::graph_t;
-graph_t init_graph_myloq(const char *t);
+// using yloc::graph_t;
+// graph_t init_graph_myloq(const char *t);

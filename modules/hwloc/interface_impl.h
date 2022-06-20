@@ -17,19 +17,15 @@ using yloc::YlocModule;
 class YlocHwloc : public YlocModule
 {
 public:
-    void init_graph(graph_t &graph)
-    {
-        graph = init_graph_myloq("0");
-        return;
-    }
+    void init_graph(/* graph_t &graph */) override;
 
-    void export_graph(graph_t &graph, void **output)
+    void export_graph(graph_t &graph, void **output) override
     {
         output = nullptr;
         return;
     }
 
-    void update_graph(graph_t &graph)
+    void update_graph(graph_t &graph) override
     {
         return;
     };

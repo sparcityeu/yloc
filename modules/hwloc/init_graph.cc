@@ -5,10 +5,11 @@
 #include "interface_impl.h"
 #include "init_graph.h"
 
-using graph_t = yloc::graph_t;
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 
+// typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
+using graph_t = yloc::graph_t;
 using VD = yloc::vertex_descriptor_t;
 
 std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;
@@ -31,6 +32,8 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t
     vertex2hwloc_map[vd] = obj;
     // or maybe use BGL property map:
     // boost::put(hwloc_obj_t, g, vd, obj);
+
+    //g1.local_to_global(vd1)
 
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
@@ -58,14 +61,17 @@ static void check_hwloc_api_version()
     }
 }
 
-graph_t init_graph_myloq(const char *file)
+void YlocHwloc::init_graph(/* const char *file */)
 {
     check_hwloc_api_version();
 
-    // hwloc_init
     hwloc_topology_t t;
     hwloc_topology_init(&t); // initialization
 
+    /**
+     * TODO: move the settings logic to other function (set_options)
+     * 
+     */
 
     // some object types are filtered by default
     // see man hwlocality_object_types and hwlocality_configuration
@@ -77,23 +83,24 @@ graph_t init_graph_myloq(const char *file)
     
     hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_IMPORTANT);
 
+    /*
     if (*file != '0') { // FIXME: check for NULL instead? review interface ...
         if (hwloc_topology_set_xml(t, file) == -1) {
             // TODO: error handling of hwloc functions ...
         }
     }
+    */
+   
     hwloc_topology_load(t); // actual detection
 
     hwloc_obj_t root = hwloc_get_root_obj(t);
     assert(root->type == HWLOC_OBJ_MACHINE);
 
-    graph_t g;
     // printf("making hwloc graph...\n");
-    auto root_vd = add_vertex(g);
-    make_hwloc_graph(g, t, root_vd, root);
+    auto root_vd = add_vertex(_subgraph);
+
+    make_hwloc_graph(_subgraph, t, root_vd, root);
 
     // TODO: lifetime of topology context?
     // hwloc_topology_destroy(t);
-
-    return g;
 }

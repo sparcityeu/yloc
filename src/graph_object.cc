@@ -7,7 +7,7 @@ namespace yloc
 {
     static graph_t g_graph;
 
-    graph_t &get_graph() {
+    graph_t &root_graph() {
         return g_graph;
     }
 }

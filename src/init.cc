@@ -8,18 +8,18 @@ namespace yloc
 {
     static graph_t g_graph;
 
-    graph_t &get_graph() {
+    graph_t &root_graph() {
         return g_graph;
     }
-    
+
     int init(init_flags_t _flags) {
         // todo flag logic (probably combined with module logic)
 
         //initialize static graph
-        graph_t & graph = get_graph();
+        // graph_t & graph = root_graph();
 
         for(auto *m : list_modules()) {
-            m->init_graph(graph);
+            m->init_graph(/* graph */);
         }
 
         // store result of module init in global variable
