@@ -1,6 +1,3 @@
-
-//#include <mpi.h>
-
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>      // write_graphviz
@@ -9,20 +6,18 @@
 #include <hwloc.h>
 #include <unordered_map>
 
-// Todo create combined header
+/** TODO: create combined header */
 //#include <yloc.h>
+#include <adapter.h>
 #include "graph_type.h"
 #include "graph_object.h"
 #include "init.h"
 #include "print.h"
 #include "modules.h"
 
-using yloc::graph_t;
-using VD = yloc::vertex_descriptor_t;
+using namespace yloc;
 
-// typedef boost::graph_traits<graph_t>::vertex_descriptor VD;
-
-extern std::unordered_map<VD, hwloc_obj_t> vertex2hwloc_map;
+extern std::unordered_map<vertex_descriptor_t, hwloc_obj_t> vertex2hwloc_map;
 static auto pm = boost::make_assoc_property_map(vertex2hwloc_map);
 
 /* writes graph with labels to file */
@@ -52,8 +47,17 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
 static void filter_graph_example(graph_t &g)
 {
     // filter the graph by hwloc object type "HWLOC_OBJ_OS_DEVICE" using a predicate (f(v) -> bool)
-    auto predicate = [&](const VD &v) -> bool {
-        return (boost::get(pm, v)->type == HWLOC_OBJ_OS_DEVICE);
+
+    // auto predicate = [&](const vertex_descriptor_t &v) -> bool {
+    // return (boost::get(pm, v)->type == HWLOC_OBJ_OS_DEVICE);
+    // };
+
+    /** TODO: adjust hwloc example implementation to adapter concept after further abstract
+     *  machine model implementation in hwloc module 
+     */
+    auto predicate = [&](const vertex_descriptor_t &v) -> bool {
+        /** TODO: replace that with correct property predicate **/
+        return g[v].tinfo.get(YLOC_PROPERTY(capacity)).has_value();
     };
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
@@ -62,7 +66,7 @@ static void filter_graph_example(graph_t &g)
 
     // print vertices of resulting filtered graph view:
     std::cout << "filtered graph:" << std::endl;
-    std::for_each(vertices(fgv).first, vertices(fgv).second, [&](const VD &v) {
+    std::for_each(vertices(fgv).first, vertices(fgv).second, [&](const vertex_descriptor_t &v) {
         std::cout << "vd: " << v << std::endl
                   << hwloc_string(boost::get(pm, v)) << std::endl;
     });
@@ -90,7 +94,7 @@ static void find_distances(graph_t &g)
     //       to get the closest cpu's to an opencl device
 
     // first we query the graph for opencl devices
-    auto predicate_opencldev = [&](const VD &v) -> bool {
+    auto predicate_opencldev = [&](const vertex_descriptor_t &v) -> bool {
         return (hwloc_compare_types(boost::get(pm, v)->type, HWLOC_OBJ_OS_DEVICE) == 0
             && (NULL != boost::get(pm, v)->subtype) ? (boost::get(pm, v)->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) : false);
     };
@@ -107,7 +111,7 @@ static void find_distances(graph_t &g)
               << hwloc_string(boost::get(pm, *vi)) << std::endl;
 
     // then we filter the graph to get all PU's
-    auto predicate_pu = [&](const VD &v) -> bool {
+    auto predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
         return (boost::get(pm, v)->type == HWLOC_OBJ_PU);
     };
     auto fgv_pu = boost::make_filtered_graph(g, boost::keep_all{}, predicate_pu);
@@ -135,7 +139,7 @@ static void find_distances(graph_t &g)
     std::cout << "minimum distance: " << mindist << std::endl;
 
     // now filter out the PU's that have higher distance
-    auto predicate_pu_min = [&](const VD &v) -> bool {
+    auto predicate_pu_min = [&](const vertex_descriptor_t &v) -> bool {
         return predicate_pu(v) && !(boost::get(dist_pmap, v) > mindist);
     };
 
