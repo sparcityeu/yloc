@@ -15,6 +15,9 @@ namespace yloc
 #else
 #endif /* USE_SUBGRAPH */
 
+        /** TODO: */
+        // virtual ~YlocModule() = 0;
+
         virtual void init_graph(/* graph_t &graph */) = 0; // init module subgraph
 
         virtual void export_graph(graph_t &graph, void **output) = 0;

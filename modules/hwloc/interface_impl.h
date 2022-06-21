@@ -12,7 +12,7 @@
 using yloc::graph_t;
 using yloc::YlocModule;
 
-// TODO: separate definition from declaration, remove init_graph_myloq
+/** TODO: separate definition from declaration **/
 
 class YlocHwloc : public YlocModule
 {

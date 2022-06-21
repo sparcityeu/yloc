@@ -1,17 +1,21 @@
+#pragma once
+
 #include <adapter.h>
+#include <hwloc.h>
 
-class HwlocAdapter : Adapter
+class HwlocAdapter : public yloc::Adapter
 {
-    using native_obj_t = hwloc_obj_t;
+    using obj_t = hwloc_obj_t;
 
-    public:
-    inline std::optional<int> capacity() { return std::make_optional(0) };
+public:
+    HwlocAdapter(obj_t obj) : m_obj(obj) {}
 
-    native_obj_t native_obj();
-    // ...
+    /** TODO: abstract machine model implementation **/
 
-    private:
-    native_obj_t obj;
+    /** abstract machine model end **/
+    
+    obj_t native_obj() { return m_obj; }
+
+private:
+    obj_t m_obj;
 };
-
-// static_cast<HwlocAdapter::native_obj_t> adapter->native_obj();
