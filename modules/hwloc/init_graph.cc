@@ -38,9 +38,14 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, VD &vd, hwloc_obj_t
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        auto child_vd = add_vertex(g);
-        auto ret = add_edge(vd, child_vd, {YLOC_EDGE_TYPE_PARENT}, g);
-        ret = add_edge(child_vd, vd, {YLOC_EDGE_TYPE_CHILD}, g);
+        auto child_vd = boost::add_vertex(g);
+#if USE_SUBGRAPH
+        auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{YLOC_EDGE_TYPE_CHILD}}, g);
+        ret = boost::add_edge(child_vd, vd, graph_t::edge_property_type{0, Edge{YLOC_EDGE_TYPE_PARENT}}, g);
+#else
+        auto ret = boost::add_edge(vd, child_vd, {YLOC_EDGE_TYPE_PARENT}, g);
+        ret = boost::add_edge(child_vd, vd, {YLOC_EDGE_TYPE_CHILD}, g);
+#endif
         make_hwloc_graph(g, t, child_vd, child);
         child = hwloc_get_next_child(t, obj, child);
     }
@@ -97,9 +102,9 @@ void YlocHwloc::init_graph(/* const char *file */)
     assert(root->type == HWLOC_OBJ_MACHINE);
 
     // printf("making hwloc graph...\n");
-    auto root_vd = add_vertex(_subgraph);
+    auto root_vd = boost::add_vertex(m_subgraph);
 
-    make_hwloc_graph(_subgraph, t, root_vd, root);
+    make_hwloc_graph(m_subgraph, t, root_vd, root);
 
     // TODO: lifetime of topology context?
     // hwloc_topology_destroy(t);

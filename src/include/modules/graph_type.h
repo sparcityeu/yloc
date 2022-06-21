@@ -1,5 +1,7 @@
 #pragma once
 
+#define USE_SUBGRAPH 1
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
 
@@ -29,13 +31,7 @@ namespace yloc
         // AdapterContainer ac;
     };
 
-    // using graph_t = boost::adjacency_list<
-    //     boost::vecS,           //  out-edge container selector
-    //     boost::vecS,           //  Vector container selector
-    //     boost::bidirectionalS, // sets bidirectional edge access
-    //     Vertex,                // vertex property
-    //     Edge>;                 // edge property
-
+#if USE_SUBGRAPH
     using graph_t = boost::subgraph<
         boost::adjacency_list<
             boost::vecS,           //  out-edge container selector
@@ -44,6 +40,14 @@ namespace yloc
             Vertex,                // vertex property
             // edge property (see bundled properties, subgraph)
             boost::property<boost::edge_index_t, std::size_t, Edge>>>;
+#else    
+    using graph_t = boost::adjacency_list<
+        boost::vecS,           //  out-edge container selector
+        boost::vecS,           //  Vector container selector
+        boost::bidirectionalS, // sets bidirectional edge access
+        Vertex,                // vertex property
+        Edge>;                 // edge property
+#endif
 
     using edge_descriptor_t = typename boost::graph_traits<graph_t>::edge_descriptor;
     using vertex_descriptor_t = typename boost::graph_traits<graph_t>::vertex_descriptor;

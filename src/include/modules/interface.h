@@ -9,7 +9,11 @@ namespace yloc
     class YlocModule
     {
     public:
-        YlocModule() : _subgraph(root_graph().create_subgraph()) {}
+        /** TODO: how to avoid duplicated code, but have "pure" interface class YlocModule? */
+#if USE_SUBGRAPH
+        YlocModule() : m_subgraph(root_graph().create_subgraph()) {}
+#else
+#endif /* USE_SUBGRAPH */
 
         virtual void init_graph(/* graph_t &graph */) = 0; // init module subgraph
 
@@ -28,7 +32,10 @@ namespace yloc
 
         // virtual graph_t & subgraph() = 0;
     protected:
-        graph_t &_subgraph; // module subgraph
+#if USE_SUBGRAPH
+        graph_t &m_subgraph; // module subgraph
+#else
+#endif /* USE_SUBGRAPH */
     };
 }
 
