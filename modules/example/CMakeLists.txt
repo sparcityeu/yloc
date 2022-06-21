@@ -1,3 +1,5 @@
+message(STATUS "Module example: currently not maintained")
+return()
 
 string(REPLACE "-" "_" MOD_CPPNAME "${MOD_TARGET}")
 

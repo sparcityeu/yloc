@@ -33,9 +33,5 @@ foreach(module ${modules})
     endif()
 endforeach()
 
-set(MAIN_MODULE "yloc-hwloc" CACHE STRING "Main module that is used as default for initialising of the graph.")
-set_property(CACHE MAIN_MODULE PROPERTY STRINGS ${YLOC_MODULES})
-# Todo minor, cmake could be used to reduce this list down to only main modules (would prevent runtime errors (compiletime with C++20))
-
 # Return found modules to the main CMake-file
 set(YLOC_MODULES ${YLOC_MODULES} PARENT_SCOPE)

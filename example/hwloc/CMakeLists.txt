@@ -8,3 +8,5 @@ find_package(HWLOC REQUIRED)
 
 target_include_directories(example PRIVATE ${HWLOC_INCLUDE_DIRS})
 target_link_libraries(example ${HWLOC_LIBRARIES})
+
+set_property(TARGET example PROPERTY CXX_STANDARD 17)
