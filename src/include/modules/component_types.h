@@ -10,8 +10,15 @@
 /** TODO: Distinguish between Memory-DIMMs and Memory in general */
 /** TODO: Add more IO-Devices and Link-types (PCIe, USB, InfiniBand ?) */
 
-/** TODO: Reduce list with MACROS (one line per type) */
 /** TODO: Default instance (Singleton) for types? */
+
+#define YLOC_SUBTYPE(type_name, ...)     \
+    class type_name : public __VA_ARGS__ \
+    {                                    \
+    public:                              \
+        virtual ~type_name() = default;  \
+        static type_name singleton;      \
+    };
 
 namespace yloc
 {
@@ -22,12 +29,29 @@ namespace yloc
         virtual ~Component() = default;
 
         template <class ComponentType>
-        bool is_a() {
+        bool is_a()
+        {
             return nullptr != dynamic_cast<ComponentType *>(this);
         }
+
+        // static Component singleton;
     };
 
+    YLOC_SUBTYPE(Unknown, Component)
 
+    YLOC_SUBTYPE(Compute, Component)
+    YLOC_SUBTYPE(CPUCore, Compute)
+
+    YLOC_SUBTYPE(Storage, Component)
+    YLOC_SUBTYPE(Memory, Storage)
+    YLOC_SUBTYPE(Cache, Storage)
+    YLOC_SUBTYPE(Disk, Storage)
+
+    YLOC_SUBTYPE(Misc, Component)
+
+    YLOC_SUBTYPE(MultipleInheritance, Storage, Compute)
+
+#if DO_NOT_USE_MACRO
     /***********************************
      * Compute-Components
      ***********************************/
@@ -55,7 +79,6 @@ namespace yloc
     public:
         virtual ~PhysicalCore() = default;
     };
-
 
     /***********************************
      * Storage-Components
@@ -103,7 +126,6 @@ namespace yloc
     public:
         virtual ~SolidStateDrive() = default;
     };
-
 
     class Cache : public Storage
     {
@@ -195,7 +217,6 @@ namespace yloc
         virtual ~L4InstructionCache() = default;
     };
 
-
     /***********************************
      * Accelerator-Components
      ***********************************/
@@ -224,7 +245,6 @@ namespace yloc
         virtual ~GPUMemory() = default;
     };
 
-
     /***********************************
      * IO-Components
      ***********************************/
@@ -241,7 +261,6 @@ namespace yloc
         virtual ~NetworkDevice() = default;
     };
 
-
     /***********************************
      * Link-Components
      ***********************************/
@@ -252,14 +271,13 @@ namespace yloc
         virtual ~Link() = default;
     };
 
-
     /***********************************
      * Miscellaneous
      ***********************************/
 
     /**
      * @brief Type for Miscellaneous components, filler class
-     * 
+     *
      */
     class Misc : public Component
     {
@@ -276,7 +294,6 @@ namespace yloc
         virtual ~Parent() = default;
     };
 
-
     /**
      * @brief Edge type that enables ordering within the graph
      */
@@ -285,5 +302,5 @@ namespace yloc
     public:
         virtual ~Child() = default;
     };
-
+#endif
 }
