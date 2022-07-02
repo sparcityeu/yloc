@@ -25,8 +25,17 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
     // ... and add vertex properties to external property map instead:
     vertex2hwloc_map[vd] = obj;
 
-    // g[vd].a = HwlocAdapter{obj};
     g[vd].tinfo.push_back(new HwlocAdapter{obj});
+    if (g[vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+        /** TODO: move that logic elsewhere and/or move type info to adapter */
+        if (hwloc_obj_type_is_cache(obj->type)) {
+            g[vd].tinfo.type = Cache::ptr();
+        } else if (hwloc_obj_type_is_memory(obj->type)) {
+            g[vd].tinfo.type = Memory::ptr();
+        } else  {
+            g[vd].tinfo.type = Misc::ptr();
+        }
+    }
 
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
