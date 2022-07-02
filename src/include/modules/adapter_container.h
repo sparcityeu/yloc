@@ -13,7 +13,7 @@ namespace yloc
     class AdapterContainer
     {
     public:
-        Component *type{&Unknown::singleton};
+        const Component *type{UnknownComponentType::ptr()};
         //~AdapterContainer
 
         void push_back(Adapter *a)

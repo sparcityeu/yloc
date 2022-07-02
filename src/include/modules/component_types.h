@@ -10,46 +10,45 @@
 /** TODO: Distinguish between Memory-DIMMs and Memory in general */
 /** TODO: Add more IO-Devices and Link-types (PCIe, USB, InfiniBand ?) */
 
-/** TODO: Default instance (Singleton) for types? */
-
-#define YLOC_SUBTYPE(type_name, ...)     \
-    class type_name : public __VA_ARGS__ \
-    {                                    \
-    public:                              \
-        virtual ~type_name() = default;  \
-        static type_name singleton;      \
+#define YLOC_DECLARE_TYPE(type_name, ...)    \
+    class type_name : public __VA_ARGS__     \
+    {                                        \
+    public:                                  \
+        virtual ~type_name() = default;      \
+        inline static const type_name *ptr() \
+        {                                    \
+            static const type_name s;        \
+            return &s;                       \
+        }                                    \
     };
 
 namespace yloc
 {
-
     class Component
     {
     public:
         virtual ~Component() = default;
 
         template <class ComponentType>
-        bool is_a()
+        bool is_a() const
         {
-            return nullptr != dynamic_cast<ComponentType *>(this);
+            return nullptr != dynamic_cast<const ComponentType *>(this);
         }
-
-        // static Component singleton;
     };
 
-    YLOC_SUBTYPE(Unknown, Component)
+    YLOC_DECLARE_TYPE(UnknownComponentType, Component)
 
-    YLOC_SUBTYPE(Compute, Component)
-    YLOC_SUBTYPE(CPUCore, Compute)
+    YLOC_DECLARE_TYPE(Compute, Component)
+    YLOC_DECLARE_TYPE(CPUCore, Compute)
 
-    YLOC_SUBTYPE(Storage, Component)
-    YLOC_SUBTYPE(Memory, Storage)
-    YLOC_SUBTYPE(Cache, Storage)
-    YLOC_SUBTYPE(Disk, Storage)
+    YLOC_DECLARE_TYPE(Storage, Component)
+    YLOC_DECLARE_TYPE(Memory, Storage)
+    YLOC_DECLARE_TYPE(Cache, Storage)
+    YLOC_DECLARE_TYPE(Disk, Storage)
 
-    YLOC_SUBTYPE(Misc, Component)
+    YLOC_DECLARE_TYPE(Misc, Component)
 
-    YLOC_SUBTYPE(MultipleInheritance, Storage, Compute)
+    YLOC_DECLARE_TYPE(MultipleInheritance, Storage, Compute)
 
 #if DO_NOT_USE_MACRO
     /***********************************
