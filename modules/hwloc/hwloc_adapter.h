@@ -11,16 +11,15 @@ class HwlocAdapter : public yloc::Adapter
 public:
     HwlocAdapter(obj_t obj) : m_obj(obj) {}
 
-    std::optional<std::string> as_string() override
+    std::optional<std::string> as_string() const override
     {
         std::stringstream ss;
         ss << hwloc_obj_type_string(m_obj->type); /*<< std::endl*/
 #if VERBOSE_HWLOC_ATTRIBUTES
         int verbose = 1;
-        const char *sep = "\n";
         const size_t attribute_len_max = 4096;
         char attributes[attribute_len_max];
-        hwloc_obj_attr_snprintf(attributes, attribute_len_max, obj, sep, verbose);
+        hwloc_obj_attr_snprintf(attributes, attribute_len_max, obj, "\n", verbose);
         ss << attributes;
 #endif
         return std::optional<std::string>{ss.str()};

@@ -3,7 +3,7 @@
 #include <optional>
 // #include <graph_type.h>
 
-#define ADAPTER_PROP(type, name) virtual std::optional<type> name() { return std::optional<type>{}; }
+#define ADAPTER_PROP(type, name) virtual std::optional<type> name() const { return std::optional<type>{}; }
 
 namespace yloc
 {

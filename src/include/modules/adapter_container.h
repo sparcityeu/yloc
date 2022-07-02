@@ -22,7 +22,7 @@ namespace yloc
         }
 
         template <typename property_type>
-        std::optional<property_type> get(std::optional<property_type> (Adapter::*mfun)())
+        std::optional<property_type> get(std::optional<property_type> (Adapter::*mfun)() const)
         {
             for (auto a : m_adapters) {
                 /** FIXME: better use std::invoke() than macro **/
