@@ -47,17 +47,8 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
 static void filter_graph_example(graph_t &g)
 {
     // filter the graph by hwloc object type "HWLOC_OBJ_OS_DEVICE" using a predicate (f(v) -> bool)
-
-    // auto predicate = [&](const vertex_descriptor_t &v) -> bool {
-    // return (boost::get(pm, v)->type == HWLOC_OBJ_OS_DEVICE);
-    // };
-
-    /** TODO: adjust hwloc example implementation to adapter concept after further abstract
-     *  machine model implementation in hwloc module 
-     */
     auto predicate = [&](const vertex_descriptor_t &v) -> bool {
-        /** TODO: replace that with correct property predicate **/
-        return g[v].tinfo.get(YLOC_PROPERTY(capacity)).has_value();
+        return (boost::get(pm, v)->type == HWLOC_OBJ_OS_DEVICE);
     };
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
