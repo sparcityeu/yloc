@@ -1,15 +1,21 @@
 #pragma once
 
 /** TODO: Documentation, ie.:
- * Add ASCII Art of type hiearchie here
- * Add description to classes and there purpose
+ * Add ASCII Art of type hierarchy here
+ * Add description to classes and their purpose
  */
 
 /** TODO: CPU-type that combines CPUCore and L1,2,3... Caches? */
 /** TODO: Unified Cache, subclasses that inherit from L1Data und L1Instruction */
-/** TODO: Distinguish between Memory-DIMMs and Memory in general */
+
+/** TODO: Distinguish between Memory-DIMMs and Memory in general 
+ * @see e.g. SMBIOS specification for better memory component types
+ * like e.g. memory controller, memory channel, memory dimm (module) 
+ */
+
 /** TODO: Add more IO-Devices and Link-types (PCIe, USB, InfiniBand ?) */
 
+/** @brief Helper macro for type declaration. */
 #define YLOC_DECLARE_TYPE(type_name, ...)    \
     class type_name : public __VA_ARGS__     \
     {                                        \
@@ -24,6 +30,7 @@
 
 namespace yloc
 {
+    /** @brief Base class for all hardware component types */
     class Component
     {
     public:
@@ -36,270 +43,105 @@ namespace yloc
         }
     };
 
+    /***********************************
+     * List of component types
+     ***********************************/
+
+    /** @brief Null-type. */
     YLOC_DECLARE_TYPE(UnknownComponentType, Component)
 
-    YLOC_DECLARE_TYPE(Compute, Component)
-    YLOC_DECLARE_TYPE(CPUCore, Compute)
-
-    YLOC_DECLARE_TYPE(Storage, Component)
-    YLOC_DECLARE_TYPE(Memory, Storage)
-    YLOC_DECLARE_TYPE(Cache, Storage)
-    YLOC_DECLARE_TYPE(Disk, Storage)
-
-    YLOC_DECLARE_TYPE(Misc, Component)
-
-    YLOC_DECLARE_TYPE(MultipleInheritance, Storage, Compute)
-
-#if DO_NOT_USE_MACRO
     /***********************************
      * Compute-Components
      ***********************************/
 
-    class Compute : public Component
-    {
-    public:
-        virtual ~Compute() = default;
-    };
+    YLOC_DECLARE_TYPE(Compute, Component)
 
-    class CPUCore : public Compute
-    {
-    public:
-        virtual ~CPUCore() = default;
-    };
-
-    class LogicalCore : public CPUCore
-    {
-    public:
-        virtual ~LogicalCore() = default;
-    };
-
-    class PhysicalCore : public CPUCore
-    {
-    public:
-        virtual ~PhysicalCore() = default;
-    };
+    YLOC_DECLARE_TYPE(CPUCore, Compute)
+    YLOC_DECLARE_TYPE(LogicalCore, Compute)
+    YLOC_DECLARE_TYPE(PhysicalCore, Compute)
 
     /***********************************
      * Storage-Components
      ***********************************/
 
-    class Storage : public Component
-    {
-    public:
-        virtual ~Storage() = default;
-    };
+    YLOC_DECLARE_TYPE(Storage, Component)
+    YLOC_DECLARE_TYPE(Memory, Storage)
+    YLOC_DECLARE_TYPE(Cache, Storage)
+    YLOC_DECLARE_TYPE(PersistentStorage, Storage)
 
-    class Memory : public Storage
-    {
-    public:
-        virtual ~Memory() = default;
-    };
+    YLOC_DECLARE_TYPE(VolatileMemory, Memory)
+    YLOC_DECLARE_TYPE(NonVolatileMemory, Memory)
 
-    /** All Memory is implicitly Volatile if not specified otherwise */
-    /* class VolatileMemory : public Memory
-    {
-    public:
-        virtual ~VolatileMemory() = default;
-    }; */
+    YLOC_DECLARE_TYPE(DataCache, Cache)
+    YLOC_DECLARE_TYPE(InstructionCache, Cache)
+    YLOC_DECLARE_TYPE(UnifiedCache, DataCache, InstructionCache)
 
-    class NonVolatileMemory : public Memory
-    {
-    public:
-        virtual ~NonVolatileMemory() = default;
-    };
+    YLOC_DECLARE_TYPE(L1Cache, Cache)
+    YLOC_DECLARE_TYPE(L2Cache, Cache)
+    YLOC_DECLARE_TYPE(L3Cache, Cache)
+    YLOC_DECLARE_TYPE(L4Cache, Cache)
 
-    class PersistentStorage : public Storage
-    {
-    public:
-        virtual ~PersistentStorage() = default;
-    };
+    YLOC_DECLARE_TYPE(L1DataCache, L1Cache, DataCache)
+    YLOC_DECLARE_TYPE(L2DataCache, L2Cache, DataCache)
+    YLOC_DECLARE_TYPE(L3DataCache, L3Cache, DataCache)
+    YLOC_DECLARE_TYPE(L4DataCache, L4Cache, DataCache)
 
-    class HardDrive : public PersistentStorage
-    {
-    public:
-        virtual ~HardDrive() = default;
-    };
+    YLOC_DECLARE_TYPE(L1InstructionCache, L1Cache, InstructionCache)
+    YLOC_DECLARE_TYPE(L2InstructionCache, L2Cache, InstructionCache)
+    YLOC_DECLARE_TYPE(L3InstructionCache, L3Cache, InstructionCache)
+    YLOC_DECLARE_TYPE(L4InstructionCache, L4Cache, InstructionCache)
 
-    class SolidStateDrive : public PersistentStorage
-    {
-    public:
-        virtual ~SolidStateDrive() = default;
-    };
+    YLOC_DECLARE_TYPE(L1UnifiedCache, L1Cache, UnifiedCache)
+    YLOC_DECLARE_TYPE(L2UnifiedCache, L2Cache, UnifiedCache)
+    YLOC_DECLARE_TYPE(L3UnifiedCache, L3Cache, UnifiedCache)
+    YLOC_DECLARE_TYPE(L4UnifiedCache, L4Cache, UnifiedCache)
 
-    class Cache : public Storage
-    {
-    public:
-        virtual ~Cache() = default;
-    };
-
-    class DataCache : public Cache
-    {
-    public:
-        virtual ~DataCache() = default;
-    };
-
-    class InstructionCache : public Cache
-    {
-    public:
-        virtual ~InstructionCache() = default;
-    };
-
-    class L1Cache : public Cache
-    {
-    public:
-        virtual ~L1Cache() = default;
-    };
-
-    class L2Cache : public Cache
-    {
-    public:
-        virtual ~L2Cache() = default;
-    };
-
-    class L3Cache : public Cache
-    {
-    public:
-        virtual ~L3Cache() = default;
-    };
-
-    class L4Cache : public Cache
-    {
-    public:
-        virtual ~L4Cache() = default;
-    };
-
-    class L1DataCache : public L1Cache, public DataCache
-    {
-    public:
-        virtual ~L1DataCache() = default;
-    };
-
-    class L2DataCache : public L2Cache, public DataCache
-    {
-    public:
-        virtual ~L2DataCache() = default;
-    };
-
-    class L3DataCache : public L3Cache, public DataCache
-    {
-    public:
-        virtual ~L3DataCache() = default;
-    };
-
-    class L4DataCache : public L4Cache, public DataCache
-    {
-    public:
-        virtual ~L4DataCache() = default;
-    };
-
-    class L1InstructionCache : public L1Cache, public InstructionCache
-    {
-    public:
-        virtual ~L1InstructionCache() = default;
-    };
-
-    class L2InstructionCache : public L2Cache, public InstructionCache
-    {
-    public:
-        virtual ~L2InstructionCache() = default;
-    };
-
-    class L3InstructionCache : public L3Cache, public InstructionCache
-    {
-    public:
-        virtual ~L3InstructionCache() = default;
-    };
-
-    class L4InstructionCache : public L4Cache, public InstructionCache
-    {
-    public:
-        virtual ~L4InstructionCache() = default;
-    };
+    YLOC_DECLARE_TYPE(SolidStateDrive, PersistentStorage)
+    YLOC_DECLARE_TYPE(HardDiskDrive, PersistentStorage)
 
     /***********************************
      * Accelerator-Components
      ***********************************/
 
-    class Accelerator : public Component
-    {
-    public:
-        virtual ~Accelerator() = default;
-    };
+    YLOC_DECLARE_TYPE(Accelerator, Component)
+    YLOC_DECLARE_TYPE(GPU, Accelerator)
+    YLOC_DECLARE_TYPE(FPGA, Accelerator)
 
-    class GPU : public Accelerator
-    {
-    public:
-        virtual ~GPU() = default;
-    };
-
-    class GPUCore : public GPU, public Compute
-    {
-    public:
-        virtual ~GPUCore() = default;
-    };
-
-    class GPUMemory : public GPU, public Memory
-    {
-    public:
-        virtual ~GPUMemory() = default;
-    };
+    YLOC_DECLARE_TYPE(GPUCore, GPU, Compute)
+    YLOC_DECLARE_TYPE(GPUMemory, GPU, Memory)
 
     /***********************************
      * IO-Components
      ***********************************/
 
-    class IO : public Component
-    {
-    public:
-        virtual ~IO() = default;
-    };
+    YLOC_DECLARE_TYPE(InputOutput, Component)
+    YLOC_DECLARE_TYPE(NetworkDevice, InputOutput)
 
-    class NetworkDevice : public IO
-    {
-    public:
-        virtual ~NetworkDevice() = default;
-    };
+    /** TODO: isn't HDD also I/O? */
+    // YLOC_DECLARE_TYPE(PersistentStorage, InputOutput)
 
     /***********************************
      * Link-Components
      ***********************************/
 
-    class Link : public Component
-    {
-    public:
-        virtual ~Link() = default;
-    };
+    YLOC_DECLARE_TYPE(Link, Component)
+    YLOC_DECLARE_TYPE(Bus, Link)
 
     /***********************************
      * Miscellaneous
      ***********************************/
 
     /**
-     * @brief Type for Miscellaneous components, filler class
+     * @brief Type for Miscellaneous components, filler class.
      *
      */
-    class Misc : public Component
-    {
-    public:
-        virtual ~Misc() = default;
-    };
+    YLOC_DECLARE_TYPE(Misc, Component)
 
+/** TODO: do we really want to use dynamic_cast for logical edge types parent & child? */
     /**
      * @brief Edge type that enables ordering within the graph
      */
-    class Parent : public Component
-    {
-    public:
-        virtual ~Parent() = default;
-    };
-
-    /**
-     * @brief Edge type that enables ordering within the graph
-     */
-    class Child : public Component
-    {
-    public:
-        virtual ~Child() = default;
-    };
-#endif
+    YLOC_DECLARE_TYPE(LogicalEdgeType, Component)
+    YLOC_DECLARE_TYPE(Parent, LogicalEdgeType)
+    YLOC_DECLARE_TYPE(Child, LogicalEdgeType)
 }
