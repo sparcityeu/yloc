@@ -32,7 +32,7 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
         /** TODO: proper add_vertex function with identifier_t */
-        auto child_vd = boost::add_vertex(g.boost_graph());
+        auto child_vd = g.add_vertex();
 #if USE_SUBGRAPH
         auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{YLOC_EDGE_TYPE_CHILD}}, g.boost_graph());
         ret = boost::add_edge(child_vd, vd, graph_t::edge_property_type{0, Edge{YLOC_EDGE_TYPE_PARENT}}, g.boost_graph());

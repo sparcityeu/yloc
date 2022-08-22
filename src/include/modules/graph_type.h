@@ -79,6 +79,18 @@ namespace yloc
 
         boost_graph_t& boost_graph() { return m_graph; }
 
+        vertex_descriptor_t add_vertex() {
+            return boost::add_vertex(m_graph);
+        }
+
+        vertex_descriptor_t add_vertex(identifier_t id) {
+            if(m_identifier_map.count(id) > 0) {
+                return m_identifier_map.at(id);
+            }
+            auto vd = boost::add_vertex(m_graph);
+            m_identifier_map.insert({id,vd});
+        }
+
         auto operator[] (vertex_descriptor_t vd)
         {
             return m_graph[vd];
