@@ -38,9 +38,9 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
         [](hwloc_obj_t const &obj) { return hwloc_string(obj); }, pm);
 
     auto epmt = boost::make_transform_value_property_map(
-        [](yloc::edge_type const &edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; }, boost::get(&yloc::Edge::type, g));
+        [](yloc::edge_type const &edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; }, boost::get(&yloc::Edge::type, g.boost_graph()));
 
-    boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
+    boost::write_graphviz(ofs, g.boost_graph(), boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
 
 /* example of a filter graph query */
@@ -62,7 +62,7 @@ static void filter_graph_example(graph_t &g)
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
     // vertices are filtered by predicate "predicate"
-    auto fgv = boost::make_filtered_graph(g, boost::keep_all{}, predicate);
+    auto fgv = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate);
 
     // print vertices of resulting filtered graph view:
     std::cout << "filtered graph:" << std::endl;
@@ -98,7 +98,7 @@ static void find_distances(graph_t &g)
         return (hwloc_compare_types(boost::get(pm, v)->type, HWLOC_OBJ_OS_DEVICE) == 0
             && (NULL != boost::get(pm, v)->subtype) ? (boost::get(pm, v)->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) : false);
     };
-    auto fgv_opencldev = boost::make_filtered_graph(g, boost::keep_all{}, predicate_opencldev);
+    auto fgv_opencldev = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_opencldev);
 
     size_t num_vertices = num_vertices_view(fgv_opencldev);
     std::cout << "number of found opencl devices: " << num_vertices_view(fgv_opencldev) << std::endl;
@@ -114,7 +114,7 @@ static void find_distances(graph_t &g)
     auto predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
         return (boost::get(pm, v)->type == HWLOC_OBJ_PU);
     };
-    auto fgv_pu = boost::make_filtered_graph(g, boost::keep_all{}, predicate_pu);
+    auto fgv_pu = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_pu);
     std::cout << "number of PU's: " << num_vertices_view(fgv_pu) << std::endl;
 
     // here we use a vector as the underlying container to the property map for the distances,
@@ -126,7 +126,7 @@ static void find_distances(graph_t &g)
     auto dist_pmap = boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, fgv_pu));
 
     auto vis = boost::make_bfs_visitor(boost::record_distances(dist_pmap, boost::on_tree_edge()));
-    boost::breadth_first_search(g, *vi, visitor(vis));
+    boost::breadth_first_search(g.boost_graph(), *vi, visitor(vis));
 
     // get the minimum distance to the PU's
     auto mindist = boost::get(dist_pmap, *boost::vertices(fgv_pu).first);
@@ -146,7 +146,7 @@ static void find_distances(graph_t &g)
     // TODO: using lambdas as predicates, the graph view cannot be further filtered because
     // lambda closure type has a deleted copy assignment operator.
     // using std::function instead of a lambda might enable queries on the graph view
-    auto fgv_pu_min = boost::make_filtered_graph(g, boost::keep_all{}, predicate_pu_min);
+    auto fgv_pu_min = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_pu_min);
 
     for (auto vd : boost::make_iterator_range(boost::vertices(fgv_pu_min))) {
         std::cout << "#hops [" << *vi << " -> " << vd << "] = " << distances[vd] << "\n";
