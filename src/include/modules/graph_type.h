@@ -89,6 +89,7 @@ namespace yloc
             }
             auto vd = boost::add_vertex(m_graph);
             m_identifier_map.insert({id,vd});
+            return vd;
         }
 
         auto operator[] (vertex_descriptor_t vd)
@@ -98,6 +99,7 @@ namespace yloc
 
         auto operator[] (identifier_t id)
         {
+            /** TODO: Error handling when id is not available, maybe call add_vertex in background */
             return m_graph[m_identifier_map[id]];
         }
 
@@ -113,4 +115,4 @@ namespace yloc
     using graph_t = Graph;
 }
 
-using yloc::graph_t; /** FIXME: do not use yloc::graph_t by default **/
+//using yloc::graph_t; /** FIXME: do not use yloc::graph_t by default **/

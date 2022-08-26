@@ -102,7 +102,7 @@ void YlocHwloc::init_graph(/* const char *file */)
     make_hwloc_graph(m_subgraph, t, root_vd, root);
 #else
     // printf("making hwloc graph...\n");
-    auto root_vd = boost::add_vertex(root_graph().boost_graph());
+    auto root_vd = root_graph().add_vertex("hwloc_root");
 
     make_hwloc_graph(root_graph(), t, root_vd, root);
 #endif
