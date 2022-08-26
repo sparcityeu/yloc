@@ -92,6 +92,25 @@ namespace yloc
             return vd;
         }
 
+        /** TODO: May depend on module initialization order */
+        bool register_vertex(vertex_descriptor_t vd, identifier_t id) {
+            auto result = m_identifier_map.insert({id,vd});
+            return result.second;
+        }
+
+        /** TODO: Depends on module initialization order
+         *        Pending list?
+         *        Better: globally valid identifiers
+         */
+        bool register_vertex(identifier_t old_id, identifier_t id) {
+            if(m_identifier_map.count(old_id) == 0) {
+                return false;
+            }
+            auto vd = m_identifier_map.at(old_id);
+            auto result = m_identifier_map.insert({id,vd});
+            return result.second;
+        }
+
         auto operator[] (vertex_descriptor_t vd)
         {
             return m_graph[vd];
