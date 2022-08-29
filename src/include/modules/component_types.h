@@ -57,8 +57,8 @@ namespace yloc
     YLOC_DECLARE_TYPE(Compute, Component)
 
     YLOC_DECLARE_TYPE(CPUCore, Compute)
-    YLOC_DECLARE_TYPE(LogicalCore, Compute)
-    YLOC_DECLARE_TYPE(PhysicalCore, Compute)
+    YLOC_DECLARE_TYPE(LogicalCore, CPUCore)
+    YLOC_DECLARE_TYPE(PhysicalCore, CPUCore)
 
     /***********************************
      * Storage-Components

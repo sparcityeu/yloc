@@ -6,10 +6,10 @@
 
 /** TODO: create combined header */
 //#include <yloc.h>
+#include <adapter.h>
 #include "graph_object.h"
 #include "graph_type.h"
 #include "init.h"
-#include <adapter.h>
 
 using namespace yloc;
 
@@ -36,7 +36,7 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
 static void filter_graph_example(graph_t &g)
 {
     // use predicate (f(v) -> bool) to filter the graph by object type "Cache"
-    auto predicate = [&](const vertex_descriptor_t &v) -> bool {
+    /*auto*/ std::function<bool(const vertex_descriptor_t &)> predicate = [&](const vertex_descriptor_t &v) -> bool {
         return g[v].tinfo.type->is_a<Cache>();
     };
 
@@ -50,6 +50,21 @@ static void filter_graph_example(graph_t &g)
         std::cout << "VD=" << v << std::endl
                   << g[v].tinfo.get(YLOC_PROPERTY(as_string)).value() << std::endl;
     });
+
+    // write_graph_dot_file(fgv, "filtered_graph.dot");
+
+    std::ofstream ofs{"filtered_graph.dot"};
+    auto vpmt = boost::make_transform_value_property_map(
+        [&](yloc::vertex_descriptor_t vd) {
+            return fgv[vd].tinfo.get(YLOC_PROPERTY(as_string)).value() + "\nVD=" + std::to_string(vd);
+        },
+        boost::get(boost::vertex_index, fgv));
+
+    auto epmt = boost::make_transform_value_property_map(
+        [&](yloc::edge_type edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; },
+        boost::get(&yloc::Edge::type, fgv));
+
+    boost::write_graphviz(ofs, fgv, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
 
 /* helper function because boost::num_vertices<GraphView> returns the number of vertices in the underlying graph.
