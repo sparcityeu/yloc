@@ -95,13 +95,13 @@ static void find_distances(graph_t &g)
     auto fgv_accelerator = boost::make_filtered_graph(g, boost::keep_all{}, predicate_accelerator);
 
     size_t num_vertices = num_vertices_view(fgv_accelerator);
-    std::cout << "number of found opencl devices: " << num_vertices_view(fgv_accelerator) << std::endl;
+    std::cout << "number of found accelerators: " << num_vertices_view(fgv_accelerator) << std::endl;
     if (num_vertices < 1) {
         return;
     }
 
     auto vi = boost::vertices(fgv_accelerator).first;
-    std::cout << "first opencl device:" << std::endl
+    std::cout << "first accelerator:" << std::endl
               << g[*vi].tinfo.get(YLOC_PROPERTY(as_string)).value() << std::endl;
 
     // then we filter the graph to get all PU's

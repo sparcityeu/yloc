@@ -26,6 +26,7 @@ namespace yloc
 
         // virtual std::optional<std::string> as_string() { return std::optional<std::string>{}; }
         ADAPTER_PROP(std::string, as_string)
+        ADAPTER_PROP(uint64_t, size)
 
     protected:
         // vertex_descriptor_t m_vd; // local vertex descriptor
