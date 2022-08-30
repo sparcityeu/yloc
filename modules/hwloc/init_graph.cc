@@ -32,6 +32,12 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
             g[vd].tinfo.type = Cache::ptr();
         } else if (hwloc_obj_type_is_memory(obj->type)) {
             g[vd].tinfo.type = Memory::ptr();
+        } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_OS_DEVICE) == 0 
+                && NULL != obj->subtype 
+                && (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC || obj->attr->osdev.type, HWLOC_OBJ_OSDEV_GPU)) {
+            g[vd].tinfo.type = Accelerator::ptr();
+        } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_PU)) {
+            g[vd].tinfo.type = LogicalCore::ptr();
         } else  {
             g[vd].tinfo.type = Misc::ptr();
         }

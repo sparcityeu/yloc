@@ -82,32 +82,31 @@ size_t num_vertices_view(const GraphView &gv)
 /* example of finding distances from one vertex to others */
 static void find_distances(graph_t &g)
 {
-#if FIND_DISTANCES_EXAMPLE_IMPLEMENTED
     // this example finds the distances (#hops as metric) from a (the first) co-processor to all PU's
     // and prints the PU's with the lowest distance.
     //
     // note: hwloc offers functionality e.g. in hwloc_opencl_get_device_cpuset()
     //       to get the closest cpu's to an opencl device
 
-    // first we query the graph for opencl devices
-    auto predicate_opencldev = [&](const vertex_descriptor_t &v) -> bool {
-        return (hwloc_compare_types(boost::get(pm, v)->type, HWLOC_OBJ_OS_DEVICE) == 0 && (NULL != boost::get(pm, v)->subtype) ? (boost::get(pm, v)->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) : false);
+    // first we query the graph for ...
+    auto predicate_accelerator = [&](const vertex_descriptor_t &v) -> bool {
+        return g[v].tinfo.type->is_a<Accelerator>();
     };
-    auto fgv_opencldev = boost::make_filtered_graph(g, boost::keep_all{}, predicate_opencldev);
+    auto fgv_accelerator = boost::make_filtered_graph(g, boost::keep_all{}, predicate_accelerator);
 
-    size_t num_vertices = num_vertices_view(fgv_opencldev);
-    std::cout << "number of found opencl devices: " << num_vertices_view(fgv_opencldev) << std::endl;
+    size_t num_vertices = num_vertices_view(fgv_accelerator);
+    std::cout << "number of found opencl devices: " << num_vertices_view(fgv_accelerator) << std::endl;
     if (num_vertices < 1) {
         return;
     }
 
-    auto vi = boost::vertices(fgv_opencldev).first;
+    auto vi = boost::vertices(fgv_accelerator).first;
     std::cout << "first opencl device:" << std::endl
-              << hwloc_string(boost::get(pm, *vi)) << std::endl;
+              << g[*vi].tinfo.get(YLOC_PROPERTY(as_string)).value() << std::endl;
 
     // then we filter the graph to get all PU's
     auto predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
-        return (boost::get(pm, v)->type == HWLOC_OBJ_PU);
+        return g[v].tinfo.type->is_a<LogicalCore>();
     };
     auto fgv_pu = boost::make_filtered_graph(g, boost::keep_all{}, predicate_pu);
     std::cout << "number of PU's: " << num_vertices_view(fgv_pu) << std::endl;
@@ -120,6 +119,7 @@ static void find_distances(graph_t &g)
     std::vector<int> distances(boost::num_vertices(fgv_pu));
     auto dist_pmap = boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, fgv_pu));
 
+    // boost::on_tree_edge() adds 1 per edge, could be any distance metric
     auto vis = boost::make_bfs_visitor(boost::record_distances(dist_pmap, boost::on_tree_edge()));
     boost::breadth_first_search(g, *vi, visitor(vis));
 
@@ -146,7 +146,6 @@ static void find_distances(graph_t &g)
     for (auto vd : boost::make_iterator_range(boost::vertices(fgv_pu_min))) {
         std::cout << "#hops [" << *vi << " -> " << vd << "] = " << distances[vd] << "\n";
     }
-#endif
 }
 
 int main(int argc, char *argv[])
