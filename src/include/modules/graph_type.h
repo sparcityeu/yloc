@@ -89,12 +89,14 @@ namespace yloc
             }
             auto vd = boost::add_vertex(m_graph);
             m_identifier_map.insert({id,vd});
+            register_pending(vd,id);
             return vd;
         }
 
         /** TODO: May depend on module initialization order */
         bool register_vertex(vertex_descriptor_t vd, identifier_t id) {
             auto result = m_identifier_map.insert({id,vd});
+            register_pending(vd,id);
             return result.second;
         }
 
@@ -104,10 +106,12 @@ namespace yloc
          */
         bool register_vertex(identifier_t old_id, identifier_t id) {
             if(m_identifier_map.count(old_id) == 0) {
+                m_pending_identifiers.insert({old_id,id});
                 return false;
             }
             auto vd = m_identifier_map.at(old_id);
             auto result = m_identifier_map.insert({id,vd});
+            register_pending(vd,id);
             return result.second;
         }
 
@@ -127,8 +131,27 @@ namespace yloc
 #endif
 
     private:
+
+        /**
+         * @brief Registration of pending identifiers for vertices that only became available later.
+         * Has to be called after every action that can introduce a new id to the identifier map.
+         * 
+         * @param vd Vertex descriptor of the node identified by id
+         * @param id Identifier that became available just now
+         */
+        void register_pending(vertex_descriptor_t vd, identifier_t id) {
+            auto pending_it = m_pending_identifiers.find(id);
+            while(pending_it != m_pending_identifiers.end()) {
+                auto new_id = pending_it->second;
+                m_pending_identifiers.erase(pending_it);
+                /** TODO: if this returns false there may be a duplicated node */
+                register_vertex(vd, new_id);
+            }
+        }
+
         boost_graph_t m_graph;
         std::unordered_map<identifier_t,vertex_descriptor_t> m_identifier_map;
+        std::unordered_multimap<identifier_t,identifier_t> m_pending_identifiers;
     };
 
     using graph_t = Graph;
