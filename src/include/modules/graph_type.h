@@ -77,12 +77,26 @@ namespace yloc
         operator boost_graph_t&() { return m_graph; }
         operator const boost_graph_t&() const { return m_graph; }
 
+        /**
+         * @brief Provides access to the underlying boost graph.
+         */
         boost_graph_t& boost_graph() { return m_graph; }
 
+        /**
+         * @brief Adds a new unnamed vertex to the graph.
+         */
         vertex_descriptor_t add_vertex() {
             return boost::add_vertex(m_graph);
         }
 
+        /**
+         * @brief Get a vertex for the identifier id.
+         * 
+         * Adds a new vertex to the graph if there is no vertex with id.
+         * Otherwise the already existing vertex is returned.
+         * 
+         * @param id The identifier of the vertex.
+         */
         vertex_descriptor_t add_vertex(identifier_t id) {
             if(m_identifier_map.count(id) > 0) {
                 return m_identifier_map.at(id);
@@ -93,16 +107,35 @@ namespace yloc
             return vd;
         }
 
-        /** TODO: May depend on module initialization order */
+        /**
+         * @brief Registers an existing vertex vd with id.
+         * 
+         * TODO: May depend on module initialization order
+         *       If possible avoid register_vertex where possible.
+         *       May introduce multiple vertices that are supposed to have the same identifier.
+         *       Better: globally valid identifiers
+         * 
+         * @param vd The vertex to be registered.
+         * @param id The new identifier for the vertex
+         * @return false if there is already another vertex with id
+         */
         bool register_vertex(vertex_descriptor_t vd, identifier_t id) {
             auto result = m_identifier_map.insert({id,vd});
             register_pending(vd,id);
             return result.second;
         }
 
-        /** TODO: Depends on module initialization order
-         *        Pending list?
-         *        Better: globally valid identifiers
+        /**
+         * @brief Makes a vertex identified by old_id also available as id.
+         * 
+         * TODO: May depend on module initialization order
+         *       If possible avoid register_vertex where possible.
+         *       May introduce multiple vertices that are supposed to have the same identifier.
+         *       Better: globally valid identifiers
+         * 
+         * @param old_id The identifier that the vertex is know under beforehand
+         * @param id The new identifier for the vertex
+         * @return false if there is no vertex with old_id or there already is another vertex with id
          */
         bool register_vertex(identifier_t old_id, identifier_t id) {
             if(m_identifier_map.count(old_id) == 0) {
@@ -115,11 +148,17 @@ namespace yloc
             return result.second;
         }
 
+        /**
+         * @brief Provides access to vertices of the underlying boost graph.
+         */
         auto operator[] (vertex_descriptor_t vd)
         {
             return m_graph[vd];
         }
 
+        /**
+         * @brief Provides access to vertices of the underlying boost graph using an identifier.
+         */
         auto operator[] (identifier_t id)
         {
             /** TODO: Error handling when id is not available, maybe call add_vertex in background */
@@ -135,6 +174,8 @@ namespace yloc
         /**
          * @brief Registration of pending identifiers for vertices that only became available later.
          * Has to be called after every action that can introduce a new id to the identifier map.
+         * 
+         * TODO: Warn if pending list isn't empty once all modules are initialized (end of init-function)
          * 
          * @param vd Vertex descriptor of the node identified by id
          * @param id Identifier that became available just now
