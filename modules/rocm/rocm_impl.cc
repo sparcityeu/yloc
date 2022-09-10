@@ -1,8 +1,6 @@
 
 #include <adapter.h>
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/graph_utility.hpp> // print_graph
-#include <boost/graph/graphviz.hpp>      // write_graphviz
+#include <boost/graph/filtered_graph.hpp>
 #include <iostream>
 
 #include <interface.h>
