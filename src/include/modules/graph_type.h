@@ -4,17 +4,20 @@
 
 #include <map>
 
+#include <adapter_container.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
-// #include <adapter.h>
-#include <adapter_container.h>
 
-enum yloc_vertex_type { YLOC_VERTEX_TYPE_MAX };
+enum class yloc_vertex_type : int { YLOC_VERTEX_TYPE_MAX };
 
-enum yloc_edge_type { YLOC_EDGE_TYPE_PARENT,
-                      YLOC_EDGE_TYPE_CHILD,
-                      YLOC_EDGE_TYPE_MAX };
-                      
+enum class yloc_edge_type : int { YLOC_EDGE_TYPE_PARENT,
+                                  YLOC_EDGE_TYPE_CHILD,
+                                  YLOC_GPU_INTERCONNECT,
+                                  YLOC_EDGE_TYPE_MAX };
+
+#define YLOC_PROPERTY &yloc::Adapter::property
+#define YLOC_GET(g, vd, property) (g)[(vd)].tinfo.get(&yloc::Adapter::property)
+
 namespace yloc
 {
     using vertex_type = yloc_vertex_type;
