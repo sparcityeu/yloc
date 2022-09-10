@@ -1,8 +1,6 @@
 
 #include <interface.h>
 
-#include "init_graph.h"
-
 // enum aliases for backwards compatibility from hwloc documentation
 #if HWLOC_API_VERSION < 0x00010b00
 #define HWLOC_OBJ_NUMANODE HWLOC_OBJ_NODE

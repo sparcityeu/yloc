@@ -5,7 +5,9 @@
 #include "hwloc_adapter.h"
 #include <adapter.h>
 
-#include "init_graph.h"
+#include <hwloc.h>
+#include <interface.h>
+
 #include "interface_impl.h"
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
