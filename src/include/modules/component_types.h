@@ -131,6 +131,9 @@ namespace yloc
      * Miscellaneous
      ***********************************/
 
+    YLOC_DECLARE_TYPE(PCIDevice, Component)
+    YLOC_DECLARE_TYPE(Bridge, Component)
+
     /**
      * @brief Type for Miscellaneous components, filler class.
      *
