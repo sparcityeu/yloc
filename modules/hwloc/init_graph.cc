@@ -4,13 +4,77 @@
 
 #include "hwloc_adapter.h"
 #include <adapter.h>
-// #include <adapter_container.h>
+
 #include "init_graph.h"
 #include "interface_impl.h"
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 using namespace yloc;
-std::unordered_map<vertex_descriptor_t, hwloc_obj_t> vertex2hwloc_map;
+
+static const yloc::Component *yloc_type(hwloc_obj_t obj)
+{
+    /** TODO: move that logic elsewhere and/or move type info to adapter */
+    /** TODO: implement missing hwloc types: (@see hwloc_compare_types)
+    Typedefs
+       typedef enum hwloc_obj_cache_type_e hwloc_obj_cache_type_t
+       typedef enum hwloc_obj_bridge_type_e hwloc_obj_bridge_type_t
+       typedef enum hwloc_obj_osdev_type_e hwloc_obj_osdev_type_t
+
+    Enumerations
+       enum hwloc_obj_type_t { HWLOC_OBJ_MACHINE, HWLOC_OBJ_PACKAGE,
+           HWLOC_OBJ_CORE, HWLOC_OBJ_PU, HWLOC_OBJ_L1CACHE, HWLOC_OBJ_L2CACHE,
+           HWLOC_OBJ_L3CACHE, HWLOC_OBJ_L4CACHE, HWLOC_OBJ_L5CACHE,
+           HWLOC_OBJ_L1ICACHE, HWLOC_OBJ_L2ICACHE, HWLOC_OBJ_L3ICACHE,
+           HWLOC_OBJ_GROUP, HWLOC_OBJ_NUMANODE, HWLOC_OBJ_BRIDGE,
+           HWLOC_OBJ_PCI_DEVICE, HWLOC_OBJ_OS_DEVICE, HWLOC_OBJ_MISC,
+           HWLOC_OBJ_MEMCACHE, HWLOC_OBJ_DIE }
+       enum hwloc_obj_cache_type_e { HWLOC_OBJ_CACHE_UNIFIED,
+           HWLOC_OBJ_CACHE_DATA, HWLOC_OBJ_CACHE_INSTRUCTION }
+       enum hwloc_obj_bridge_type_e { HWLOC_OBJ_BRIDGE_HOST,
+           HWLOC_OBJ_BRIDGE_PCI }
+       enum hwloc_obj_osdev_type_e { HWLOC_OBJ_OSDEV_BLOCK, HWLOC_OBJ_OSDEV_GPU,
+           HWLOC_OBJ_OSDEV_NETWORK, HWLOC_OBJ_OSDEV_OPENFABRICS,
+           HWLOC_OBJ_OSDEV_DMA, HWLOC_OBJ_OSDEV_COPROC }
+       enum hwloc_compare_types_e { HWLOC_TYPE_UNORDERED }
+    */
+
+    if (hwloc_obj_type_is_icache(obj->type)) {
+        return InstructionCache::ptr();
+    } else if (hwloc_obj_type_is_dcache(obj->type)) {
+        /* Check whether an object type is a CPU Data or Unified Cache. Memory-side caches are not CPU caches. */
+        return DataCache::ptr();
+    } else if (hwloc_obj_type_is_memory(obj->type)) {
+        /* This current includes NUMA nodes and Memory-side caches. */
+        return Memory::ptr();
+    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_OS_DEVICE) == 0 && obj->attr != NULL) {
+        switch (obj->attr->osdev.type) {
+        case HWLOC_OBJ_OSDEV_GPU:
+            return GPU::ptr();
+        case HWLOC_OBJ_OSDEV_COPROC:
+            return Accelerator::ptr();
+        case HWLOC_OBJ_OSDEV_DMA:
+            return Misc::ptr(); // yloc type not implemented yet
+        case HWLOC_OBJ_OSDEV_NETWORK:
+            return Misc::ptr(); // yloc type not implemented yet
+        case HWLOC_OBJ_OSDEV_OPENFABRICS:
+            return Misc::ptr(); // yloc type not implemented yet
+        case HWLOC_OBJ_OSDEV_BLOCK:
+            return Misc::ptr(); // yloc type not implemented yet
+        default:
+            return UnknownComponentType::ptr();
+        }
+    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_CORE)) {
+        return CPUCore::ptr();
+    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_PU)) {
+        return LogicalCore::ptr();
+    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_MACHINE)) {
+        return Misc::ptr(); // yloc type not implemented yet
+    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_PACKAGE)) {
+        return Misc::ptr(); // yloc type not implemented yet
+    } else {
+        return UnknownComponentType::ptr();
+    }
+}
 
 /**
  * @brief Build boost graph from hwloc (sub)tree.
@@ -22,11 +86,12 @@ std::unordered_map<vertex_descriptor_t, hwloc_obj_t> vertex2hwloc_map;
  */
 static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t &vd, hwloc_obj_t obj)
 {
-    // ... and add vertex properties to external property map instead:
-    vertex2hwloc_map[vd] = obj;
-
-    // g[vd].a = HwlocAdapter{obj};
     g[vd].tinfo.push_back(new HwlocAdapter{obj});
+    if (g[vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+        // TODO: With gcc 12.2.0: g[vd].tinfo.type can't be used as lvalue, Why?
+        auto t = g[vd].tinfo;
+        t.type = yloc_type(obj);
+    }
 
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
