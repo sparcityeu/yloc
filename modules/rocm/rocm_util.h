@@ -1,7 +1,13 @@
 #pragma once
 #include <rocm_smi/rocm_smi.h>
 
+#define VERBOSE_ROCM 0
+
+#if (VERBOSE_ROCM > 0)
+#define CHECK_ROCM(x) CHECK_ROCM_MSG(x)
+#else
 #define CHECK_ROCM(x) ((x) == RSMI_STATUS_SUCCESS)
+#endif
 
 #define CHECK_ROCM_MSG(x)                                                                                    \
     ({                                                                                                       \

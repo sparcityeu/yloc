@@ -2,14 +2,13 @@
 #include <adapter.h>
 #include <boost/graph/filtered_graph.hpp>
 #include <iostream>
+#include <vector>
 
 #include <interface.h>
 
 #include "interface_impl.h"
 #include "rocm_adapter.h"
 #include "rocm_util.h"
-
-#define VERBOSE_ROCM 0
 
 using namespace yloc;
 
@@ -22,6 +21,54 @@ static void print_bdfid(uint64_t bdfid)
     uint device = static_cast<uint>((bdfid >> 3) & 0x1fULL);
     uint function = static_cast<uint>(bdfid & 0x7ULL);
     std::cout << std::hex << bdfid << "::" << domain << ":" << bus << ":" << device << ":" << function << std::dec << '\n';
+}
+
+static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std::vector<vertex_descriptor_t> vertices)
+{
+    uint64_t num_interconnects = 0;
+    // get connectivity and topology between devices: (assuming symmetric connection)
+    for (uint32_t dev_ind_src = 0; dev_ind_src < num_devices; ++dev_ind_src) {
+        for (uint32_t dev_ind_dst = dev_ind_src + 1; dev_ind_dst < num_devices; ++dev_ind_dst) {
+            bool p2p_accessible;
+            CHECK_ROCM_MSG(rsmi_is_P2P_accessible(dev_ind_src, dev_ind_dst, &p2p_accessible));
+            std::cout << "device " << dev_ind_src << " and " << dev_ind_dst << " are P2P " << (p2p_accessible ? "accessible" : "not accessible") << '\n';
+
+            // get link type
+            RSMI_IO_LINK_TYPE link_type;
+            uint64_t hops;
+            CHECK_ROCM_MSG(rsmi_topo_get_link_type(dev_ind_src, dev_ind_dst, &hops, &link_type));
+            std::cout << "link type: " << yloc_rocm_link_type_str(link_type) << " hops: " << hops << '\n';
+
+            uint64_t weight;
+            // Retrieve the weight for a connection between 2 GPUs.
+            CHECK_ROCM_MSG(rsmi_topo_get_link_weight(dev_ind_src, dev_ind_dst, &weight));
+            std::cout << "link weight: " << weight << '\n';
+
+            // Retreive minimal and maximal theoretical io link bandwidth between 2 GPUs.
+            // API works if src and dst are connected via xgmi and have 1 hop distance.
+            uint64_t min_bandwidth;
+            uint64_t max_bandwidth;
+            if (link_type == RSMI_IOLINK_TYPE_XGMI) {
+                CHECK_ROCM_MSG(rsmi_minmax_bandwidth_get(dev_ind_src, dev_ind_dst, &min_bandwidth, &max_bandwidth));
+            }
+
+            if (p2p_accessible) {
+                num_interconnects++;
+                std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
+                std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
+#if USE_SUBGRAPH
+                /** TODO: pass subgraph instead of root graph? */
+                /** TODO: std::bald_alloc if add_edge */
+                // auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
+                // ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
+#else
+                auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
+                ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
+#endif
+            }
+        }
+    }
+    return num_interconnects;
 }
 
 void YlocRocm::init_graph()
@@ -67,87 +114,42 @@ void YlocRocm::init_graph()
         CHECK_ROCM_MSG(rsmi_dev_memory_total_get(dev_index, RSMI_MEM_TYPE_GTT, &memory_total));
         std::cout << "GPU MEMORY GTT=" << memory_total << '\n';
 
-        auto fgv = boost::make_filtered_graph(g, boost::keep_all{}, [&](const vertex_descriptor_t &v) -> bool {
-            return g[v].tinfo.type->is_a<PCIDevice>(); // or Bridge?!
-        });
-        for (auto vd : boost::make_iterator_range(boost::vertices(fgv))) {
-            auto vd_bdfid = YLOC_GET(g, vd, bdfid);
-            if (vd_bdfid.has_value() && vd_bdfid.value() == bdfid) {
-                std::cout << "GPU found at vd=" << vd << " BDFID=" << vd_bdfid.value() << '\n';
-                std::cout << "adding ROCm adapter...\n";
-                g[vd].tinfo.push_back(new RocmAdapter{dev_index});
-                vertices[dev_index] = vd;
-                break;
-            }
-        }
+        // std::cout << "rocm\n";
+        auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
+        g[vd].tinfo.push_back(new RocmAdapter{dev_index});
+        vertices[dev_index] = vd;
+        // std::cout << YLOC_GET(g, vd, as_string).value() << '\n';
+        // std::cout << "yloc type: " << g[vd].tinfo.type->to_string() << " vd: " << vd << '\n';
+
+        assert(g[vd].tinfo.type->is_a<PCIDevice>());
+        g[vd].tinfo.type = GPU::ptr();
     }
-
-    // get connectivity and topology between devices: (assuming symmetric connection)
-    for (uint32_t dev_ind_src = 0; dev_ind_src < num_devices; ++dev_ind_src) {
-        for (uint32_t dev_ind_dst = dev_ind_src + 1; dev_ind_dst < num_devices; ++dev_ind_dst) {
-            bool p2p_accessible;
-            CHECK_ROCM_MSG(rsmi_is_P2P_accessible(dev_ind_src, dev_ind_dst, &p2p_accessible));
-            std::cout << "device " << dev_ind_src << " and " << dev_ind_dst << " are P2P " << (p2p_accessible ? "accessible" : "not accessible") << '\n';
-
-            // get link type
-            RSMI_IO_LINK_TYPE link_type;
-            uint64_t hops;
-            CHECK_ROCM_MSG(rsmi_topo_get_link_type(dev_ind_src, dev_ind_dst, &hops, &link_type));
-            std::cout << "link type: " << yloc_rocm_link_type_str(link_type) << " hops: " << hops << '\n';
-
-            uint64_t weight;
-            // Retrieve the weight for a connection between 2 GPUs.
-            CHECK_ROCM_MSG(rsmi_topo_get_link_weight(dev_ind_src, dev_ind_dst, &weight));
-            std::cout << "link weight: " << weight << '\n';
-
-            // Retreive minimal and maximal theoretical io link bandwidth between 2 GPUs.
-            // API works if src and dst are connected via xgmi and have 1 hop distance.
-            uint64_t min_bandwidth;
-            uint64_t max_bandwidth;
-            if (link_type == RSMI_IOLINK_TYPE_XGMI) {
-                CHECK_ROCM_MSG(rsmi_minmax_bandwidth_get(dev_ind_src, dev_ind_dst, &min_bandwidth, &max_bandwidth));
-            }
-
-            if (p2p_accessible) {
-                /** TODO: pass subgraph instead of root graph? */
-                std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
-                std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
-
-                /** TODO: std::bald_alloc if add_edge */
-#if USE_SUBGRAPH
-                // auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g);
-                // ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g);
-#else
-                auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
-                ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
-#endif
-            }
-        }
-    }
+    /** TODO: store this interconnect information? */
+    uint64_t num_interconnects = yloc_rocm_gpu_interconnect(g, num_devices, vertices);
     return;
 }
 
-#if 0
+#if YLOC_ROCM_NOT_IMPLEMENTED_YET
 /************************************************/
-        Hardware Topology Functions
-/************************************************/
+Hardware Topology Functions
+    /************************************************/
 
-rsmi_status_t rsmi_minmax_bandwidth_get (
-uint32_t dv_ind_src,
-uint32_t dv_ind_dst,
-uint64_t * min_bandwidth,
-uint64_t * max_bandwidth )
-Retreive minimal and maximal io link bandwidth between 2 GPUs.
-Given a source device index dv_ind_src and a destination device index dv_ind_dst , pointer to an uint64_t
-min_bandwidth , and a pointer to uint64_t max_bandiwidth , this function will write theoretical minimal and
-maximal bandwidth limits. API works if src and dst are connected via xgmi and have 1 hop distance.
+    rsmi_status_t
+    rsmi_minmax_bandwidth_get(
+        uint32_t dv_ind_src,
+        uint32_t dv_ind_dst,
+        uint64_t *min_bandwidth,
+        uint64_t *max_bandwidth)
+        Retreive minimal and maximal io link bandwidth between 2 GPUs.Given a source device index dv_ind_src and a destination device index dv_ind_dst,
+    pointer to an uint64_t
+    min_bandwidth,
+    and a pointer to uint64_t max_bandiwidth, this function will write theoretical minimal and maximal bandwidth limits.API works if src and dst are connected via xgmi and have 1 hop distance.
 
-/** TODO: link bandwidth / throughput */
+                                              /** TODO: link bandwidth / throughput */
 
-rsmi_dev_pci_bandwidth_get (uint32_t dv_ind, rsmi_pcie_bandwidth_t * bandwidth)
-Get the list of possible PCIe bandwidths that are available.
+                                              rsmi_dev_pci_bandwidth_get(uint32_t dv_ind, rsmi_pcie_bandwidth_t *bandwidth) Get the list of possible PCIe bandwidths that are available.
 
-rsmi_frequencies_t transfer_rate = bandwidth.transfer_rate;
+                                              rsmi_frequencies_t transfer_rate = bandwidth.transfer_rate;
 uint32_t rsmi_pcie_bandwidth_t::lanes[RSMI_MAX_NUM_FREQUENCIES]
 
 All bits with indices greater than or equal to the value of the rsmi_frequencies_t::num_supported field

@@ -1,7 +1,7 @@
 
 string(REPLACE "-" "_" MOD_CPPNAME "${MOD_TARGET}")
 
-if(NOT DEFINED $ENV{ROCM_DIR})
+if(NOT DEFINED ENV{ROCM_DIR})
     return()
 endif()
 
