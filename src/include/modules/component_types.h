@@ -50,6 +50,8 @@ namespace yloc
     /** @brief Null-type. */
     YLOC_DECLARE_TYPE(UnknownComponentType, Component)
 
+    YLOC_DECLARE_TYPE(Node, Component)
+
     /***********************************
      * Compute-Components
      ***********************************/
@@ -103,7 +105,10 @@ namespace yloc
      * Accelerator-Components
      ***********************************/
 
-    YLOC_DECLARE_TYPE(Accelerator, Component)
+    YLOC_DECLARE_TYPE(PCIDevice, Component)
+    YLOC_DECLARE_TYPE(Bridge, Component)
+
+    YLOC_DECLARE_TYPE(Accelerator, PCIDevice)
     YLOC_DECLARE_TYPE(GPU, Accelerator)
     YLOC_DECLARE_TYPE(FPGA, Accelerator)
 
@@ -115,7 +120,7 @@ namespace yloc
      ***********************************/
 
     YLOC_DECLARE_TYPE(InputOutput, Component)
-    YLOC_DECLARE_TYPE(NetworkDevice, InputOutput)
+    YLOC_DECLARE_TYPE(NetworkDevice, PCIDevice, InputOutput)
 
     /** TODO: isn't HDD also I/O? */
     // YLOC_DECLARE_TYPE(PersistentStorage, InputOutput)
@@ -130,9 +135,6 @@ namespace yloc
     /***********************************
      * Miscellaneous
      ***********************************/
-
-    YLOC_DECLARE_TYPE(PCIDevice, Component)
-    YLOC_DECLARE_TYPE(Bridge, Component)
 
     /**
      * @brief Type for Miscellaneous components, filler class.

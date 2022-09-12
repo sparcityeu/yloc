@@ -99,11 +99,11 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_PU)) {
         return LogicalCore::ptr();
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_MACHINE)) {
-        return Misc::ptr(); // yloc type not implemented yet
+        return Node::ptr(); // yloc type not implemented yet
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_PACKAGE)) {
         return Misc::ptr(); // yloc type not implemented yet
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_NUMANODE)) {
-        return Misc::ptr(); // yloc type not implemented yet
+        return Memory::ptr(); // yloc type not implemented yet
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_GROUP)) {
         return Misc::ptr(); // yloc type not implemented yet
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_MISC)) {
