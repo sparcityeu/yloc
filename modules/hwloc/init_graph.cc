@@ -79,9 +79,9 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_OS_DEVICE) && obj->attr != NULL) {
         switch (obj->attr->osdev.type) {
         case HWLOC_OBJ_OSDEV_GPU:
-            return GPU::ptr();
+            return LogicalGPU::ptr();
         case HWLOC_OBJ_OSDEV_COPROC:
-            return Accelerator::ptr();
+            return LogicalAccelerator::ptr();
         case HWLOC_OBJ_OSDEV_DMA:
             return Misc::ptr(); // yloc type not implemented yet
         case HWLOC_OBJ_OSDEV_NETWORK:
@@ -131,27 +131,28 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
  * @param vd
  * @param obj
  */
-static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t &vd, hwloc_obj_t obj)
+static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t vd, hwloc_obj_t obj)
 {
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        auto * adapter = new HwlocAdapter{obj};
+        auto * adapter = new HwlocAdapter{child};
         vertex_descriptor_t child_vd;
         
-        if(yloc_type(obj)->is_a<PCIDevice>()) {
-            std::string id = "bdfid:"+std::to_string(adapter->bdfid().value());
+        if(yloc_type(child)->is_a<PCIDevice>()) {
+            std::string id = "bdfid:" + std::to_string(adapter->bdfid().value());
             child_vd = g.add_vertex(id);
+            // std::cout << "hwloc pcidevice " << id << " vd: " << child_vd << "\n";
         } else {
             child_vd = g.add_vertex();
         }
 
         g[child_vd].tinfo.push_back(adapter);
         if (g[child_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
-            g[child_vd].tinfo.type = yloc_type(obj);
+            g[child_vd].tinfo.type = yloc_type(child);
         } else {
-            // sanity check
-            assert(g[child_vd].tinfo.type == yloc_type(obj));
+            // sanity check /** TODO: implement is_a for runtime objects */
+            // assert(g[child_vd].tinfo.type == yloc_type(obj));
         }
 #if USE_SUBGRAPH
         auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}}, g.boost_graph());
@@ -230,7 +231,7 @@ void YlocHwloc::init_graph()
         root_graph()[root_vd].tinfo.type = yloc_type(root);
     } else {
         // sanity check
-        assert(root_graph()[root_vd].tinfo.type == yloc_type(root));
+        // assert(root_graph()[root_vd].tinfo.type == yloc_type(root));
     }
 
     make_hwloc_graph(root_graph(), t, root_vd, root);
