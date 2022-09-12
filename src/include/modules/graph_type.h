@@ -151,7 +151,7 @@ namespace yloc
         /**
          * @brief Provides access to vertices of the underlying boost graph.
          */
-        auto operator[] (vertex_descriptor_t vd)
+        auto & operator[] (vertex_descriptor_t vd)
         {
             return m_graph[vd];
         }
@@ -159,7 +159,7 @@ namespace yloc
         /**
          * @brief Provides access to vertices of the underlying boost graph using an identifier.
          */
-        auto operator[] (identifier_t id)
+        auto & operator[] (identifier_t id)
         {
             /** TODO: Error handling when id is not available, maybe call add_vertex in background */
             return m_graph[m_identifier_map[id]];
