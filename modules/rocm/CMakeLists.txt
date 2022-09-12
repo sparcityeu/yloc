@@ -1,6 +1,10 @@
 
 string(REPLACE "-" "_" MOD_CPPNAME "${MOD_TARGET}")
 
+if(NOT DEFINED $ENV{ROCM_DIR})
+    return()
+endif()
+
 configure_file("interface_impl.cc.in" "interface_impl.cc")
 
 set(MOD_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/interface_impl.cc" "interface_impl.h" "rocm_impl.cc")
