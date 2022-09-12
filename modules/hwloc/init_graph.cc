@@ -88,9 +88,7 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
 {
     g[vd].tinfo.push_back(new HwlocAdapter{obj});
     if (g[vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
-        // TODO: With gcc 12.2.0: g[vd].tinfo.type can't be used as lvalue, Why?
-        auto t = g[vd].tinfo;
-        t.type = yloc_type(obj);
+        g[vd].tinfo.type = yloc_type(obj);
     }
 
     // for all children of obj: add new vertex to graph and set edges
