@@ -133,20 +133,26 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
  */
 static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t &vd, hwloc_obj_t obj)
 {
-    g[vd].tinfo.push_back(new HwlocAdapter{obj});
-
-    if (g[vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
-        g[vd].tinfo.type = yloc_type(obj);
-    } else {
-        // sanity check
-        assert(g[vd].tinfo.type == yloc_type(obj));
-    }
-
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        /** TODO: proper add_vertex function with identifier_t */
-        auto child_vd = g.add_vertex();
+        auto * adapter = new HwlocAdapter{obj};
+        vertex_descriptor_t child_vd;
+        
+        if(yloc_type(obj)->is_a<PCIDevice>()) {
+            std::string id = "bdfid:"+std::to_string(adapter->bdfid().value());
+            child_vd = g.add_vertex(id);
+        } else {
+            child_vd = g.add_vertex();
+        }
+
+        g[child_vd].tinfo.push_back(adapter);
+        if (g[child_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+            g[child_vd].tinfo.type = yloc_type(obj);
+        } else {
+            // sanity check
+            assert(g[child_vd].tinfo.type == yloc_type(obj));
+        }
 #if USE_SUBGRAPH
         auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}}, g.boost_graph());
         ret = boost::add_edge(child_vd, vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}}, g.boost_graph());
@@ -217,7 +223,15 @@ void YlocHwloc::init_graph()
     make_hwloc_graph(m_subgraph, t, root_vd, root);
 #else
     // printf("making hwloc graph...\n");
-    auto root_vd = root_graph().add_vertex("hwloc_root");
+    auto root_vd = root_graph().add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
+
+    root_graph()[root_vd].tinfo.push_back(new HwlocAdapter{root});
+    if (root_graph()[root_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+        root_graph()[root_vd].tinfo.type = yloc_type(root);
+    } else {
+        // sanity check
+        assert(root_graph()[root_vd].tinfo.type == yloc_type(root));
+    }
 
     make_hwloc_graph(root_graph(), t, root_vd, root);
 #endif
