@@ -181,7 +181,7 @@ static void check_hwloc_api_version()
     }
 }
 
-void YlocHwloc::init_graph()
+void YlocHwloc::init_graph(graph_t &g)
 {
     check_hwloc_api_version();
 
@@ -224,17 +224,17 @@ void YlocHwloc::init_graph()
     make_hwloc_graph(m_subgraph, t, root_vd, root);
 #else
     // printf("making hwloc graph...\n");
-    auto root_vd = root_graph().add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
+    auto root_vd = g.add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
 
-    root_graph()[root_vd].tinfo.push_back(new HwlocAdapter{root});
-    if (root_graph()[root_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
-        root_graph()[root_vd].tinfo.type = yloc_type(root);
+    g[root_vd].tinfo.push_back(new HwlocAdapter{root});
+    if (g[root_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+        g[root_vd].tinfo.type = yloc_type(root);
     } else {
-        // sanity check
-        // assert(root_graph()[root_vd].tinfo.type == yloc_type(root));
+        // sanity check /** TODO: implement is_a for runtime objects */
+        // assert(g[root_vd].tinfo.type == yloc_type(root));
     }
 
-    make_hwloc_graph(root_graph(), t, root_vd, root);
+    make_hwloc_graph(g, t, root_vd, root);
 #endif
 
     // TODO: lifetime of topology context?

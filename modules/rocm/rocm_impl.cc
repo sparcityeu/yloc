@@ -71,14 +71,8 @@ static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std
     return num_interconnects;
 }
 
-void YlocRocm::init_graph()
+void YlocRocm::init_graph(graph_t &g)
 {
-#if USE_SUBGRAPH
-    auto g = m_subgraph;
-#else
-    auto g = root_graph();
-#endif
-
     EXIT_ERR_ROCM(rsmi_init(0)); /* RSMI_INIT_FLAG_ALL_GPUS */
     uint32_t num_devices;
     uint16_t dev_id;
@@ -121,8 +115,10 @@ void YlocRocm::init_graph()
         // std::cout << YLOC_GET(g, vd, as_string).value() << '\n';
         // std::cout << "yloc type: " << g[vd].tinfo.type->to_string() << " vd: " << vd << '\n';
 
-        assert(g[vd].tinfo.type->is_a<PCIDevice>());
         g[vd].tinfo.type = GPU::ptr();
+        assert(g[vd].tinfo.type->is_a<PCIDevice>());
+        assert(g[vd].tinfo.type->is_a<Accelerator>());
+        assert(g[vd].tinfo.type->is_a<GPU>());
     }
     /** TODO: store this interconnect information? */
     uint64_t num_interconnects = yloc_rocm_gpu_interconnect(g, num_devices, vertices);

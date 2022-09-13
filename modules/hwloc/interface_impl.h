@@ -15,9 +15,9 @@ using yloc::YlocModule;
 class YlocHwloc : public YlocModule
 {
 public:
-    void init_graph(/* graph_t &graph */) override;
+    void init_graph(graph_t &graph) override;
 
-    void export_graph(graph_t &graph, void **output) override
+    void export_graph(const graph_t &graph, void **output) override
     {
         output = nullptr;
         return;

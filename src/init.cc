@@ -19,7 +19,7 @@ namespace yloc
         // graph_t & graph = root_graph();
 
         for(auto *m : list_modules()) {
-            m->init_graph(/* graph */);
+            m->init_graph(g_graph);
         }
 
         // store result of module init in global variable
