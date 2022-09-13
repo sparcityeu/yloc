@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     // MPI_Init(&argc, &argv);
     yloc::init(YLOC_FULL | YLOC_ONGOING);
 
-    graph_t g = yloc::root_graph();
+    graph_t & g = yloc::root_graph();
 
     write_graph_dot_file(g, std::string{"graph.dot"});
     filter_graph_example(g);

@@ -65,7 +65,9 @@ namespace yloc
         using identifier_t = std::string;
 
         Graph() = default;
+    private:
         Graph(Graph &) = default;
+    public:
         Graph(Graph &&) = default;
 
         Graph(boost_graph_t _graph)
@@ -73,7 +75,9 @@ namespace yloc
 
         ~Graph() = default;
 
+    private:
         Graph &operator=(Graph &) = default;
+    public:
         Graph &operator=(Graph &&) = default;
 
         operator boost_graph_t &() { return m_graph; }
