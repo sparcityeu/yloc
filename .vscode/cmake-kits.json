@@ -1,0 +1,6 @@
+[
+    {
+      "name": "Module environment from scripts/env.sh",
+      "environmentSetupScript": "${workspaceFolder}/scripts/env.sh"
+    }
+]
