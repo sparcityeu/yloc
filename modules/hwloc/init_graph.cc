@@ -5,7 +5,9 @@
 #include "hwloc_adapter.h"
 #include <adapter.h>
 
-#include "init_graph.h"
+#include <hwloc.h>
+#include <interface.h>
+
 #include "interface_impl.h"
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
@@ -15,11 +17,6 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
 {
     /** TODO: move that logic elsewhere and/or move type info to adapter */
     /** TODO: implement missing hwloc types: (@see hwloc_compare_types)
-    Typedefs
-       typedef enum hwloc_obj_cache_type_e hwloc_obj_cache_type_t
-       typedef enum hwloc_obj_bridge_type_e hwloc_obj_bridge_type_t
-       typedef enum hwloc_obj_osdev_type_e hwloc_obj_osdev_type_t
-
     Enumerations
        enum hwloc_obj_type_t { HWLOC_OBJ_MACHINE, HWLOC_OBJ_PACKAGE,
            HWLOC_OBJ_CORE, HWLOC_OBJ_PU, HWLOC_OBJ_L1CACHE, HWLOC_OBJ_L2CACHE,
@@ -37,21 +34,54 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
            HWLOC_OBJ_OSDEV_DMA, HWLOC_OBJ_OSDEV_COPROC }
        enum hwloc_compare_types_e { HWLOC_TYPE_UNORDERED }
     */
+    if (hwloc_obj_type_is_cache(obj->type)) {
+        /** TODO: resolve ambigous type, implement unified cache type */
+    }
 
     if (hwloc_obj_type_is_icache(obj->type)) {
+#if RESOLVED_AMBIGOUS_CACHE_TYPE
+        if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L1ICACHE)) {
+            return L1InstructionCache::ptr();
+        } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L2ICACHE)) {
+            return L2InstructionCache::ptr();
+        } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L3ICACHE)) {
+            return L3InstructionCache::ptr();
+        } else {
+            return InstructionCache::ptr();
+        }
+#else
         return InstructionCache::ptr();
+#endif /* RESOLVED_AMBIGOUS_CACHE_TYPE */
     } else if (hwloc_obj_type_is_dcache(obj->type)) {
         /* Check whether an object type is a CPU Data or Unified Cache. Memory-side caches are not CPU caches. */
+#if RESOLVED_AMBIGOUS_CACHE_TYPE
+        if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L1CACHE)) {
+            return L1DataCache::ptr();
+        } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L2CACHE)) {
+            return L2DataCache::ptr();
+        } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L3CACHE)) {
+            return L3DataCache::ptr();
+        } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L4CACHE)) {
+            return L4DataCache::ptr();
+        }
+        // else if (!hwloc_compare_types(HWLOC_OBJ_L5CACHE)) {
+        // return DataCache::ptr();
+        // }
+        else {
+            return DataCache::ptr();
+        }
+#else
         return DataCache::ptr();
+#endif /* RESOLVED_AMBIGOUS_CACHE_TYPE */
     } else if (hwloc_obj_type_is_memory(obj->type)) {
-        /* This current includes NUMA nodes and Memory-side caches. */
+        /* This currently includes NUMA nodes and Memory-side caches. */
         return Memory::ptr();
-    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_OS_DEVICE) == 0 && obj->attr != NULL) {
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_OS_DEVICE) && obj->attr != NULL) {
         switch (obj->attr->osdev.type) {
         case HWLOC_OBJ_OSDEV_GPU:
-            return GPU::ptr();
+            return LogicalGPU::ptr();
         case HWLOC_OBJ_OSDEV_COPROC:
-            return Accelerator::ptr();
+            return LogicalAccelerator::ptr();
         case HWLOC_OBJ_OSDEV_DMA:
             return Misc::ptr(); // yloc type not implemented yet
         case HWLOC_OBJ_OSDEV_NETWORK:
@@ -61,17 +91,34 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
         case HWLOC_OBJ_OSDEV_BLOCK:
             return Misc::ptr(); // yloc type not implemented yet
         default:
+            assert(false); // sanity check
             return UnknownComponentType::ptr();
         }
-    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_CORE)) {
-        return CPUCore::ptr();
-    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_PU)) {
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_CORE)) {
+        return PhysicalCore::ptr();
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_PU)) {
         return LogicalCore::ptr();
-    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_MACHINE)) {
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_MACHINE)) {
+        return Node::ptr(); // yloc type not implemented yet
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_PACKAGE)) {
         return Misc::ptr(); // yloc type not implemented yet
-    } else if (hwloc_compare_types(obj->type, HWLOC_OBJ_PACKAGE)) {
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_NUMANODE)) {
+        return Memory::ptr(); // yloc type not implemented yet
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_GROUP)) {
+        return Misc::ptr(); // yloc type not implemented yet
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_MISC)) {
+        return Misc::ptr(); // yloc type not implemented yet
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_MEMCACHE)) {
+        return Misc::ptr(); // yloc type not implemented yet
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_BRIDGE)) {
+        return Bridge::ptr();
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_PCI_DEVICE)) {
+        return PCIDevice::ptr();
+    } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_DIE)) {
         return Misc::ptr(); // yloc type not implemented yet
     } else {
+        /** TODO: this assert triggers, so we miss a hwloc type here */
+        assert(false); // sanity check
         return UnknownComponentType::ptr();
     }
 }
@@ -84,23 +131,35 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
  * @param vd
  * @param obj
  */
-static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t &vd, hwloc_obj_t obj)
+static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t vd, hwloc_obj_t obj)
 {
-    g[vd].tinfo.push_back(new HwlocAdapter{obj});
-    if (g[vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
-        g[vd].tinfo.type = yloc_type(obj);
-    }
-
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        auto child_vd = boost::add_vertex(g);
+        auto * adapter = new HwlocAdapter{child};
+        vertex_descriptor_t child_vd;
+        
+        if(yloc_type(child)->is_a<PCIDevice>()) {
+            std::string id = "bdfid:" + std::to_string(adapter->bdfid().value());
+            child_vd = g.add_vertex(id);
+            // std::cout << "hwloc pcidevice " << id << " vd: " << child_vd << "\n";
+        } else {
+            child_vd = g.add_vertex();
+        }
+
+        g[child_vd].tinfo.push_back(adapter);
+        if (g[child_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+            g[child_vd].tinfo.type = yloc_type(child);
+        } else {
+            // sanity check /** TODO: implement is_a for runtime objects */
+            // assert(g[child_vd].tinfo.type == yloc_type(obj));
+        }
 #if USE_SUBGRAPH
-        auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{YLOC_EDGE_TYPE_CHILD}}, g);
-        ret = boost::add_edge(child_vd, vd, graph_t::edge_property_type{0, Edge{YLOC_EDGE_TYPE_PARENT}}, g);
+        auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}}, g.boost_graph());
+        ret = boost::add_edge(child_vd, vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}}, g.boost_graph());
 #else
-        auto ret = boost::add_edge(vd, child_vd, {YLOC_EDGE_TYPE_PARENT}, g);
-        ret = boost::add_edge(child_vd, vd, {YLOC_EDGE_TYPE_CHILD}, g);
+        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
+        ret = boost::add_edge(child_vd, vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
 #endif
         make_hwloc_graph(g, t, child_vd, child);
         child = hwloc_get_next_child(t, obj, child);
@@ -122,7 +181,7 @@ static void check_hwloc_api_version()
     }
 }
 
-void YlocHwloc::init_graph(/* const char *file */)
+void YlocHwloc::init_graph(graph_t &g)
 {
     check_hwloc_api_version();
 
@@ -139,10 +198,11 @@ void YlocHwloc::init_graph(/* const char *file */)
     // control with hwloc_topology_set_flags() or
     // hwloc_topology_set_..._filter()
 
-    // hwloc_topology_set_io_types_filter(t, HWLOC_TYPE_FILTER_KEEP_ALL);
-    // hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_ALL);
-
     hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_IMPORTANT);
+
+    // instruction cache and bridges are typically not important
+    hwloc_topology_set_icache_types_filter(t, HWLOC_TYPE_FILTER_KEEP_NONE);
+    hwloc_topology_set_type_filter(t, HWLOC_OBJ_BRIDGE, HWLOC_TYPE_FILTER_KEEP_NONE);
 
     /*
     if (*file != '0') { // FIXME: check for NULL instead? review interface ...
@@ -156,11 +216,26 @@ void YlocHwloc::init_graph(/* const char *file */)
 
     hwloc_obj_t root = hwloc_get_root_obj(t);
     assert(root->type == HWLOC_OBJ_MACHINE);
-
+#if USE_SUBGRAPH
+    /** TODO: Subgraph-logic if it is supposed to stay */
     // printf("making hwloc graph...\n");
     auto root_vd = boost::add_vertex(m_subgraph);
 
     make_hwloc_graph(m_subgraph, t, root_vd, root);
+#else
+    // printf("making hwloc graph...\n");
+    auto root_vd = g.add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
+
+    g[root_vd].tinfo.push_back(new HwlocAdapter{root});
+    if (g[root_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
+        g[root_vd].tinfo.type = yloc_type(root);
+    } else {
+        // sanity check /** TODO: implement is_a for runtime objects */
+        // assert(g[root_vd].tinfo.type == yloc_type(root));
+    }
+
+    make_hwloc_graph(g, t, root_vd, root);
+#endif
 
     // TODO: lifetime of topology context?
     // hwloc_topology_destroy(t);

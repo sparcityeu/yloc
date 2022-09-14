@@ -8,24 +8,28 @@
 /** TODO: CPU-type that combines CPUCore and L1,2,3... Caches? */
 /** TODO: Unified Cache, subclasses that inherit from L1Data und L1Instruction */
 
-/** TODO: Distinguish between Memory-DIMMs and Memory in general 
+/** TODO: Distinguish between Memory-DIMMs and Memory in general
  * @see e.g. SMBIOS specification for better memory component types
- * like e.g. memory controller, memory channel, memory dimm (module) 
+ * like e.g. memory controller, memory channel, memory dimm (module)
  */
 
 /** TODO: Add more IO-Devices and Link-types (PCIe, USB, InfiniBand ?) */
 
 /** @brief Helper macro for type declaration. */
-#define YLOC_DECLARE_TYPE(type_name, ...)    \
-    class type_name : public __VA_ARGS__     \
-    {                                        \
-    public:                                  \
-        virtual ~type_name() = default;      \
-        inline static const type_name *ptr() \
-        {                                    \
-            static const type_name s;        \
-            return &s;                       \
-        }                                    \
+#define YLOC_DECLARE_TYPE(type_name, ...)              \
+    class type_name : public __VA_ARGS__               \
+    {                                                  \
+    public:                                            \
+        virtual ~type_name() = default;                \
+        inline static const type_name *ptr()           \
+        {                                              \
+            static const type_name s;                  \
+            return &s;                                 \
+        }                                              \
+        virtual std::string to_string() const override \
+        {                                              \
+            return #type_name;                         \
+        }                                              \
     };
 
 namespace yloc
@@ -41,6 +45,10 @@ namespace yloc
         {
             return nullptr != dynamic_cast<const ComponentType *>(this);
         }
+        virtual std::string to_string() const
+        {
+            return "Component";
+        }
     };
 
     /***********************************
@@ -49,6 +57,8 @@ namespace yloc
 
     /** @brief Null-type. */
     YLOC_DECLARE_TYPE(UnknownComponentType, Component)
+
+    YLOC_DECLARE_TYPE(Node, Component)
 
     /***********************************
      * Compute-Components
@@ -103,7 +113,13 @@ namespace yloc
      * Accelerator-Components
      ***********************************/
 
-    YLOC_DECLARE_TYPE(Accelerator, Component)
+    YLOC_DECLARE_TYPE(PCIDevice, Component)
+    YLOC_DECLARE_TYPE(Bridge, Component)
+
+    YLOC_DECLARE_TYPE(LogicalAccelerator, Component)
+    YLOC_DECLARE_TYPE(LogicalGPU, LogicalAccelerator)
+
+    YLOC_DECLARE_TYPE(Accelerator, PCIDevice)
     YLOC_DECLARE_TYPE(GPU, Accelerator)
     YLOC_DECLARE_TYPE(FPGA, Accelerator)
 
@@ -115,7 +131,7 @@ namespace yloc
      ***********************************/
 
     YLOC_DECLARE_TYPE(InputOutput, Component)
-    YLOC_DECLARE_TYPE(NetworkDevice, InputOutput)
+    YLOC_DECLARE_TYPE(NetworkDevice, PCIDevice, InputOutput)
 
     /** TODO: isn't HDD also I/O? */
     // YLOC_DECLARE_TYPE(PersistentStorage, InputOutput)
@@ -137,7 +153,7 @@ namespace yloc
      */
     YLOC_DECLARE_TYPE(Misc, Component)
 
-/** TODO: do we really want to use dynamic_cast for logical edge types parent & child? */
+    /** TODO: do we really want to use dynamic_cast for logical edge types parent & child? */
     /**
      * @brief Edge type that enables ordering within the graph
      */

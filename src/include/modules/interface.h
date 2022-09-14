@@ -18,9 +18,9 @@ namespace yloc
         /** TODO: */
         // virtual ~YlocModule() = 0;
 
-        virtual void init_graph(/* graph_t &graph */) = 0; // init module subgraph
+        virtual void init_graph(graph_t &graph) = 0; // init module subgraph
 
-        virtual void export_graph(graph_t &graph, void **output) = 0;
+        virtual void export_graph(const graph_t &graph, void **output) = 0;
         // optional function, not ever module requires this
         // it is recommended that every module that can init a graph on its own also provides this function.
 

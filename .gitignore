@@ -36,3 +36,9 @@ Makefile
 *.exe
 *.out
 *.app
+
+# VSCode settings
+.vscode/settings.json
+
+# Dot files (graphwiz)
+*.dot

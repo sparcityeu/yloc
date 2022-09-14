@@ -1,0 +1,11 @@
+{
+    "tasks": [
+        {
+            "label": "modules and environment",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/./env.sh",
+            // "args": [],
+            "runOptions": {"runOn": "folderOpen"}
+        }
+    ]
+}

@@ -6,8 +6,6 @@
 #include <adapter.h>
 #include <component_types.h>
 
-#define YLOC_PROPERTY(prop) &yloc::Adapter::prop
-
 namespace yloc
 {
     class AdapterContainer
