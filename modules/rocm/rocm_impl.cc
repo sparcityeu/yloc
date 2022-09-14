@@ -37,17 +37,19 @@ static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std
             // API works if src and dst are connected via xgmi and have 1 hop distance.
             uint64_t min_bandwidth;
             uint64_t max_bandwidth;
-            if (link_type == RSMI_IOLINK_TYPE_XGMI) {
+            if (link_type == RSMI_IOLINK_TYPE_XGMI && hops == 1) {
                 CHECK_ROCM_MSG(rsmi_minmax_bandwidth_get(dev_ind_src, dev_ind_dst, &min_bandwidth, &max_bandwidth));
             }
 
-            if (p2p_accessible) {
+            // we add a new GPU_INTERCONNECT edge iff two GPUs are directly connected (via XGMI for AMD GPUs, 1 hop)
+            // connection via PCIe is already modeled via graph
+            if (hops == 1) {
                 num_interconnects++;
                 std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
                 std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
 #if USE_SUBGRAPH
                 /** TODO: pass subgraph instead of root graph? */
-                /** TODO: std::bald_alloc if add_edge */
+                /** TODO: std::bald_alloc if add_edge (possibly resolved) */
                 // auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
                 // ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
 #else
