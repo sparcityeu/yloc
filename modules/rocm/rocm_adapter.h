@@ -48,7 +48,7 @@ public:
     std::optional<uint64_t> memory_load() const override
     {
         uint32_t load;
-        if(!CHECK_ROCM(rsmi_dev_memory_busy_percent_get(m_obj, &load))) {
+        if (!CHECK_ROCM(rsmi_dev_memory_busy_percent_get(m_obj, &load))) {
             return {};
         }
         return static_cast<uint64_t>(load);
@@ -94,7 +94,7 @@ public:
         // RSMI_TEMP_TYPE_HBM_3 HBM temperature instance 3.
         // RSMI_TEMP_TYPE_INVALID Invalid type.
         int64_t temperature;
-        if(!CHECK_ROCM(rsmi_dev_temp_metric_get(m_obj, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_CURRENT, &temperature))) {
+        if (!CHECK_ROCM(rsmi_dev_temp_metric_get(m_obj, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_CURRENT, &temperature))) {
             return {};
         }
         return temperature;
@@ -119,7 +119,7 @@ public:
     std::optional<uint64_t> load() const override
     {
         uint32_t load;
-        if(!CHECK_ROCM(rsmi_dev_busy_percent_get(m_obj, &load))) {
+        if (!CHECK_ROCM(rsmi_dev_busy_percent_get(m_obj, &load))) {
             return {};
         }
         return static_cast<uint64_t>(load);
@@ -133,6 +133,43 @@ public:
             return {};
         }
         return power;
+    }
+
+    /** FIXME: rsmi_dev_pci_throughput_get is a blocking call! */
+    std::optional<uint64_t> pci_throughput() const override
+    {
+        // Give a device index dv_ind and pointers to a uint64_t s, sent , received and max_pkt_sz , this function will
+        // write the number of bytes sent and received in 1 second to sent and received , respectively. The maximum
+        // possible packet size will be written to max_pkt_sz .
+        uint64_t sent;
+        uint64_t received;
+        uint64_t max_pkt_sz;
+        if (!CHECK_ROCM(rsmi_dev_pci_throughput_get(m_obj, &sent, &received, &max_pkt_sz))) {
+            return {};
+        }
+        return sent + received;
+    }
+
+    std::optional<uint64_t> pci_throughput_read() const override
+    {
+        uint64_t sent;
+        uint64_t received;
+        uint64_t max_pkt_sz;
+        if (!CHECK_ROCM(rsmi_dev_pci_throughput_get(m_obj, &sent, &received, &max_pkt_sz))) {
+            return {};
+        }
+        return received;
+    }
+
+    std::optional<uint64_t> pci_throughput_write() const override
+    {
+        uint64_t sent;
+        uint64_t received;
+        uint64_t max_pkt_sz;
+        if (!CHECK_ROCM(rsmi_dev_pci_throughput_get(m_obj, &sent, &received, &max_pkt_sz))) {
+            return {};
+        }
+        return sent;
     }
 
     /** abstract machine model end **/

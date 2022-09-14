@@ -29,7 +29,8 @@ namespace yloc
         // virtual std::optional<std::string> as_string() { return std::optional<std::string>{}; }
         ADAPTER_PROP(std::string, as_string) // String representation
 
-        ADAPTER_PROP(int64_t, temperature) // in millidegrees Celcius
+        // in millidegrees Celcius /** TODO: normalize to millidegrees Kelvin and change to return type uint64_t? */
+        ADAPTER_PROP(int64_t, temperature)
 
         ADAPTER_PROP(uint64_t, memory)       // in Bytes
         ADAPTER_PROP(uint64_t, memory_usage) // in Bytes
@@ -49,6 +50,10 @@ namespace yloc
         // ADAPTER_PROP(uint64_t, power_max)
         ADAPTER_PROP(uint64_t, usage)
         ADAPTER_PROP(uint64_t, load) // in percent
+
+        ADAPTER_PROP(uint64_t, pci_throughput)       // read + write in bytes per second
+        ADAPTER_PROP(uint64_t, pci_throughput_read)  // in bytes per second
+        ADAPTER_PROP(uint64_t, pci_throughput_write) // in bytes per second
 
     protected:
         // vertex_descriptor_t m_vd; // local vertex descriptor

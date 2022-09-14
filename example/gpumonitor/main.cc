@@ -47,6 +47,10 @@ int main(int argc, char *argv[])
             PRINT_PROPERTY(frequency);
             PRINT_PROPERTY(load);
             PRINT_PROPERTY(power);
+            // these properties are blocking:
+            // PRINT_PROPERTY(pci_throughput);
+            // PRINT_PROPERTY(pci_throughput_read);
+            // PRINT_PROPERTY(pci_throughput_write);
             gpu++;
         }
         sleep(1);
