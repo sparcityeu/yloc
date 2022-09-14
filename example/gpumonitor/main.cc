@@ -1,18 +1,24 @@
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/graph_utility.hpp> // print_graph
-#include <boost/graph/graphviz.hpp>      // write_graphviz
-#include <boost/property_map/property_map.hpp>
-#include <fstream>
-
 /** TODO: create combined header */
 //#include <yloc.h>
+#include "boost/graph/filtered_graph.hpp"
 #include "graph_object.h"
 #include "graph_type.h"
 #include "init.h"
+#include <iostream>
+#include <optional>
 
 using namespace yloc;
 
-#define PRINT_PROPERTY(property) std::cout << #property << "=" << YLOC_GET(g, vd, property).value() << '\n'
+#define PRINT_PROPERTY(property)            \
+    do {                                    \
+        auto p = YLOC_GET(g, vd, property); \
+        std::cout << #property << "=";      \
+        if (p.has_value()) {                \
+            std::cout << p.value() << '\n'; \
+        } else {                            \
+            std::cout << "has no value\n";  \
+        }                                   \
+    } while (0)
 
 int main(int argc, char *argv[])
 {
@@ -27,9 +33,10 @@ int main(int argc, char *argv[])
     });
 
     while (1) {
+        size_t gpu = 0;
         for (auto vd : boost::make_iterator_range(boost::vertices(fgv))) {
             // PRINT_PROPERTY(as_string);
-            std::cout << "==========================\nGPU [vd=" << vd << "]\n==========================\n";
+            std::cout << "==========================\nGPU" << gpu << " [vd=" << vd << "]\n==========================\n";
             PRINT_PROPERTY(memory);
             PRINT_PROPERTY(memory_usage);
             PRINT_PROPERTY(memory_load);
@@ -40,6 +47,7 @@ int main(int argc, char *argv[])
             PRINT_PROPERTY(frequency);
             PRINT_PROPERTY(load);
             PRINT_PROPERTY(power);
+            gpu++;
         }
         sleep(1);
     }
