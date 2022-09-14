@@ -12,17 +12,6 @@
 
 using namespace yloc;
 
-static void print_bdfid(uint64_t bdfid)
-{
-    // BDFID = ((DOMAIN & 0xffffffff) << 32) | ((BUS & 0xff) << 8) |
-    // ((DEVICE & 0x1f) <<3 ) | (FUNCTION & 0x7)
-    uint domain = static_cast<uint>((bdfid >> 32) & 0xffffffffULL);
-    uint bus = static_cast<uint>((bdfid >> 8) & 0xffULL);
-    uint device = static_cast<uint>((bdfid >> 3) & 0x1fULL);
-    uint function = static_cast<uint>(bdfid & 0x7ULL);
-    std::cout << std::hex << bdfid << "::" << domain << ":" << bus << ":" << device << ":" << function << std::dec << '\n';
-}
-
 static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std::vector<vertex_descriptor_t> vertices)
 {
     uint64_t num_interconnects = 0;
