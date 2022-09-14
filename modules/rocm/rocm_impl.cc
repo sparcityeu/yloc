@@ -1,6 +1,5 @@
 
 #include <adapter.h>
-#include <boost/graph/filtered_graph.hpp>
 #include <iostream>
 #include <vector>
 
@@ -9,6 +8,8 @@
 #include "interface_impl.h"
 #include "rocm_adapter.h"
 #include "rocm_util.h"
+
+/** TODO: implement bandwidth and throughput properties */
 
 using namespace yloc;
 
@@ -79,13 +80,25 @@ void YlocRocm::init_graph(graph_t &g)
         yloc_rocm_get_supported_functions(num_devices);
     }
 
-    // associate rocm device with graph node by pcie bdfid:
     for (uint32_t dev_index = 0; dev_index < num_devices; ++dev_index) {
-        //  auto gpu_vd = boost::add_vertex(g);
         CHECK_ROCM_MSG(rsmi_dev_id_get(dev_index, &dev_id));
 
         CHECK_ROCM_MSG(rsmi_dev_pci_id_get(dev_index, &bdfid));
         std::cout << "GPU BDFID=" << bdfid << '\n';
+
+        uint64_t bandwidth_pcie_max;
+        uint64_t bandwidth_pcie_current;
+        rsmi_pcie_bandwidth_t bandwidth;
+        // Get the list of possible PCIe bandwidths that are available.
+        CHECK_ROCM_MSG(rsmi_dev_pci_bandwidth_get(dev_index, &bandwidth));
+
+        // uint32_t rsmi_pcie_bandwidth_t::lanes[RSMI_MAX_NUM_FREQUENCIES]:
+        // All bits with indices greater than or equal to the value of the rsmi_frequencies_t::num_supported field
+        rsmi_frequencies_t f = bandwidth.transfer_rate;
+        bandwidth_pcie_max = f.frequency[f.num_supported - 1] * bandwidth.lanes[f.num_supported - 1];
+        bandwidth_pcie_current = f.frequency[f.current] * bandwidth.lanes[f.current];
+        std::cout << "GPU PCIE BANDWIDTH[bit/s]=" << bandwidth_pcie_current << " MAX=" << bandwidth_pcie_max << '\n';
+        std::cout << "GPU PCIE BANDWIDTH[GB/s]=" << bandwidth_pcie_current * 1.e-9 / 8 << " MAX=" << bandwidth_pcie_max * 1.e-9 / 8 << '\n';
 
         uint32_t numa_node;
         CHECK_ROCM_MSG(rsmi_topo_numa_affinity_get(dev_index, &numa_node));
@@ -100,6 +113,7 @@ void YlocRocm::init_graph(graph_t &g)
         std::cout << "GPU MEMORY GTT=" << memory_total << '\n';
 
         // std::cout << "rocm\n";
+        // associate rocm device with graph node by pcie bdfid:
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
         g[vd].tinfo.push_back(new RocmAdapter{dev_index});
         vertices[dev_index] = vd;
@@ -120,41 +134,6 @@ void YlocRocm::init_graph(graph_t &g)
 /************************************************/
 Hardware Topology Functions
     /************************************************/
-
-    rsmi_status_t
-    rsmi_minmax_bandwidth_get(
-        uint32_t dv_ind_src,
-        uint32_t dv_ind_dst,
-        uint64_t *min_bandwidth,
-        uint64_t *max_bandwidth)
-        Retreive minimal and maximal io link bandwidth between 2 GPUs.Given a source device index dv_ind_src and a destination device index dv_ind_dst,
-    pointer to an uint64_t
-    min_bandwidth,
-    and a pointer to uint64_t max_bandiwidth, this function will write theoretical minimal and maximal bandwidth limits.API works if src and dst are connected via xgmi and have 1 hop distance.
-
-                                              /** TODO: link bandwidth / throughput */
-
-                                              rsmi_dev_pci_bandwidth_get(uint32_t dv_ind, rsmi_pcie_bandwidth_t *bandwidth) Get the list of possible PCIe bandwidths that are available.
-
-                                              rsmi_frequencies_t transfer_rate = bandwidth.transfer_rate;
-uint32_t rsmi_pcie_bandwidth_t::lanes[RSMI_MAX_NUM_FREQUENCIES]
-
-All bits with indices greater than or equal to the value of the rsmi_frequencies_t::num_supported field
-
-rsmi_frequencies_t Data Fields
-* uint32_t num_supported
-* uint32_t current The current frequency index
-* uint64_t frequency [RSMI_MAX_NUM_FREQUENCIES] 
-
-
-rsmi_status_t rsmi_dev_pci_throughput_get (
-uint32_t dv_ind,
-uint64_t * sent,
-uint64_t * received,
-uint64_t * max_pkt_sz )
-Give a device index dv_ind and pointers to a uint64_t s, sent , received and max_pkt_sz , this function will
-write the number of bytes sent and received in 1 second to sent and received , respectively. The maximum
-possible packet size will be written to max_pkt_sz .
 
 
 rsmi_status_t rsmi_utilization_count_get (
