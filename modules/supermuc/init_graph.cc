@@ -17,9 +17,22 @@ using namespace yloc;
  */
 static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, char *hostname, int hostname_length)
 {
-    /** TODO: Allgatherv with hostnames
-     * Create hierachie based on numbers in hostname
-     */
+    /** TODO: check for structure of hostnames as expected for supermuc */
+    assert(hostname_length < 32);
+
+    int rank,nbproc;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nbproc);
+
+    char *recv_buffer = new char[32*nbproc];
+    char (*hostnames)[32] = (char (*)[32])(recv_buffer);
+
+    // necessary?
+    //strncpy(hostnames[rank],hostname,32);
+
+    MPI_Allgather(hostname,32,MPI_CHAR,recv_buffer,32,MPI_CHAR,MPI_COMM_WORLD);
+
+    /** TODO: Create hierachie based on numbers in hostname */
 }
 
 void YlocSuperMUC::init_graph(graph_t &g)
