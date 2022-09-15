@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @brief Error codes retured by yloc functions.
+ * 
+ */
 typedef enum : int {
     YLOC_STATUS_SUCCESS = 0,
     YLOC_STATUS_INVALID_ARGS,
