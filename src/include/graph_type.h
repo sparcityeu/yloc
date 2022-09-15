@@ -8,6 +8,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
 
+
 enum class yloc_vertex_type : int { YLOC_VERTEX_TYPE_MAX };
 
 enum class yloc_edge_type : int { YLOC_EDGE_TYPE_PARENT,
