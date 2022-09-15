@@ -1,5 +1,6 @@
 
 #include <mpi.h>
+#include <string.h>
 
 //#include <adapter.h>
 // #include <adapter_container.h>
@@ -32,7 +33,88 @@ static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, c
 
     MPI_Allgather(hostname,32,MPI_CHAR,recv_buffer,32,MPI_CHAR,MPI_COMM_WORLD);
 
-    /** TODO: Create hierachie based on numbers in hostname */
+    for(int i=0; i < nbproc; i++)
+    {
+        vertex_descriptor_t island_vd;
+        vertex_descriptor_t rack_vd;
+        vertex_descriptor_t slot_vd;
+        vertex_descriptor_t node_vd;
+
+#ifdef READABLE_CODE
+        char island[3];
+        strncpy(island,hostnames[i],2);
+        island[2] = '\0';
+        island_vd = g.add_vertex("system:"+std::string{island});
+
+        char rack[5];
+        strncpy(rack,hostnames[i],4);
+        rack[4] = '\0';
+        rack_vd = g.add_vertex("system:"+std::string{rack});
+
+        char slot[7];
+        strncpy(slot,hostnames[i],6);
+        slot[6] = '\0';
+        slot_vd = g.add_vertex("system:"+std::string{slot});
+        
+        char *node = hostnames[i];
+        if(rank == i)
+        {
+            node_vd = vd_local_node;
+        }
+        else
+        {
+            node_vd = g.add_vertex("system:"+std::string{node});
+        }
+#else
+        if(rank == i)
+        {
+            node_vd = vd_local_node;
+        }
+        else
+        {
+            node_vd = g.add_vertex("system:"+std::string{hostnames[i]});
+        }
+
+        /** TODO: Check hostname structure on supermuc */
+        // slot ends after 6 characters
+        hostnames[i][6] = '\0';
+        slot_vd = g.add_vertex("system:"+std::string{hostnames[i]});
+
+        // rack ends after 4 characters
+        hostnames[i][4] = '\0';
+        rack_vd = g.add_vertex("system:"+std::string{hostnames[i]});
+
+        // island ends after 2 characters
+        hostnames[i][2] = '\0';
+        island_vd = g.add_vertex("system:"+std::string{hostnames[i]});
+#endif
+
+        /** TODO: Move this logic to g.add_edge-method */
+
+        // Check if there is already an edge between the nodes
+        if(! boost::edge(island_vd, rack_vd, g.boost_graph()).second)
+        {
+            /** TODO: Filter for only child/parent edges */
+            boost::add_edge(island_vd, rack_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
+            boost::add_edge(rack_vd, island_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
+        }
+
+        // Check if there is already an edge between the nodes
+        if(! boost::edge(island_vd, rack_vd, g.boost_graph()).second)
+        {
+            /** TODO: Filter for only child/parent edges */
+            boost::add_edge(rack_vd, slot_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
+            boost::add_edge(slot_vd, rack_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
+        }
+
+        // Check if there is already an edge between the nodes
+        if(! boost::edge(island_vd, rack_vd, g.boost_graph()).second)
+        {
+            /** TODO: Filter for only child/parent edges */
+            boost::add_edge(slot_vd, node_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
+            boost::add_edge(node_vd, slot_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
+        }
+    }
 }
 
 void YlocSuperMUC::init_graph(graph_t &g)
