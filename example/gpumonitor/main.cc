@@ -6,6 +6,7 @@
 #include "init.h"
 #include <iostream>
 #include <optional>
+#include <thread>
 
 using namespace yloc;
 
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
             // PRINT_PROPERTY(pci_throughput_write);
             gpu++;
         }
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     yloc::finalize();
