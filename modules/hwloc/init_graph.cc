@@ -181,7 +181,7 @@ static void check_hwloc_api_version()
     }
 }
 
-void YlocHwloc::init_graph(graph_t &g)
+yloc_status_t YlocHwloc::init_graph(graph_t &g)
 {
     check_hwloc_api_version();
 
@@ -239,4 +239,6 @@ void YlocHwloc::init_graph(graph_t &g)
 
     // TODO: lifetime of topology context?
     // hwloc_topology_destroy(t);
+
+    return YLOC_STATUS_SUCCESS;
 }

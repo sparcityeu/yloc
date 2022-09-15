@@ -63,7 +63,7 @@ static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std
     return num_interconnects;
 }
 
-void YlocRocm::init_graph(graph_t &g)
+yloc_status_t YlocRocm::init_graph(graph_t &g)
 {
     EXIT_ERR_ROCM(rsmi_init(0)); /* RSMI_INIT_FLAG_ALL_GPUS */
     uint32_t num_devices;
@@ -127,7 +127,7 @@ void YlocRocm::init_graph(graph_t &g)
     }
     /** TODO: store this interconnect information? */
     uint64_t num_interconnects = yloc_rocm_gpu_interconnect(g, num_devices, vertices);
-    return;
+    return YLOC_STATUS_SUCCESS;
 }
 
 #if YLOC_ROCM_NOT_IMPLEMENTED_YET

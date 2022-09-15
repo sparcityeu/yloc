@@ -15,17 +15,17 @@ using yloc::YlocModule;
 class YlocHwloc : public YlocModule
 {
 public:
-    void init_graph(graph_t &graph) override;
+    yloc_status_t init_graph(graph_t &graph) override;
 
-    void export_graph(const graph_t &graph, void **output) override
+    yloc_status_t export_graph(const graph_t &graph, void **output) override
     {
         output = nullptr;
-        return;
+        return YLOC_STATUS_NOT_YET_IMPLEMENTED;
     }
 
-    void update_graph(graph_t &graph) override
+    yloc_status_t update_graph(graph_t &graph) override
     {
-        return;
+        return YLOC_STATUS_NOT_YET_IMPLEMENTED;
     };
 
 private:
