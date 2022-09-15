@@ -4,14 +4,14 @@
 #include <vector>
 // #include <modules/adapter.h>
 #include <adapter.h>
-
-#define YLOC_PROPERTY(prop) &yloc::Adapter::prop
+#include <component_types.h>
 
 namespace yloc
 {
     class AdapterContainer
     {
     public:
+        const Component *type{UnknownComponentType::ptr()};
         //~AdapterContainer
 
         void push_back(Adapter *a)
@@ -20,7 +20,7 @@ namespace yloc
         }
 
         template <typename property_type>
-        std::optional<property_type> get(std::optional<property_type> (Adapter::*mfun)())
+        std::optional<property_type> get(std::optional<property_type> (Adapter::*mfun)() const)
         {
             for (auto a : m_adapters) {
                 /** FIXME: better use std::invoke() than macro **/

@@ -3,42 +3,30 @@
 #include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
 #include <fstream>
-#include <hwloc.h>
-#include <unordered_map>
 
 /** TODO: create combined header */
 //#include <yloc.h>
-#include <adapter.h>
-#include "graph_type.h"
 #include "graph_object.h"
+#include "graph_type.h"
 #include "init.h"
-#include "print.h"
-#include "modules.h"
 
 using namespace yloc;
-
-extern std::unordered_map<vertex_descriptor_t, hwloc_obj_t> vertex2hwloc_map;
-static auto pm = boost::make_assoc_property_map(vertex2hwloc_map);
 
 /* writes graph with labels to file */
 static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
 {
     std::ofstream ofs{dot_file_name};
-
-    // method 1:
-    // get interal property map for Vertex::type (or other properties) to write type labels to graph
-    // vertices boost::write_graphviz(ofs, g, boost::make_label_writer(get(&Vertex::type, g)));
-
-    // method 2:
-    // since the values of vertex2hwloc_map are of type hwloc_obj_t, we need to define
-    // how to transform the values to string labels. 
-    // this is implemented using make_transform_value_property_map()
-    // before using a label writer for the transformed property map
+    // we need to define how to transform the vertices/edges to string labels.
+    // implemented using make_transform_value_property_map() before creating a label writer
     auto vpmt = boost::make_transform_value_property_map(
-        [](hwloc_obj_t const &obj) { return hwloc_string(obj); }, pm);
+        [&](yloc::vertex_descriptor_t vd) {
+            return YLOC_GET(g, vd, as_string).value() + "\nVD=" + std::to_string(vd);
+        },
+        boost::get(boost::vertex_index, g.boost_graph()));
 
     auto epmt = boost::make_transform_value_property_map(
-        [](yloc::edge_type const &edgetype) { return edgetype == YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; }, boost::get(&yloc::Edge::type, g.boost_graph()));
+        [&](yloc::edge_type edgetype) { return edgetype == yloc_edge_type::YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; },
+        boost::get(&yloc::Edge::type, g.boost_graph()));
 
     boost::write_graphviz(ofs, g.boost_graph(), boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
@@ -46,18 +34,9 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
 /* example of a filter graph query */
 static void filter_graph_example(graph_t &g)
 {
-    // filter the graph by hwloc object type "HWLOC_OBJ_OS_DEVICE" using a predicate (f(v) -> bool)
-
-    // auto predicate = [&](const vertex_descriptor_t &v) -> bool {
-    // return (boost::get(pm, v)->type == HWLOC_OBJ_OS_DEVICE);
-    // };
-
-    /** TODO: adjust hwloc example implementation to adapter concept after further abstract
-     *  machine model implementation in hwloc module 
-     */
-    auto predicate = [&](const vertex_descriptor_t &v) -> bool {
-        /** TODO: replace that with correct property predicate **/
-        return g[v].tinfo.get(YLOC_PROPERTY(capacity)).has_value();
+    // use predicate (f(v) -> bool) to filter the graph by object type "Cache"
+    /*auto*/ std::function<bool(const vertex_descriptor_t &)> predicate = [&](const vertex_descriptor_t &v) -> bool {
+        return g[v].tinfo.type->is_a<Cache>();
     };
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
@@ -65,20 +44,35 @@ static void filter_graph_example(graph_t &g)
     auto fgv = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate);
 
     // print vertices of resulting filtered graph view:
-    std::cout << "filtered graph:" << std::endl;
-    std::for_each(vertices(fgv).first, vertices(fgv).second, [&](const vertex_descriptor_t &v) {
-        std::cout << "vd: " << v << std::endl
-                  << hwloc_string(boost::get(pm, v)) << std::endl;
-    });
+    std::cout << "writing filtered graph to filtered_graph.dot" << std::endl;
+    // std::for_each(vertices(fgv).first, vertices(fgv).second, [&](const vertex_descriptor_t &v) {
+        // std::cout << "VD=" << v << std::endl
+                //   << YLOC_GET(g, v, as_string).value() << std::endl;
+    // });
+
+    // write_graph_dot_file(fgv, "filtered_graph.dot");
+
+    std::ofstream ofs{"filtered_graph.dot"};
+    auto vpmt = boost::make_transform_value_property_map(
+        [&](yloc::vertex_descriptor_t vd) {
+            return YLOC_GET(fgv, vd, as_string).value() + "\nVD=" + std::to_string(vd);
+        },
+        boost::get(boost::vertex_index, fgv));
+
+    auto epmt = boost::make_transform_value_property_map(
+        [&](yloc::edge_type edgetype) { return edgetype == yloc_edge_type::YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; },
+        boost::get(&yloc::Edge::type, fgv));
+
+    boost::write_graphviz(ofs, fgv, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
 
 /* helper function because boost::num_vertices<GraphView> returns the number of vertices in the underlying graph.
-   getting the number of vertices contained in a graph view must be calculated */
-template<typename GraphView>
-size_t num_vertices_view(const GraphView &gv) 
+   the number of vertices contained in a graph view must be calculated */
+template <typename GraphView>
+size_t num_vertices_view(const GraphView &gv)
 {
     size_t num_vertices = 0;
-    for(auto vi = boost::vertices(gv).first; vi != boost::vertices(gv).second; vi++) {
+    for (auto vi = boost::vertices(gv).first; vi != boost::vertices(gv).second; vi++) {
         num_vertices++;
     }
     return num_vertices;
@@ -93,38 +87,38 @@ static void find_distances(graph_t &g)
     // note: hwloc offers functionality e.g. in hwloc_opencl_get_device_cpuset()
     //       to get the closest cpu's to an opencl device
 
-    // first we query the graph for opencl devices
-    auto predicate_opencldev = [&](const vertex_descriptor_t &v) -> bool {
-        return (hwloc_compare_types(boost::get(pm, v)->type, HWLOC_OBJ_OS_DEVICE) == 0
-            && (NULL != boost::get(pm, v)->subtype) ? (boost::get(pm, v)->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) : false);
+    // first we query the graph for ...
+    auto predicate_accelerator = [&](const vertex_descriptor_t &v) -> bool {
+        return g[v].tinfo.type->is_a<Accelerator>();
     };
-    auto fgv_opencldev = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_opencldev);
+    auto fgv_accelerator = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_accelerator);
 
-    size_t num_vertices = num_vertices_view(fgv_opencldev);
-    std::cout << "number of found opencl devices: " << num_vertices_view(fgv_opencldev) << std::endl;
-    if(num_vertices < 1) {
-        return; 
+    size_t num_vertices = num_vertices_view(fgv_accelerator);
+    std::cout << "number of found accelerators: " << num_vertices_view(fgv_accelerator) << std::endl;
+    if (num_vertices < 1) {
+        return;
     }
 
-    auto vi = boost::vertices(fgv_opencldev).first;
-    std::cout << "first opencl device:" << std::endl 
-              << hwloc_string(boost::get(pm, *vi)) << std::endl;
+    auto vi = boost::vertices(fgv_accelerator).first;
+    std::cout << "first accelerator:" << std::endl
+              << YLOC_GET(g, *vi, as_string).value() << std::endl;
 
     // then we filter the graph to get all PU's
     auto predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
-        return (boost::get(pm, v)->type == HWLOC_OBJ_PU);
+        return g[v].tinfo.type->is_a<LogicalCore>();
     };
     auto fgv_pu = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_pu);
-    std::cout << "number of PU's: " << num_vertices_view(fgv_pu) << std::endl;
+    std::cout << "number of Cores: " << num_vertices_view(fgv_pu) << std::endl;
 
     // here we use a vector as the underlying container to the property map for the distances,
     // therefore we must use an iterator property map here.
     //
-    // note: there must be space allocated for every vertex descriptor of the underlying graph 
+    // note: there must be space allocated for every vertex descriptor of the underlying graph
     //       using the default boost property map adaptor.
     std::vector<int> distances(boost::num_vertices(fgv_pu));
     auto dist_pmap = boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, fgv_pu));
 
+    // boost::on_tree_edge() adds 1 per edge, could be any distance metric
     auto vis = boost::make_bfs_visitor(boost::record_distances(dist_pmap, boost::on_tree_edge()));
     boost::breadth_first_search(g.boost_graph(), *vi, visitor(vis));
 
@@ -132,7 +126,7 @@ static void find_distances(graph_t &g)
     auto mindist = boost::get(dist_pmap, *boost::vertices(fgv_pu).first);
     for (auto vd : boost::make_iterator_range(boost::vertices(fgv_pu))) {
         // boost::get(dist_pmap, vd) accesses distances[vd] via adaptor
-        if(boost::get(dist_pmap, vd) < mindist) {
+        if (boost::get(dist_pmap, vd) < mindist) {
             mindist = boost::get(dist_pmap, vd);
         }
     }
@@ -150,20 +144,20 @@ static void find_distances(graph_t &g)
 
     for (auto vd : boost::make_iterator_range(boost::vertices(fgv_pu_min))) {
         std::cout << "#hops [" << *vi << " -> " << vd << "] = " << distances[vd] << "\n";
+        break;
     }
 }
 
 int main(int argc, char *argv[])
 {
-    //yloc::set_options/configure/...
+    // yloc::set_options/configure/...
 
     // MPI_Init(&argc, &argv);
     yloc::init(YLOC_FULL | YLOC_ONGOING);
 
-    graph_t g = yloc::root_graph();
+    graph_t & g = yloc::root_graph();
 
     write_graph_dot_file(g, std::string{"graph.dot"});
-
     filter_graph_example(g);
 
     find_distances(g);
