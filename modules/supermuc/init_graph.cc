@@ -1,30 +1,28 @@
 
-#include <hwloc.h>
-#include <iostream>
+#include <mpi.h>
 
 //#include <adapter.h>
 // #include <adapter_container.h>
-#include "init_graph.h"
+
 #include "interface_impl.h"
 
-// hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 using namespace yloc;
 
 /**
- * @brief Build boost graph structure in hostnames of supermuc.
+ * @brief Build boost graph structure from hostnames of supermuc.
  *
  * @param g The graph to add the entries to
  * @param hostname Own hostname
  * @param hostname_length Length of hostname
  */
-static void make_supermuc_graph(graph_t &g, char *hostname, int hostname_length)
+static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, char *hostname, int hostname_length)
 {
     /** TODO: Allgatherv with hostnames
      * Create hierachie based on numbers in hostname
      */
 }
 
-void YlocSuperMUC::init_graph(/* const char *file */)
+void YlocSuperMUC::init_graph(graph_t &g)
 {
     int initialized;
     MPI_Initialized(&initialized);
@@ -39,7 +37,7 @@ void YlocSuperMUC::init_graph(/* const char *file */)
     //hostname[hostname_length] = '\0'; // ??
 
     /** TODO: Only works if init_graph of hwloc is called before this one */
-    root_graph().register_vertex("hwloc_root",hostname);
+    auto vd_local_node = g.add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
 
-    make_supermuc_graph(root_graph(), hostname, hostname_length);
+    make_supermuc_graph(g, vd_local_node, hostname, hostname_length);
 }
