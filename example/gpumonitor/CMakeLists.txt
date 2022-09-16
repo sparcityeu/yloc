@@ -7,4 +7,3 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_include_directories(gpumonitor PRIVATE)
 
-set_property(TARGET gpumonitor PROPERTY CXX_STANDARD 17)
