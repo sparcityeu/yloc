@@ -38,22 +38,23 @@ namespace yloc
         ADAPTER_PROP(int64_t, temperature)
 
         /**
-         * @brief Gets memory capacity of component.
+         * @brief Gets total memory capacity of component.
          *
-         * @return Total memory capacity in bytes or std::nullopt if component has no memory.
+         * @return Total memory capacity in bytes or std::nullopt if component has no memory capacity.
          */
         ADAPTER_PROP(uint64_t, memory)
 
         /**
          * @brief Gets used memory of component.
          *
-         * @return Used memory in bytes or std::nullopt if component has no memory.
+         * @return Used memory in bytes or std::nullopt if component has no used memory.
          */
         ADAPTER_PROP(uint64_t, memory_usage)
 
         /**
-         * @brief TODO
+         * @brief Gets memory load of component.
          *
+         * @return Used memory in percent or std::nullopt if component has no memory load.
          */
         ADAPTER_PROP(uint64_t, memory_load)
 
