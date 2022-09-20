@@ -37,58 +37,57 @@ static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, c
     {
         vertex_descriptor_t island_vd;
         vertex_descriptor_t rack_vd;
+        vertex_descriptor_t column_vd;
         vertex_descriptor_t slot_vd;
-        vertex_descriptor_t node_vd;
 
 #ifdef READABLE_CODE
-        char island[3];
-        strncpy(island,hostnames[i],2);
-        island[2] = '\0';
+        char island[4];
+        strncpy(island,hostnames[i],3);
+        island[3] = '\0';
         island_vd = g.add_vertex("system:"+std::string{island});
 
-        char rack[5];
-        strncpy(rack,hostnames[i],4);
-        rack[4] = '\0';
+        char rack[7];
+        strncpy(rack,hostnames[i],6);
+        rack[6] = '\0';
         rack_vd = g.add_vertex("system:"+std::string{rack});
 
-        char slot[7];
-        strncpy(slot,hostnames[i],6);
-        slot[6] = '\0';
-        slot_vd = g.add_vertex("system:"+std::string{slot});
+        char slot[10];
+        strncpy(slot,hostnames[i],9);
+        slot[9] = '\0';
+        column_vd = g.add_vertex("system:"+std::string{slot});
         
         char *node = hostnames[i];
         if(rank == i)
         {
-            node_vd = vd_local_node;
+            slot_vd = vd_local_node;
         }
         else
         {
-            node_vd = g.add_vertex("system:"+std::string{node});
+            slot_vd = g.add_vertex("system:"+std::string{node});
         }
 #else
         if(rank == i)
         {
-            node_vd = vd_local_node;
+            slot_vd = vd_local_node;
         }
         else
         {
-            node_vd = g.add_vertex("system:"+std::string{hostnames[i]});
+            slot_vd = g.add_vertex("system:"+std::string{hostnames[i]});
         }
-        g[node_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
-
-        /** TODO: Check hostname structure on supermuc */
-        // slot ends after 6 characters
-        hostnames[i][6] = '\0';
-        slot_vd = g.add_vertex("system:"+std::string{hostnames[i]});
         g[slot_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
 
+        // slot ends after 6 characters
+        hostnames[i][9] = '\0';
+        column_vd = g.add_vertex("system:"+std::string{hostnames[i]});
+        g[column_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
+
         // rack ends after 4 characters
-        hostnames[i][4] = '\0';
+        hostnames[i][6] = '\0';
         rack_vd = g.add_vertex("system:"+std::string{hostnames[i]});
         g[rack_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
 
         // island ends after 2 characters
-        hostnames[i][2] = '\0';
+        hostnames[i][3] = '\0';
         island_vd = g.add_vertex("system:"+std::string{hostnames[i]});
         g[island_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
 #endif
@@ -104,19 +103,19 @@ static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, c
         }
 
         // Check if there is already an edge between the nodes
-        if(! boost::edge(island_vd, rack_vd, g.boost_graph()).second)
+        if(! boost::edge(rack_vd, column_vd, g.boost_graph()).second)
         {
             /** TODO: Filter for only child/parent edges */
-            boost::add_edge(rack_vd, slot_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
-            boost::add_edge(slot_vd, rack_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
+            boost::add_edge(rack_vd, column_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
+            boost::add_edge(column_vd, rack_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
         }
 
         // Check if there is already an edge between the nodes
-        if(! boost::edge(island_vd, rack_vd, g.boost_graph()).second)
+        if(! boost::edge(column_vd, slot_vd, g.boost_graph()).second)
         {
             /** TODO: Filter for only child/parent edges */
-            boost::add_edge(slot_vd, node_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
-            boost::add_edge(node_vd, slot_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
+            boost::add_edge(column_vd, slot_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
+            boost::add_edge(slot_vd, column_vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
         }
     }
 }
