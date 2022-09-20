@@ -1,8 +1,8 @@
 
-#include <adapter.h>
 #include <iostream>
 #include <vector>
 
+#include <adapter.h>
 #include <interface.h>
 
 #include "interface_impl.h"
@@ -112,18 +112,19 @@ yloc_status_t YlocRocm::init_graph(graph_t &g)
         CHECK_ROCM_MSG(rsmi_dev_memory_total_get(dev_index, RSMI_MEM_TYPE_GTT, &memory_total));
         std::cout << "GPU MEMORY GTT=" << memory_total << '\n';
 
-        // std::cout << "rocm\n";
         // associate rocm device with graph node by pcie bdfid:
+        Adapter *adapter = new RocmAdapter{dev_index};
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
-        g[vd].tinfo.push_back(new RocmAdapter{dev_index});
+
+        g[vd].add(adapter);
         vertices[dev_index] = vd;
         // std::cout << YLOC_GET(g, vd, as_string).value() << '\n';
-        // std::cout << "yloc type: " << g[vd].tinfo.type->to_string() << " vd: " << vd << '\n';
+        // std::cout << "yloc type: " << g[vd].type->to_string() << " vd: " << vd << '\n';
 
-        g[vd].tinfo.type = GPU::ptr();
-        assert(g[vd].tinfo.type->is_a<PCIDevice>());
-        assert(g[vd].tinfo.type->is_a<Accelerator>());
-        assert(g[vd].tinfo.type->is_a<GPU>());
+        g[vd].type = GPU::ptr();
+        assert(g[vd].type->is_a<PCIDevice>());
+        assert(g[vd].type->is_a<Accelerator>());
+        assert(g[vd].type->is_a<GPU>());
     }
     /** TODO: store this interconnect information? */
     uint64_t num_interconnects = yloc_rocm_gpu_interconnect(g, num_devices, vertices);

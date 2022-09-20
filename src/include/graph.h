@@ -1,44 +1,23 @@
 #pragma once
 
+#include <unordered_map>
+
 #define USE_SUBGRAPH 0
 
-#include <map>
-
-#include <adapter_container.h>
 #include <boost/graph/adjacency_list.hpp>
+#if USE_SUBGRAPH
 #include <boost/graph/subgraph.hpp>
+#endif
 
+#include <graph_vertex.h>
+#include <yloc.h>
 
-enum class yloc_vertex_type : int { YLOC_VERTEX_TYPE_MAX };
-
-enum class yloc_edge_type : int { YLOC_EDGE_TYPE_PARENT,
-                                  YLOC_EDGE_TYPE_CHILD,
-                                  YLOC_GPU_INTERCONNECT,
-                                  YLOC_EDGE_TYPE_MAX };
-
-#define YLOC_PROPERTY &yloc::Adapter::property
-#define YLOC_GET(g, vd, property) (g)[(vd)].tinfo.get(&yloc::Adapter::property)
+// #define YLOC_PROPERTY &yloc::Adapter::property
+// #define YLOC_GET(g, vd, property) (g)[(vd)].get(&yloc::Adapter::property)
+#define YLOC_GET(g, vd, property) (g)[(vd)].get(#property)
 
 namespace yloc
 {
-    using vertex_type = yloc_vertex_type;
-    using edge_type = yloc_edge_type;
-
-    /* bundled internal (common) vertex properties */
-    struct Vertex {
-        // yloc_vertex_type type;
-        /* TODO: somehow we need to point to the vertex property maps here */
-        AdapterContainer tinfo;
-        // Adapter a;
-    };
-
-    /* bundled internal (common) edge properties */
-    struct Edge {
-        edge_type type;
-        /* TODO: somehow we need to point to the edge property maps here */
-        // AdapterContainer tinfo;
-    };
-
 #if USE_SUBGRAPH
     using boost_graph_t = boost::subgraph<
         boost::adjacency_list<
@@ -66,8 +45,10 @@ namespace yloc
         using identifier_t = std::string;
 
         Graph() = default;
+
     private:
         Graph(Graph &) = default;
+
     public:
         Graph(Graph &&) = default;
 
@@ -78,6 +59,7 @@ namespace yloc
 
     private:
         Graph &operator=(Graph &) = default;
+
     public:
         Graph &operator=(Graph &&) = default;
 
@@ -144,4 +126,11 @@ namespace yloc
     };
 
     using graph_t = Graph;
+
+    /**
+     * @brief TODO deprecate?
+     *
+     * @return graph_t&
+     */
+    graph_t &root_graph();
 }
