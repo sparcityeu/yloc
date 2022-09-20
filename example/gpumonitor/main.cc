@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     while (1) {
         size_t gpu = 0;
         for (auto vd : boost::make_iterator_range(boost::vertices(fgv))) {
-            // PRINT_PROPERTY(as_string);
+            // PRINT_PROPERTY(to_string);
             std::cout << "==========================\nGPU" << gpu << " [vd=" << vd << "]\n==========================\n";
             PRINT_PROPERTY(memory);
             PRINT_PROPERTY(memory_usage);

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <adapter.h>
 #include <rocm_smi/rocm_smi.h>
+
+#include <adapter.h>
 
 #include "rocm_util.h"
 
@@ -12,7 +13,7 @@ class RocmAdapter : public yloc::Adapter
 public:
     RocmAdapter(obj_t obj) : m_obj(obj) {}
 
-    std::optional<std::string> as_string() const override
+    std::string to_string() const override
     {
         constexpr size_t MAX_NAME_LEN = 2048;
         char name[MAX_NAME_LEN];

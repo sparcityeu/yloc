@@ -13,7 +13,7 @@ class HwlocAdapter : public yloc::Adapter
 public:
     HwlocAdapter(obj_t obj) : m_obj(obj) {}
 
-    std::optional<std::string> as_string() const override
+    std::string to_string() const override
     {
         std::stringstream ss;
         ss << hwloc_obj_type_string(m_obj->type); /*<< std::endl*/

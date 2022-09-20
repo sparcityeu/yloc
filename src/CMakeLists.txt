@@ -18,6 +18,7 @@ add_library(yloc
     "${CMAKE_CURRENT_BINARY_DIR}/modules.cc" "include/modules.h"
     "include/graph.h"
     "graph_vertex.cc" "include/graph_vertex.h"
+    "include/property.h"
     "include/component_types.h"
     "include/modules/interface.h"
     "include/modules/adapter.h"

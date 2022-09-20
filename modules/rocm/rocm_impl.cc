@@ -117,6 +117,8 @@ yloc_status_t YlocRocm::init_graph(graph_t &g)
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
 
         g[vd].add(adapter);
+        g[vd].description = adapter->to_string();
+
         vertices[dev_index] = vd;
         // std::cout << YLOC_GET(g, vd, as_string).value() << '\n';
         // std::cout << "yloc type: " << g[vd].type->to_string() << " vd: " << vd << '\n';

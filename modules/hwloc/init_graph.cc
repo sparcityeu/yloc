@@ -1,16 +1,13 @@
 
 #include <hwloc.h>
 #include <iostream>
-
-#include "hwloc_adapter.h"
-#include <adapter.h>
-
-
-#include <interface.h>
-#include "interface_impl.h"
-
 #include <unistd.h> // gethostname
 
+#include <adapter.h>
+#include <interface.h>
+
+#include "hwloc_adapter.h"
+#include "interface_impl.h"
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 using namespace yloc;
@@ -147,6 +144,10 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
             // std::cout << "hwloc pcidevice " << id << " vd: " << child_vd << "\n";
         } else {
             child_vd = g.add_vertex();
+        }
+
+        if (g[child_vd].description.empty()) {
+            g[child_vd].description = adapter->to_string();
         }
 
         g[child_vd].add(adapter);
