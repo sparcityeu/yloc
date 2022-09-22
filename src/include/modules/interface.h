@@ -2,7 +2,7 @@
 
 #include <graph_type.h>
 #include <graph_object.h>
-/** TODO: think about constness of arguments and functions **/
+#include <yloc.h>
 
 namespace yloc
 {
@@ -18,13 +18,13 @@ namespace yloc
         /** TODO: */
         // virtual ~YlocModule() = 0;
 
-        virtual void init_graph(graph_t &graph) = 0; // init module subgraph
+        virtual yloc_status_t init_graph(graph_t &graph) = 0; // init module subgraph
 
-        virtual void export_graph(const graph_t &graph, void **output) = 0;
+        virtual yloc_status_t export_graph(const graph_t &graph, void **output) = 0;
         // optional function, not ever module requires this
         // it is recommended that every module that can init a graph on its own also provides this function.
 
-        virtual void update_graph(graph_t &graph) = 0;
+        virtual yloc_status_t update_graph(graph_t &graph) = 0;
         // Manual(?) trigger for an update on the graph
         // Thread logic in module or in init?
         // Probably both, modules that require push logic need internal threads.
@@ -34,6 +34,7 @@ namespace yloc
         // this would be a good place to add an per-module interval
 
         // virtual graph_t & subgraph() = 0;
+
     protected:
 #if USE_SUBGRAPH
         graph_t &m_subgraph; // module subgraph

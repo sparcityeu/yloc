@@ -5,10 +5,12 @@
 #include "hwloc_adapter.h"
 #include <adapter.h>
 
-#include <hwloc.h>
-#include <interface.h>
 
+#include <interface.h>
 #include "interface_impl.h"
+
+#include <unistd.h> // gethostname
+
 
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 using namespace yloc;
@@ -136,10 +138,10 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
     // for all children of obj: add new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        auto * adapter = new HwlocAdapter{child};
+        auto *adapter = new HwlocAdapter{child};
         vertex_descriptor_t child_vd;
-        
-        if(yloc_type(child)->is_a<PCIDevice>()) {
+
+        if (yloc_type(child)->is_a<PCIDevice>()) {
             std::string id = "bdfid:" + std::to_string(adapter->bdfid().value());
             child_vd = g.add_vertex(id);
             // std::cout << "hwloc pcidevice " << id << " vd: " << child_vd << "\n";
@@ -181,7 +183,7 @@ static void check_hwloc_api_version()
     }
 }
 
-void YlocHwloc::init_graph(graph_t &g)
+yloc_status_t YlocHwloc::init_graph(graph_t &g)
 {
     check_hwloc_api_version();
 
@@ -224,7 +226,11 @@ void YlocHwloc::init_graph(graph_t &g)
     make_hwloc_graph(m_subgraph, t, root_vd, root);
 #else
     // printf("making hwloc graph...\n");
-    auto root_vd = g.add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
+
+    // std::getenv("HOSTNAME") // HOSTNAME may be not set, so we use gethostname instead
+    char hostname[HOST_NAME_MAX];
+    gethostname(hostname, HOST_NAME_MAX);
+    auto root_vd = g.add_vertex("machine:" + std::string{hostname});
 
     g[root_vd].tinfo.push_back(new HwlocAdapter{root});
     if (g[root_vd].tinfo.type == UnknownComponentType::ptr()) { // has no component type yet
@@ -239,4 +245,6 @@ void YlocHwloc::init_graph(graph_t &g)
 
     // TODO: lifetime of topology context?
     // hwloc_topology_destroy(t);
+
+    return YLOC_STATUS_SUCCESS;
 }
