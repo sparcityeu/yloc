@@ -4,12 +4,12 @@
 
 class SuperMUCAdapter : public yloc::Adapter
 {
-    using obj_t = std::string; // rocm device index
+    using obj_t = std::string;
 
 public:
     SuperMUCAdapter(obj_t obj) : m_obj(obj) {}
 
-    std::optional<std::string> as_string() const override
+    std::string to_string() const override
     {
         return m_obj;
     }

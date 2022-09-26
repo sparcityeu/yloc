@@ -13,12 +13,12 @@ public:
     yloc_status_t export_graph(const graph_t &graph, void **output) override
     {
         output = nullptr;
-        return;
+        return YLOC_STATUS_NOT_SUPPORTED;
     }
 
     yloc_status_t update_graph(graph_t &graph) override
     {
-        return;
+        return YLOC_STATUS_NOT_SUPPORTED;
     };
 
 private:

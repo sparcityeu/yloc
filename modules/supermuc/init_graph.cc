@@ -74,22 +74,22 @@ static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, c
         {
             slot_vd = g.add_vertex("system:"+std::string{hostnames[i]});
         }
-        g[slot_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
+        g[slot_vd].add(new SuperMUCAdapter{hostnames[i]});
 
         // slot ends after 6 characters
         hostnames[i][9] = '\0';
         column_vd = g.add_vertex("system:"+std::string{hostnames[i]});
-        g[column_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
+        g[column_vd].add(new SuperMUCAdapter{hostnames[i]});
 
         // rack ends after 4 characters
         hostnames[i][6] = '\0';
         rack_vd = g.add_vertex("system:"+std::string{hostnames[i]});
-        g[rack_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
+        g[rack_vd].add(new SuperMUCAdapter{hostnames[i]});
 
         // island ends after 2 characters
         hostnames[i][3] = '\0';
         island_vd = g.add_vertex("system:"+std::string{hostnames[i]});
-        g[island_vd].tinfo.push_back(new SuperMUCAdapter{hostnames[i]});
+        g[island_vd].add(new SuperMUCAdapter{hostnames[i]});
 #endif
 
         /** TODO: Move this logic to g.add_edge-method */
@@ -137,4 +137,6 @@ yloc_status_t YlocSuperMUC::init_graph(graph_t &g)
     auto vd_local_node = g.add_vertex("machine:"+std::string{std::getenv("HOSTNAME")});
 
     make_supermuc_graph(g, vd_local_node, hostname, hostname_length);
+
+    return YLOC_STATUS_SUCCESS;
 }
