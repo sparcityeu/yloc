@@ -120,13 +120,12 @@ static void make_supermuc_graph(graph_t &g, vertex_descriptor_t vd_local_node, c
     }
 }
 
-void YlocSuperMUC::init_graph(graph_t &g)
+yloc_status_t YlocSuperMUC::init_graph(graph_t &g)
 {
     int initialized;
     MPI_Initialized(&initialized);
     if(!initialized) {
-        /** TODO: Log MPI not available */
-        return;
+        return YLOC_STATUS_INIT_ERROR;
     }
 
     char hostname[MPI_MAX_PROCESSOR_NAME];
