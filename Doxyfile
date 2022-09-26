@@ -829,7 +829,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = src/ modules/ Readme.md
+INPUT                  = src/ modules/ README.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -2585,8 +2585,8 @@ HIDE_UNDOC_RELATIONS   = NO
 HAVE_DOT               = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
-UML_LOOK               = YES
-UML_LIMIT_NUM_FIELDS   = 50
+UML_LOOK               = NO
+UML_LIMIT_NUM_FIELDS   = 1
 TEMPLATE_RELATIONS     = YES
 DOT_GRAPH_MAX_NODES    = 100
 MAX_DOT_GRAPH_DEPTH    = 0
