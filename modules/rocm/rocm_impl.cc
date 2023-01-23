@@ -13,7 +13,7 @@
 
 using namespace yloc;
 
-static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std::vector<vertex_descriptor_t> vertices)
+static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices)
 {
     uint64_t num_interconnects = 0;
     // get connectivity and topology between devices: (assuming symmetric connection)
