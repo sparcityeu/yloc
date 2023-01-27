@@ -5,22 +5,22 @@
 #include "boost/graph/filtered_graph.hpp"
 
 /** TODO: create combined header */
-//#include <yloc.h>
+// #include <yloc.h>
 #include "graph.h"
 #include "init.h"
 
 using namespace yloc;
 
-#define PRINT_PROPERTY(property)            \
-    do {                                    \
-        auto p = YLOC_GET(g, vd, property); \
-        std::cout << #property << "=";      \
-        if (p.has_value()) {                \
-            std::cout << p.value() << '\n'; \
-        } else {                            \
-            std::cout << "has no value\n";  \
-        }                                   \
-    } while (0)
+static void print_property(graph_t &g, vertex_descriptor_t vd, const char *property)
+{
+    auto p = g[vd].get(property);
+    std::cout << property << "=";
+    if (p.has_value()) {
+        std::cout << p.value() << '\n';
+    } else {
+        std::cout << "has no value\n";
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -39,16 +39,16 @@ int main(int argc, char *argv[])
         for (auto vd : boost::make_iterator_range(boost::vertices(fgv))) {
             // PRINT_PROPERTY(to_string);
             std::cout << "==========================\nGPU" << gpu << " [vd=" << vd << "]\n==========================\n";
-            PRINT_PROPERTY(memory);
-            PRINT_PROPERTY(memory_usage);
-            PRINT_PROPERTY(memory_load);
-            PRINT_PROPERTY(memory_frequency);
-            PRINT_PROPERTY(bdfid);
-            PRINT_PROPERTY(numa_affinity);
-            PRINT_PROPERTY(temperature);
-            PRINT_PROPERTY(frequency);
-            PRINT_PROPERTY(load);
-            PRINT_PROPERTY(power);
+            print_property(g, vd, "memory");
+            print_property(g, vd, "memory_usage");
+            print_property(g, vd, "memory_load");
+            print_property(g, vd, "memory_frequency");
+            print_property(g, vd, "bdfid");
+            print_property(g, vd, "numa_affinity");
+            print_property(g, vd, "temperature");
+            print_property(g, vd, "frequency");
+            print_property(g, vd, "load");
+            print_property(g, vd, "power");
             // these properties are blocking:
             // PRINT_PROPERTY(pci_throughput);
             // PRINT_PROPERTY(pci_throughput_read);

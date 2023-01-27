@@ -12,10 +12,6 @@
 #include <graph_vertex.h>
 #include <yloc.h>
 
-// #define YLOC_PROPERTY &yloc::Adapter::property
-// #define YLOC_GET(g, vd, property) (g)[(vd)].get(&yloc::Adapter::property)
-#define YLOC_GET(g, vd, property) (g)[(vd)].get(#property)
-
 namespace yloc
 {
 #if USE_SUBGRAPH
