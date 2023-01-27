@@ -4,24 +4,29 @@
 
 namespace yloc
 {
-    class Graph; // forward declaration
+    class Graph;
 
-    class YlocModule
+    class Module
     {
     public:
-        /** TODO: how to avoid duplicated code, but have "pure" interface class YlocModule? */
+        /** TODO: how to avoid duplicated code, but have "pure" interface class Module? */
 #if USE_SUBGRAPH
-        YlocModule() : m_subgraph(root_graph().create_subgraph()) {}
+        Module() : m_subgraph(root_graph().create_subgraph()) {}
 #else
 #endif /* USE_SUBGRAPH */
 
-        virtual ~YlocModule() = default; // 0;
+        /** TODO: use pure virtual destructor ? then we must override in sub-classes */
+        virtual ~Module() = default; // 0;
 
-        virtual yloc_status_t init_graph(Graph &graph) = 0; // init module subgraph
+        /**
+         * @brief Initializes the module's subgraph and attaches to the root graph.
+         * 
+         * @param graph The root graph
+         * @return yloc_status_t 
+         */
+        virtual yloc_status_t init_graph(Graph &graph) = 0;
 
         virtual yloc_status_t export_graph(const Graph &graph, void **output) = 0;
-        // optional function, not ever module requires this
-        // it is recommended that every module that can init a graph on its own also provides this function.
 
         virtual yloc_status_t update_graph(Graph &graph) = 0;
         // Manual(?) trigger for an update on the graph
@@ -41,8 +46,3 @@ namespace yloc
 #endif /* USE_SUBGRAPH */
     };
 }
-
-// template <typename T>
-// T query_graph(Graph *graph, void *query);
-// Todo this function does not belong here,
-// it is only written here to highlight the logic required inside the modules for this function

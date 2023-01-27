@@ -80,7 +80,7 @@ static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::
     return num_interconnects;
 }
 
-yloc_status_t YlocNvml::init_graph(Graph &g)
+yloc_status_t ModuleNvml::init_graph(Graph &g)
 {
     EXIT_ERR_NVML(nvmlInit_v2());
     unsigned int num_units;

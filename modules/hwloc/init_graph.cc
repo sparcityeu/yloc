@@ -11,6 +11,12 @@
 #include "hwloc_adapter.h"
 #include "interface_impl.h"
 
+// enum aliases for backwards compatibility (from hwloc documentation)
+#if HWLOC_API_VERSION < 0x00010b00
+#define HWLOC_OBJ_NUMANODE HWLOC_OBJ_NODE
+#define HWLOC_OBJ_PACKAGE HWLOC_OBJ_SOCKET
+#endif /* HWLOC_API_VERSION */
+
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 using namespace yloc;
 
@@ -186,7 +192,7 @@ static void check_hwloc_api_version()
     }
 }
 
-yloc_status_t YlocHwloc::init_graph(Graph &g)
+yloc_status_t ModuleHwloc::init_graph(Graph &g)
 {
     check_hwloc_api_version();
 

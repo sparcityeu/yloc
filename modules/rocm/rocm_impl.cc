@@ -11,6 +11,8 @@
 #include "rocm_adapter.h"
 #include "rocm_util.h"
 
+#include <rocm_smi/rocm_smi.h>
+
 /** TODO: implement bandwidth and throughput properties */
 
 using namespace yloc;
@@ -65,7 +67,7 @@ static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::
     return num_interconnects;
 }
 
-yloc_status_t YlocRocm::init_graph(Graph &g)
+yloc_status_t ModuleRocm::init_graph(Graph &g)
 {
     EXIT_ERR_ROCM(rsmi_init(0)); /* RSMI_INIT_FLAG_ALL_GPUS */
     uint32_t num_devices;

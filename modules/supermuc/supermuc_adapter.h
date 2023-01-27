@@ -2,24 +2,27 @@
 
 #include <yloc/modules/adapter.h>
 
-class SuperMUCAdapter : public yloc::Adapter
+namespace yloc
 {
-    using obj_t = std::string;
-
-public:
-    SuperMUCAdapter(obj_t obj) : m_obj(obj) {}
-
-    std::string to_string() const override
+    class SuperMUCAdapter : public Adapter
     {
-        return m_obj;
-    }
+        using obj_t = std::string;
 
-    /** TODO: abstract machine model implementation **/
+    public:
+        SuperMUCAdapter(obj_t obj) : m_obj(obj) {}
 
-    /** abstract machine model end **/
+        std::string to_string() const override
+        {
+            return m_obj;
+        }
 
-    obj_t native_obj() const { return m_obj; }
+        /** TODO: abstract machine model implementation **/
 
-private:
-    obj_t m_obj;
-};
+        /** abstract machine model end **/
+
+        obj_t native_obj() const { return m_obj; }
+
+    private:
+        obj_t m_obj;
+    };
+}

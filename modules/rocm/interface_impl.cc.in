@@ -5,5 +5,5 @@
 
 namespace yloc
 {
-    YlocModule * @MOD_CPPNAME@ = new YlocRocm();
+    Module * @MOD_CPPNAME@ = new ModuleRocm();
 }

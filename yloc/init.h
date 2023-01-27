@@ -28,7 +28,7 @@ namespace yloc
 
     int finalize();
 
-    class YlocModule;
+    class Module;
 
-    std::vector<YlocModule *> list_modules();
+    std::vector<Module *> list_modules();
 }

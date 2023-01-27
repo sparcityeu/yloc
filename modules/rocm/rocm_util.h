@@ -1,4 +1,6 @@
 #pragma once
+
+#include <iostream>
 #include <rocm_smi/rocm_smi.h>
 
 #define VERBOSE_ROCM 0
@@ -30,7 +32,6 @@
             rsmi_shut_down();                       \
         }                                           \
     } while (0)
-
 
 static void print_bdfid(uint64_t bdfid)
 {

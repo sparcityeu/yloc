@@ -113,7 +113,7 @@ static void make_supermuc_graph(Graph &g, vertex_descriptor_t vd_local_node, cha
     }
 }
 
-yloc_status_t YlocSuperMUC::init_graph(Graph &g)
+yloc_status_t ModuleSuperMUC::init_graph(Graph &g)
 {
     int initialized;
     MPI_Initialized(&initialized);
