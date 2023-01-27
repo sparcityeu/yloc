@@ -109,26 +109,26 @@ The adapter class specifies the list of available properties, and how these prop
 ### Module Interface
 
 ```CPP
-#include <interface.h>
+#include <yloc/modules/module.h>
 
-using yloc::graph_t;
+using yloc::Graph;
 using yloc::YlocModule;
 
 class ExampleModule : public YlocModule
 {
 
 public:
-    void init_graph(graph_t &graph) override
+    void init_graph(Graph &graph) override
     {
         return;
     }
 
-    void export_graph(const graph_t &graph, void **output) const override
+    void export_graph(const Graph &graph, void **output) const override
     {
         output = nullptr; return;
     }
 
-    void update_graph(graph_t &graph) override
+    void update_graph(Graph &graph) override
     {
         return;
     }
@@ -141,7 +141,7 @@ private:
 ### Module Adapter
 
 ```CPP
-#include <adapter.h>
+#include <yloc/modules/adapter.h>
 
 class MyAdapter : public yloc::Adapter
 {

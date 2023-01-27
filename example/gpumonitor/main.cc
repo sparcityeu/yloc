@@ -4,14 +4,11 @@
 
 #include "boost/graph/filtered_graph.hpp"
 
-/** TODO: create combined header */
-// #include <yloc.h>
-#include "graph.h"
-#include "init.h"
+#include <yloc/yloc.h>
 
 using namespace yloc;
 
-static void print_property(graph_t &g, vertex_descriptor_t vd, const char *property)
+static void print_property(Graph &g, vertex_descriptor_t vd, const char *property)
 {
     auto p = g[vd].get(property);
     std::cout << property << "=";
@@ -28,7 +25,7 @@ int main(int argc, char *argv[])
 
     yloc::init(YLOC_FULL | YLOC_ONGOING);
 
-    graph_t &g = yloc::root_graph();
+    Graph &g = yloc::root_graph();
 
     auto fgv = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, [&](const vertex_descriptor_t &v) -> bool {
         return g[v].type->is_a<GPU>();

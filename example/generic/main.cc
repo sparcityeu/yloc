@@ -5,15 +5,12 @@
 #include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
 
-/** TODO: create combined header */
-//#include <yloc.h>
-#include "graph.h"
-#include "init.h"
+#include <yloc/yloc.h>
 
 using namespace yloc;
 
 /* writes graph with labels to file */
-static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
+static void write_graph_dot_file(Graph &g, std::string dot_file_name)
 {
     std::ofstream ofs{dot_file_name};
     // we need to define how to transform the vertices/edges to string labels.
@@ -25,14 +22,14 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
         boost::get(boost::vertex_index, g.boost_graph()));
 
     auto epmt = boost::make_transform_value_property_map(
-        [&](yloc::edge_type edgetype) { return edgetype == yloc_edge_type::YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; },
+        [&](yloc::edge_type edgetype) { return edgetype == edge_type::PARENT ? "parent" : "child"; },
         boost::get(&yloc::Edge::type, g.boost_graph()));
 
     boost::write_graphviz(ofs, g.boost_graph(), boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
 
 /* example of a filter graph query */
-static void filter_graph_example(graph_t &g)
+static void filter_graph_example(Graph &g)
 {
     // use predicate (f(v) -> bool) to filter the graph by object type "Cache"
     /*auto*/ std::function<bool(const vertex_descriptor_t &)> predicate = [&](const vertex_descriptor_t &v) -> bool {
@@ -60,7 +57,7 @@ static void filter_graph_example(graph_t &g)
         boost::get(boost::vertex_index, fgv));
 
     auto epmt = boost::make_transform_value_property_map(
-        [&](yloc::edge_type edgetype) { return edgetype == yloc_edge_type::YLOC_EDGE_TYPE_PARENT ? "parent" : "child"; },
+        [&](yloc::edge_type edgetype) { return edgetype == edge_type::PARENT ? "parent" : "child"; },
         boost::get(&yloc::Edge::type, fgv));
 
     boost::write_graphviz(ofs, fgv, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
@@ -79,7 +76,7 @@ size_t num_vertices_view(const GraphView &gv)
 }
 
 /* example of finding distances from one vertex to others */
-static void find_distances(graph_t &g)
+static void find_distances(Graph &g)
 {
     // this example finds the distances (#hops as metric) from a (the first) co-processor to all PU's
     // and prints the PU's with the lowest distance.
@@ -155,7 +152,7 @@ int main(int argc, char *argv[])
     // MPI_Init(&argc, &argv);
     yloc::init(YLOC_FULL | YLOC_ONGOING);
 
-    graph_t & g = yloc::root_graph();
+    Graph & g = yloc::root_graph();
 
     write_graph_dot_file(g, std::string{"graph.dot"});
     filter_graph_example(g);

@@ -3,9 +3,9 @@
 /** TODO: provide reason why you should include all headers that are required in implementation */
 // #include <unordered_map>
 
-#include <graph_vertex.h>
-#include <modules/adapter.h>
-#include <property.h>
+#include <yloc/graph/vertex.h>
+#include <yloc/modules/adapter.h>
+#include <yloc/modules/property.h>
 
 namespace yloc
 {

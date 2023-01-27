@@ -1,6 +1,6 @@
 #pragma once
 
-#include <adapter.h>
+#include <yloc/modules/adapter.h>
 #include <hwloc.h>
 #include <sstream>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <adapter.h>
+#include <yloc/modules/adapter.h>
 
 class SuperMUCAdapter : public yloc::Adapter
 {

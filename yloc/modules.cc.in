@@ -1,11 +1,9 @@
 
-#include <cassert>
 #include <vector>
-
-#include <modules.h>
 
 namespace yloc
 {
+    class YlocModule;
     extern YlocModule *@YLOC_MODULES_DECLARATIONS@;
 
     std::vector<YlocModule *> list_modules() {

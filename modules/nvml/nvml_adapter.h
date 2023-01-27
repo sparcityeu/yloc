@@ -1,6 +1,6 @@
 #pragma once
 
-#include <adapter.h>
+#include <yloc/modules/adapter.h>
 #include <nvml.h>
 #include <bits/stdc++.h>
 #include "nvml_util.h"

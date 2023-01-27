@@ -1,5 +1,5 @@
 
-#include <interface.h>
+#include <yloc/modules/module.h>
 
 #include "interface_impl.h"
 

@@ -2,8 +2,10 @@
 #include <iostream>
 #include <vector>
 
-#include <adapter.h>
-#include <interface.h>
+#include <yloc/graph/graph.h>
+#include <yloc/modules/adapter.h>
+#include <yloc/modules/module.h>
+#include <yloc/yloc_status.h>
 
 #include "interface_impl.h"
 #include "rocm_adapter.h"
@@ -13,7 +15,7 @@
 
 using namespace yloc;
 
-static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices)
+static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices)
 {
     uint64_t num_interconnects = 0;
     // get connectivity and topology between devices: (assuming symmetric connection)
@@ -51,8 +53,8 @@ static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std
 #if USE_SUBGRAPH
                 /** TODO: pass subgraph instead of root graph? */
                 /** TODO: std::bald_alloc if add_edge (possibly resolved) */
-                // auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
-                // ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], graph_t::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
+                // auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Graph::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
+                // ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Graph::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
 #else
                 auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
                 ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
@@ -63,7 +65,7 @@ static uint64_t yloc_rocm_gpu_interconnect(graph_t &g, uint32_t num_devices, std
     return num_interconnects;
 }
 
-yloc_status_t YlocRocm::init_graph(graph_t &g)
+yloc_status_t YlocRocm::init_graph(Graph &g)
 {
     EXIT_ERR_ROCM(rsmi_init(0)); /* RSMI_INIT_FLAG_ALL_GPUS */
     uint32_t num_devices;
@@ -116,8 +118,8 @@ yloc_status_t YlocRocm::init_graph(graph_t &g)
         Adapter *adapter = new RocmAdapter{dev_index};
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
 
-        g[vd].add(adapter);
-        g[vd].description = adapter->to_string();
+        g[vd].add_adapter(adapter);
+        g[vd].m_description = adapter->to_string();
 
         vertices[dev_index] = vd;
         // std::cout << YLOC_GET(g, vd, as_string).value() << '\n';

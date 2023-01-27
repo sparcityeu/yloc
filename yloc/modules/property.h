@@ -2,11 +2,6 @@
 
 #include <cinttypes>
 #include <optional>
-#include <string>
-#include <unordered_map>
-
-#include <graph.h>
-#include <yloc.h>
 
 namespace yloc
 {
@@ -14,7 +9,7 @@ namespace yloc
 
     /**
      * @brief TODO
-     * 
+     *
      */
     class AbstractProperty
     {
@@ -34,19 +29,19 @@ namespace yloc
 
     /**
      * @brief TODO
-     * 
-     * @tparam AdapterType 
+     *
+     * @tparam AdapterType
      */
     template <class AdapterType>
     class Property : public AbstractProperty
     {
-        using property_mem_fn_type = std::optional<uint64_t> (AdapterType::*)() const;
+        using property_mem_fn_t = std::optional<uint64_t> (AdapterType::*)() const;
 
     private:
-        property_mem_fn_type m_pmfu64;
+        property_mem_fn_t m_pmfu64;
 
     public:
-        Property(const char *property_name, property_mem_fn_type pmfu64) : AbstractProperty{property_name}, m_pmfu64{pmfu64} {}
+        Property(const char *property_name, property_mem_fn_t pmfu64) : AbstractProperty{property_name}, m_pmfu64{pmfu64} {}
 
         virtual std::optional<uint64_t> get(Adapter *a) const override
         {
@@ -62,11 +57,11 @@ namespace yloc
 
     /**
      * @brief TODO
-     * 
-     * @tparam AdapterType 
-     * @param property_name 
-     * @param pmfu64 
-     * @return Property<AdapterType>* 
+     *
+     * @tparam AdapterType
+     * @param property_name
+     * @param pmfu64
+     * @return Property<AdapterType>*
      */
     template <class AdapterType>
     Property<AdapterType> *make_property(const char *property_name, std::optional<uint64_t> (AdapterType::*pmfu64)() const)

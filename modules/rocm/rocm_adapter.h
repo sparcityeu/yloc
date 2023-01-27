@@ -2,7 +2,7 @@
 
 #include <rocm_smi/rocm_smi.h>
 
-#include <adapter.h>
+#include <yloc/modules/adapter.h>
 
 #include "rocm_util.h"
 

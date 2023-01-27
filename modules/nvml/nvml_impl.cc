@@ -1,16 +1,17 @@
 
-#include <adapter.h>
 #include <iostream>
 #include <vector>
 
-#include <interface.h>
+#include <yloc/graph/graph.h>
+#include <yloc/modules/adapter.h>
+#include <yloc/modules/module.h>
+#include <yloc/yloc_status.h>
 
 #include "interface_impl.h"
 #include "nvml_adapter.h"
 #include "nvml_util.h"
 #include <nvml.h>
 
-#include "yloc.h"
 
 /** TODO: implement bandwidth and throughput properties */
 
@@ -19,7 +20,7 @@
 using namespace yloc;
 
 /** TODO: */
-static uint64_t yloc_nvml_gpu_interconnect(graph_t &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices, std::vector<nvmlDevice_t> &devices)
+static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices, std::vector<nvmlDevice_t> &devices)
 {
     uint64_t num_interconnects = 0;
     // get connectivity and topology between devices: (assuming symmetric connection)
@@ -41,7 +42,7 @@ static uint64_t yloc_nvml_gpu_interconnect(graph_t &g, uint32_t num_devices, std
 
             nvmlDeviceGetP2PStatus(devices[dev_ind_src], devices[dev_ind_dst], NVML_P2P_CAPS_INDEX_NVLINK, &status);
             uint32_t hops;
-            if(NVML_P2P_STATUS_OK == status) {
+            if (NVML_P2P_STATUS_OK == status) {
                 hops = 1;
             }
 
@@ -63,7 +64,7 @@ static uint64_t yloc_nvml_gpu_interconnect(graph_t &g, uint32_t num_devices, std
             }
 #endif
 
-            if(path == NVML_TOPOLOGY_SINGLE || NVML_TOPOLOGY_MULTIPLE || NVML_TOPOLOGY_HOSTBRIDGE || NVML_TOPOLOGY_NODE) {
+            if (path == NVML_TOPOLOGY_SINGLE || NVML_TOPOLOGY_MULTIPLE || NVML_TOPOLOGY_HOSTBRIDGE || NVML_TOPOLOGY_NODE) {
                 std::cout << "at least same node\n";
             }
 
@@ -79,7 +80,7 @@ static uint64_t yloc_nvml_gpu_interconnect(graph_t &g, uint32_t num_devices, std
     return num_interconnects;
 }
 
-yloc_status_t YlocNvml::init_graph(graph_t &g)
+yloc_status_t YlocNvml::init_graph(Graph &g)
 {
     EXIT_ERR_NVML(nvmlInit_v2());
     unsigned int num_units;
@@ -107,7 +108,6 @@ yloc_status_t YlocNvml::init_graph(graph_t &g)
         bdfid = a->bdfid().value();
         std::cout << "GPU BDFID=" << bdfid << '\n';
 
-
         std::cout << "GPU NUMA AFFINITY=" << a->numa_affinity().value() << '\n';
 
         nvmlMemory_t memory;
@@ -124,7 +124,7 @@ yloc_status_t YlocNvml::init_graph(graph_t &g)
         g[vd].tinfo.type = GPU::ptr();
         assert(g[vd].tinfo.type->is_a<Accelerator>());
         assert(g[vd].tinfo.type->is_a<GPU>());
-}
+    }
     /** TODO: store this interconnect information? */
     // uint64_t num_interconnects = yloc_nvml_gpu_interconnect(g, num_devices, vertices);
     return YLOC_STATUS_SUCCESS;

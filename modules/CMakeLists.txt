@@ -7,9 +7,6 @@ file(GLOB modules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 # Todo custom module order, necessary?
 # Custom order during cmake or only in YLOC_MODULES-list?
 
-# add include path for all childs
-include_directories("../src/include")
-
 foreach(module ${modules})
     # Check if the found module can be configured
     if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${module} AND

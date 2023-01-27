@@ -1,23 +1,23 @@
 // #pragma once
 
-#include <interface.h>
+#include <yloc/modules/module.h>
 #include <iostream>
 #include <rocm_smi/rocm_smi.h>
 
-using yloc::graph_t;
+using yloc::Graph;
 using yloc::YlocModule;
 
 class YlocRocm : public YlocModule
 {
 public:
-    yloc_status_t init_graph(graph_t &graph) override;
+    yloc_status_t init_graph(Graph &graph) override;
 
-    yloc_status_t export_graph(const graph_t &graph, void **output) override
+    yloc_status_t export_graph(const Graph &graph, void **output) override
     {
         return YLOC_STATUS_NOT_SUPPORTED;
     }
 
-    yloc_status_t update_graph(graph_t &graph) override
+    yloc_status_t update_graph(Graph &graph) override
     {
         return YLOC_STATUS_NOT_SUPPORTED;
     }

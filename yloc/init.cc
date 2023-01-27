@@ -1,13 +1,13 @@
 
-#include <graph.h>
-#include <init.h>
-#include <modules.h>
+#include <yloc/graph/graph.h>
+#include <yloc/init.h>
+#include <yloc/modules/module.h>
 
 namespace yloc
 {
-    static graph_t g_graph;
+    static Graph g_graph;
 
-    graph_t &root_graph()
+    Graph &root_graph()
     {
         return g_graph;
     }
@@ -18,7 +18,7 @@ namespace yloc
         // todo flag logic (probably combined with module logic)
 
         // initialize static graph
-        //  graph_t & graph = root_graph();
+        //  Graph & graph = root_graph();
 
         for (auto *m : list_modules()) {
             m->init_graph(g_graph);
@@ -30,9 +30,12 @@ namespace yloc
 
     int finalize()
     {
-        // free global variables
+        // free modules
+        for (auto *m : list_modules()) {
+            delete(m);
+        }
 
-        // exit threads of ongoing modules
+        // exit threads of ongoing modules (nothing to do yet)
 
         return 0;
     }

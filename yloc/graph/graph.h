@@ -9,8 +9,9 @@
 #include <boost/graph/subgraph.hpp>
 #endif
 
-#include <graph_vertex.h>
-#include <yloc.h>
+#include <yloc/graph/vertex.h>
+#include <yloc/graph/edge.h>
+#include <yloc/yloc_status.h>
 
 namespace yloc
 {
@@ -121,12 +122,11 @@ namespace yloc
         std::unordered_map<identifier_t, vertex_descriptor_t> m_identifier_map;
     };
 
-    using graph_t = Graph;
 
     /**
      * @brief TODO deprecate?
      *
-     * @return graph_t&
+     * @return Graph&
      */
-    graph_t &root_graph();
+    Graph &root_graph();
 }

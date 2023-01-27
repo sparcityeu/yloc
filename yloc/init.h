@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 typedef enum
 {
     YLOC_MINIMAL    = 0b00000000,   // bare minimum
@@ -22,6 +24,11 @@ namespace yloc
 
     // TODO: export as yloc_init for C-interface
     int init(init_flags_t _flags);
+    // int init();
 
     int finalize();
+
+    class YlocModule;
+
+    std::vector<YlocModule *> list_modules();
 }

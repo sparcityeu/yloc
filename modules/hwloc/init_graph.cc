@@ -3,8 +3,10 @@
 #include <iostream>
 #include <unistd.h> // gethostname
 
-#include <adapter.h>
-#include <interface.h>
+#include <yloc/graph/graph.h>
+#include <yloc/modules/adapter.h>
+#include <yloc/modules/module.h>
+#include <yloc/yloc_status.h>
 
 #include "hwloc_adapter.h"
 #include "interface_impl.h"
@@ -130,9 +132,9 @@ static const yloc::Component *yloc_type(hwloc_obj_t obj)
  * @param vd
  * @param obj
  */
-static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t vd, hwloc_obj_t obj)
+static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t vd, hwloc_obj_t obj)
 {
-    // for all children of obj: add new vertex to graph and set edges
+    // for all children of obj: add_adapter new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
         auto *adapter = new HwlocAdapter{child};
@@ -146,11 +148,11 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
             child_vd = g.add_vertex();
         }
 
-        if (g[child_vd].description.empty()) {
-            g[child_vd].description = adapter->to_string();
+        if (g[child_vd].m_description.empty()) {
+            g[child_vd].m_description = adapter->to_string();
         }
 
-        g[child_vd].add(adapter);
+        g[child_vd].add_adapter(adapter);
         if (g[child_vd].type == UnknownComponentType::ptr()) { // has no component type yet
             g[child_vd].type = yloc_type(child);
         } else {
@@ -158,11 +160,11 @@ static void make_hwloc_graph(graph_t &g, hwloc_topology_t t, vertex_descriptor_t
             // assert(g[child_vd].type == yloc_type(obj));
         }
 #if USE_SUBGRAPH
-        auto ret = boost::add_edge(vd, child_vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}}, g.boost_graph());
-        ret = boost::add_edge(child_vd, vd, graph_t::edge_property_type{0, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}}, g.boost_graph());
+        auto ret = boost::add_edge(vd, child_vd, Graph::edge_property_type{0, Edge{edge_type::CHILD}}, g.boost_graph());
+        ret = boost::add_edge(child_vd, vd, Graph::edge_property_type{0, Edge{edge_type::PARENT}}, g.boost_graph());
 #else
-        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::YLOC_EDGE_TYPE_PARENT}, g.boost_graph());
-        ret = boost::add_edge(child_vd, vd, Edge{edge_type::YLOC_EDGE_TYPE_CHILD}, g.boost_graph());
+        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::PARENT}, g.boost_graph());
+        ret = boost::add_edge(child_vd, vd, Edge{edge_type::CHILD}, g.boost_graph());
 #endif
         make_hwloc_graph(g, t, child_vd, child);
         child = hwloc_get_next_child(t, obj, child);
@@ -184,7 +186,7 @@ static void check_hwloc_api_version()
     }
 }
 
-yloc_status_t YlocHwloc::init_graph(graph_t &g)
+yloc_status_t YlocHwloc::init_graph(Graph &g)
 {
     check_hwloc_api_version();
 
@@ -233,7 +235,7 @@ yloc_status_t YlocHwloc::init_graph(graph_t &g)
     gethostname(hostname, HOST_NAME_MAX);
     auto root_vd = g.add_vertex("machine:" + std::string{hostname});
 
-    g[root_vd].add(new HwlocAdapter{root});
+    g[root_vd].add_adapter(new HwlocAdapter{root});
     if (g[root_vd].type == UnknownComponentType::ptr()) { // has no component type yet
         g[root_vd].type = yloc_type(root);
     } else {
