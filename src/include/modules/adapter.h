@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
+
+#include <property.h>
+#include <yloc.h> // yloc_status_t
 
 #define ADAPTER_PROP(type, name) \
     virtual std::optional<type> name() const { return std::optional<type>{}; }
@@ -16,18 +20,53 @@ namespace yloc
         // Adapter() = default;
         virtual ~Adapter() = default;
 
-        /** TODO: abstract machine model definition */
-        // virtual std::optional<int> capacity() { return std::optional<int>{}; }
+        /** predefined yloc-global property map */
+        static std::unordered_map<const char *, AbstractProperty *> &map()
+        {
+            static std::unordered_map<const char *, AbstractProperty *> map{
+                {"memory", make_property("memory", &Adapter::memory)},
+                {"memory_usage", make_property("memory_usage", &Adapter::memory_usage)},
+                {"memory_load", make_property("memory_load", &Adapter::memory_load)},
+                {"memory_frequency", make_property("memory_frequency", &Adapter::memory_frequency)},
+                {"bdfid", make_property("bdfid", &Adapter::bdfid)},
+                {"numa_affinity", make_property("numa_affinity", &Adapter::numa_affinity)},
+                {"bandwidth", make_property("bandwidth", &Adapter::bandwidth)},
+                {"bandwidth_min", make_property("bandwidth_min", &Adapter::bandwidth_min)},
+                {"bandwidth_max", make_property("bandwidth_max", &Adapter::bandwidth_max)},
+                {"throughput", make_property("throughput", &Adapter::throughput)},
+                {"latency", make_property("latency", &Adapter::latency)},
+                {"frequency", make_property("frequency", &Adapter::frequency)},
+                {"power", make_property("power", &Adapter::power)},
+                {"usage", make_property("usage", &Adapter::usage)},
+                {"load", make_property("load", &Adapter::load)},
+                {"pci_throughput", make_property("pci_throughput", &Adapter::pci_throughput)},
+                {"pci_throughput_read", make_property("pci_throughput_read", &Adapter::pci_throughput_read)},
+                {"pci_throughput_write", make_property("pci_throughput_write", &Adapter::pci_throughput_write)}};
 
-        // virtual std::optional<yloc_vertex_type> type() { return std::optional<yloc_vertex_type>{}; }
-        // yloc_vertex_type type() { return YLOC_VERTEX_TYPE_MAX; }
-        /** abstract machine model end */
+            return map;
+        }
+
+        /**
+         * @brief TODO
+         * 
+         * @return std::unordered_map<const char *, AbstractProperty *>& 
+         */
+        virtual std::unordered_map<const char *, AbstractProperty *> &mmap()
+        {
+            return map();
+        }
 
         /* virtual YlocModule *        source() = 0; */
         /* virtual vertex_descriptor_t source_descriptor() { return m_vd; } */
 
-        // virtual std::optional<std::string> as_string() { return std::optional<std::string>{}; }
-        ADAPTER_PROP(std::string, as_string) // String representation
+        /**
+         * @brief Gets string representation of component.
+         *
+         * @return String representation.
+         */
+        virtual std::string to_string() const { return {}; }
+
+        /** abstract machine model begin */
 
         /** TODO: normalize to millidegrees Kelvin and change to return type uint64_t? */
         /**
@@ -86,8 +125,8 @@ namespace yloc
          */
         ADAPTER_PROP(uint64_t, bandwidth)
 
+        /** TODO: documentation */
         ADAPTER_PROP(uint64_t, bandwidth_min)
-
         ADAPTER_PROP(uint64_t, bandwidth_max)
         ADAPTER_PROP(uint64_t, throughput)
 
@@ -131,11 +170,11 @@ namespace yloc
          */
         ADAPTER_PROP(uint64_t, load)
 
+        /** TODO: documentation */
         ADAPTER_PROP(uint64_t, pci_throughput)       // read + write in bytes per second
         ADAPTER_PROP(uint64_t, pci_throughput_read)  // in bytes per second
         ADAPTER_PROP(uint64_t, pci_throughput_write) // in bytes per second
 
-    protected:
-        // vertex_descriptor_t m_vd; // local vertex descriptor
+        /** abstract machine model end */
     };
 }

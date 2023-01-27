@@ -1,8 +1,7 @@
 #pragma once
 
-#include <graph_type.h>
-#include <graph_object.h>
-#include <yloc.h>
+#include <graph.h>
+#include <yloc.h> // yloc_status_t
 
 namespace yloc
 {

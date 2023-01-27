@@ -1,0 +1,34 @@
+#!/bin/bash
+# Job Name and Files (also --job-name)
+#SBATCH -J yloc_example
+#Output and error (also --output, --error):
+##SBATCH -o ./%x.%j.out
+##SBATCH -e ./%x.%j.err
+#SBATCH -o ./%x.out
+#SBATCH -e ./%x.err
+#Initial working directory (also --chdir):
+#SBATCH -D ./
+#Notification and type
+#SBATCH --mail-type=END
+#SBATCH --mail-user=
+# Wall clock limit:
+#SBATCH --time=00:01:00
+#SBATCH --no-requeue
+#Setup of execution environment
+#SBATCH --export=NONE
+#SBATCH --get-user-env
+#SBATCH --account=insert your_projectID_here
+
+#SBATCH --partition=test
+#Number of nodes and MPI tasks per node:
+#SBATCH --nodes=16
+#SBATCH --ntasks-per-node=1
+#SBATCH --ear=off
+##SBATCH --contiguous
+
+#Important
+module load slurm_setup hwloc
+
+#Run the program:
+mpiexec -n 16 ../build/example/generic/example
+

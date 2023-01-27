@@ -1,13 +1,13 @@
+#include <fstream>
+
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
-#include <fstream>
 
 /** TODO: create combined header */
 //#include <yloc.h>
-#include "graph_object.h"
-#include "graph_type.h"
+#include "graph.h"
 #include "init.h"
 
 using namespace yloc;
@@ -20,7 +20,7 @@ static void write_graph_dot_file(graph_t &g, std::string dot_file_name)
     // implemented using make_transform_value_property_map() before creating a label writer
     auto vpmt = boost::make_transform_value_property_map(
         [&](yloc::vertex_descriptor_t vd) {
-            return YLOC_GET(g, vd, as_string).value() + "\nVD=" + std::to_string(vd);
+            return g[vd].to_string() + "\nVD=" + std::to_string(vd);
         },
         boost::get(boost::vertex_index, g.boost_graph()));
 
@@ -36,7 +36,7 @@ static void filter_graph_example(graph_t &g)
 {
     // use predicate (f(v) -> bool) to filter the graph by object type "Cache"
     /*auto*/ std::function<bool(const vertex_descriptor_t &)> predicate = [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].tinfo.type->is_a<Cache>();
+        return g[v].type->is_a<Cache>();
     };
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
@@ -47,7 +47,7 @@ static void filter_graph_example(graph_t &g)
     std::cout << "writing filtered graph to filtered_graph.dot" << std::endl;
     // std::for_each(vertices(fgv).first, vertices(fgv).second, [&](const vertex_descriptor_t &v) {
         // std::cout << "VD=" << v << std::endl
-                //   << YLOC_GET(g, v, as_string).value() << std::endl;
+                //   << g[v].to_string() << std::endl;
     // });
 
     // write_graph_dot_file(fgv, "filtered_graph.dot");
@@ -55,7 +55,7 @@ static void filter_graph_example(graph_t &g)
     std::ofstream ofs{"filtered_graph.dot"};
     auto vpmt = boost::make_transform_value_property_map(
         [&](yloc::vertex_descriptor_t vd) {
-            return YLOC_GET(fgv, vd, as_string).value() + "\nVD=" + std::to_string(vd);
+            return fgv[vd].to_string() + "\nVD=" + std::to_string(vd);
         },
         boost::get(boost::vertex_index, fgv));
 
@@ -89,7 +89,7 @@ static void find_distances(graph_t &g)
 
     // first we query the graph for ...
     auto predicate_accelerator = [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].tinfo.type->is_a<Accelerator>();
+        return g[v].type->is_a<Accelerator>();
     };
     auto fgv_accelerator = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_accelerator);
 
@@ -101,11 +101,11 @@ static void find_distances(graph_t &g)
 
     auto vi = boost::vertices(fgv_accelerator).first;
     std::cout << "first accelerator:" << std::endl
-              << YLOC_GET(g, *vi, as_string).value() << std::endl;
+              << g[*vi].to_string() << std::endl;
 
     // then we filter the graph to get all PU's
     auto predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].tinfo.type->is_a<LogicalCore>();
+        return g[v].type->is_a<LogicalCore>();
     };
     auto fgv_pu = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_pu);
     std::cout << "number of Cores: " << num_vertices_view(fgv_pu) << std::endl;

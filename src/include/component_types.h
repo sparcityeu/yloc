@@ -14,10 +14,11 @@
  */
 
 /** TODO: Add more IO-Devices and Link-types (PCIe, USB, InfiniBand ?) */
+/** TODO: Fox multiple inheritance from non-virtual base class */
 
 /** @brief Helper macro for type declaration. */
 #define YLOC_DECLARE_TYPE(type_name, ...)              \
-    class type_name : public __VA_ARGS__               \
+    class type_name : virtual public __VA_ARGS__       \
     {                                                  \
     public:                                            \
         virtual ~type_name() = default;                \

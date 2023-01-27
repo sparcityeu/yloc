@@ -1,0 +1,9 @@
+
+#include <interface.h>
+
+#include "interface_impl.h"
+
+namespace yloc
+{
+    YlocModule * @MOD_CPPNAME@ = new YlocSuperMUC();
+}
