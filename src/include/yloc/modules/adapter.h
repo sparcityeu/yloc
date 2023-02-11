@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include <yloc/modules/property.h>
@@ -25,37 +26,37 @@ namespace yloc
         virtual ~Adapter() = default;
 
         /** predefined yloc-global property map */
-        static std::unordered_map<const char *, AbstractProperty *> &map()
+        static std::unordered_map<std::string_view, Property> &map()
         {
-            static std::unordered_map<const char *, AbstractProperty *> map{
-                {"memory", make_property("memory", &Adapter::memory)},
-                {"memory_usage", make_property("memory_usage", &Adapter::memory_usage)},
-                {"memory_load", make_property("memory_load", &Adapter::memory_load)},
-                {"memory_frequency", make_property("memory_frequency", &Adapter::memory_frequency)},
-                {"bdfid", make_property("bdfid", &Adapter::bdfid)},
-                {"numa_affinity", make_property("numa_affinity", &Adapter::numa_affinity)},
-                {"bandwidth", make_property("bandwidth", &Adapter::bandwidth)},
-                {"bandwidth_min", make_property("bandwidth_min", &Adapter::bandwidth_min)},
-                {"bandwidth_max", make_property("bandwidth_max", &Adapter::bandwidth_max)},
-                {"throughput", make_property("throughput", &Adapter::throughput)},
-                {"latency", make_property("latency", &Adapter::latency)},
-                {"frequency", make_property("frequency", &Adapter::frequency)},
-                {"power", make_property("power", &Adapter::power)},
-                {"usage", make_property("usage", &Adapter::usage)},
-                {"load", make_property("load", &Adapter::load)},
-                {"pci_throughput", make_property("pci_throughput", &Adapter::pci_throughput)},
-                {"pci_throughput_read", make_property("pci_throughput_read", &Adapter::pci_throughput_read)},
-                {"pci_throughput_write", make_property("pci_throughput_write", &Adapter::pci_throughput_write)}};
-
+            static std::unordered_map<std::string_view, Property> map{
+                {make_property_pair("memory", &Adapter::memory)},
+                {make_property_pair("memory_usage", &Adapter::memory_usage)},
+                {make_property_pair("memory_load", &Adapter::memory_load)},
+                {make_property_pair("memory_frequency", &Adapter::memory_frequency)},
+                {make_property_pair("bdfid", &Adapter::bdfid)},
+                {make_property_pair("numa_affinity", &Adapter::numa_affinity)},
+                {make_property_pair("bandwidth", &Adapter::bandwidth)},
+                {make_property_pair("bandwidth_min", &Adapter::bandwidth_min)},
+                {make_property_pair("bandwidth_max", &Adapter::bandwidth_max)},
+                {make_property_pair("throughput", &Adapter::throughput)},
+                {make_property_pair("latency", &Adapter::latency)},
+                {make_property_pair("frequency", &Adapter::frequency)},
+                {make_property_pair("power", &Adapter::power)},
+                {make_property_pair("usage", &Adapter::usage)},
+                {make_property_pair("load", &Adapter::load)},
+                {make_property_pair("pci_throughput", &Adapter::pci_throughput)},
+                {make_property_pair("pci_throughput_read", &Adapter::pci_throughput_read)},
+                {make_property_pair("pci_throughput_write", &Adapter::pci_throughput_write)},
+                {make_property_pair("mpi_rank", &Adapter::mpi_rank)}};
             return map;
         }
 
         /**
-         * @brief TODO
+         * @brief 
          * 
-         * @return std::unordered_map<const char *, AbstractProperty *>& 
+         * @return std::unordered_map<std::string_view, Property>& 
          */
-        virtual std::unordered_map<const char *, AbstractProperty *> &mmap()
+        virtual std::unordered_map<std::string_view, Property> &mmap()
         {
             return map();
         }
@@ -178,6 +179,8 @@ namespace yloc
         ADAPTER_PROPERTY(uint64_t, pci_throughput)       // read + write in bytes per second
         ADAPTER_PROPERTY(uint64_t, pci_throughput_read)  // in bytes per second
         ADAPTER_PROPERTY(uint64_t, pci_throughput_write) // in bytes per second
+
+        ADAPTER_PROPERTY(uint64_t, mpi_rank) // rank in comm world
 
         /** abstract machine model end */
     };

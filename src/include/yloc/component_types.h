@@ -27,7 +27,7 @@
             static const type_name s;                  \
             return &s;                                 \
         }                                              \
-        virtual std::string to_string() const override \
+        virtual const char *to_string() const override \
         {                                              \
             return #type_name;                         \
         }                                              \
@@ -46,7 +46,8 @@ namespace yloc
         {
             return nullptr != dynamic_cast<const ComponentType *>(this);
         }
-        virtual std::string to_string() const
+
+        virtual const char *to_string() const
         {
             return "Component";
         }
@@ -142,6 +143,7 @@ namespace yloc
      ***********************************/
 
     YLOC_DECLARE_TYPE(Link, Component)
+    // YLOC_DECLARE_TYPE(NetworkInterconnect, Link)
     YLOC_DECLARE_TYPE(Bus, Link)
 
     /***********************************
@@ -161,4 +163,7 @@ namespace yloc
     YLOC_DECLARE_TYPE(LogicalEdgeType, Component)
     YLOC_DECLARE_TYPE(Parent, LogicalEdgeType)
     YLOC_DECLARE_TYPE(Child, LogicalEdgeType)
+
+    YLOC_DECLARE_TYPE(LogicalComponent, Component)
+    YLOC_DECLARE_TYPE(MPIProcess, LogicalComponent)
 }

@@ -2,9 +2,10 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include <yloc/graph/component_types.h>
+#include <yloc/component_types.h>
 
 namespace yloc
 {
@@ -14,9 +15,9 @@ namespace yloc
     struct Vertex {
         const Component *type{UnknownComponentType::ptr()};
 
-        std::optional<uint64_t> get(const char *property);
+        std::optional<uint64_t> get(std::string_view property) const;
 
-        std::string to_string() { return type->to_string() + ": " + m_description; }
+        std::string to_string() const { return std::string{type->to_string()} + ": " + m_description; }
 
         void add_adapter(Adapter *a)
         {

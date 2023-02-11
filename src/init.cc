@@ -1,15 +1,14 @@
 
-#include <yloc/graph/graph.h>
+#include <yloc/graph.h>
 #include <yloc/init.h>
 #include <yloc/modules/module.h>
 
 namespace yloc
 {
-    static Graph g_graph;
-
     Graph &root_graph()
     {
-        return g_graph;
+        static Graph s_graph;
+        return s_graph;
     }
 
     int init(init_flags_t _flags)
@@ -21,7 +20,7 @@ namespace yloc
         //  Graph & graph = root_graph();
 
         for (auto *m : list_modules()) {
-            m->init_graph(g_graph);
+            m->init_graph(root_graph());
         }
 
         // store result of module init in global variable

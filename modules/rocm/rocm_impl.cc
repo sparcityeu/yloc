@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include <yloc/graph/graph.h>
+#include <yloc/graph.h>
 #include <yloc/modules/adapter.h>
 #include <yloc/modules/module.h>
 #include <yloc/yloc_status.h>

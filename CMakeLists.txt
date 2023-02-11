@@ -7,15 +7,17 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(-Wall -Wextra)
-add_compile_options(-Wno-unused) # TODO: we need to fix the unused parameters...
+add_compile_options(-Wno-unused-parameter) # TODO: we need to fix the unused parameters...
+add_compile_options(-Wno-unused-but-set-parameter) # TODO: we need to fix the unused parameters...
 add_compile_options(-O2 -march=native)
 
 project(yloc VERSION 0.1 LANGUAGES CXX)
 
+# path for cmake files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories("${CMAKE_SOURCE_DIR}/src/include")
 
 add_subdirectory(modules)
-add_subdirectory(yloc)
+add_subdirectory(src)
 add_subdirectory(example)

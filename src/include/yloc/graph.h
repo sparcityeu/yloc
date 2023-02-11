@@ -9,8 +9,8 @@
 #include <boost/graph/subgraph.hpp>
 #endif
 
-#include <yloc/graph/vertex.h>
-#include <yloc/graph/edge.h>
+#include <yloc/vertex.h>
+#include <yloc/edge.h>
 #include <yloc/yloc_status.h>
 
 namespace yloc
@@ -60,6 +60,9 @@ namespace yloc
     public:
         Graph &operator=(Graph &&) = default;
 
+        /**
+         * @brief Implicit conversion to boost graph. 
+         */
         operator boost_graph_t &() { return m_graph; }
         operator const boost_graph_t &() const { return m_graph; }
 
@@ -92,7 +95,6 @@ namespace yloc
             }
             auto vd = boost::add_vertex(m_graph);
             m_identifier_map.insert({id, vd});
-            // m_identifier_map[id] = vd; // alternative to insert
             return vd;
         }
 
@@ -124,7 +126,7 @@ namespace yloc
 
 
     /**
-     * @brief TODO deprecate?
+     * @brief Returns yloc topology root graph.
      *
      * @return Graph&
      */

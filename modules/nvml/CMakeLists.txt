@@ -8,7 +8,7 @@
 if(${CMAKE_VERSION} VERSION_LESS "3.17")
     find_package(CUDA) # deprecated since cmake version 3.10
     if(NOT DEFINED CUDA_TOOLKIT_ROOT_DIR)
-        message(WARNING "FindCUDA: CUDA toolkit not found")
+        message(STATUS "FindCUDA: CUDA not found")
         return()
     endif()
     set(CUDA_LIB_DIRS ${CUDA_LIBRARIES})
@@ -16,7 +16,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.17")
 else()
     find_package(CUDAToolkit) # since cmake version 3.17
     if(NOT ${CUDAToolkit_FOUND})
-        message(WARNING "FindCUDAToolkit: CUDA toolkit not found")
+        message(STATUS "FindCUDAToolkit: CUDA toolkit not found")
         return()
     endif()
     set(CUDA_LIB_DIRS ${CUDAToolkit_LIBRARY_DIR})
