@@ -8,21 +8,8 @@
 
 using namespace yloc;
 
-static void print_property(Graph &g, vertex_descriptor_t vd, const char *property)
-{
-    auto p = g[vd].get(property);
-    std::cout << property << "=";
-    if (p.has_value()) {
-        std::cout << p.value() << '\n';
-    } else {
-        std::cout << "has no value\n";
-    }
-}
-
 int main(int argc, char *argv[])
 {
-    // yloc::set_options/configure/...
-
     yloc::init(YLOC_FULL | YLOC_ONGOING);
 
     Graph &g = yloc::root_graph();

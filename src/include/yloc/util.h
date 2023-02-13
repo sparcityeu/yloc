@@ -1,23 +1,42 @@
 #pragma once
 
-#include <yloc/graph.h>
+#include <iostream>
+#include <sstream>
 
+#include <yloc/graph.h>
 
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
 
+namespace yloc
+{
+    /* helper function because boost::num_vertices<GraphView> returns the number of vertices in the underlying graph.
+       the number of vertices contained in a graph view must be calculated */
+    template <class GraphView>
+    size_t num_vertices_view(const GraphView &gv)
+    {
+        size_t num_vertices = 0u;
+        for (auto vi = boost::vertices(gv).first; vi != boost::vertices(gv).second; vi++) {
+            num_vertices++;
+        }
+        return num_vertices;
+    }
 
-
-namespace yloc {
-    // template <class G>
-    // void write_graph_dot_file(G &g, std::string dot_file_name, std::vector<std::string> edge_properties);
-
-    // template <class G>
-    // void write_graph_dot_file(G &g, std::string dot_file_name, std::vector<std::string> vertex_properties, std::vector<std::string> edge_properties);
-
-    template <class G>
-    void write_graph_dot_file(G &g, std::string dot_file_name, std::vector<std::string> vertex_properties)
+    template <class Graph, class Descriptor>
+    void print_property(const Graph &g, Descriptor &d, const char *property)
+    {
+        auto p = g[d].get(property);
+        std::cout << property << "=";
+        if (p.has_value()) {
+            std::cout << p.value() << '\n';
+        } else {
+            std::cout << "has no value\n";
+        }
+    }
+    
+    template <class Graph>
+    void write_graph_dot_file(const Graph &g, std::string dot_file_name, std::vector<std::string> vertex_properties)
     {
         std::ofstream ofs{dot_file_name};
 

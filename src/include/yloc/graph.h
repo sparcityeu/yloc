@@ -106,6 +106,11 @@ namespace yloc
             return m_graph[vd];
         }
 
+        auto &operator[](vertex_descriptor_t vd) const
+        {
+            return m_graph[vd];
+        }
+
         /**
          * @brief Provides access to vertices of the underlying boost graph using an identifier.
          */
