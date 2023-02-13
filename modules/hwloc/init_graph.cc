@@ -20,7 +20,7 @@
 // hwloc hierarchy: machine -> numanode -> package -> cache -> core -> pu
 using namespace yloc;
 
-static const yloc::Component *yloc_type(hwloc_obj_t obj)
+static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
 {
     /** TODO: move that logic elsewhere and/or move type info to adapter */
     /** TODO: implement missing hwloc types: (@see hwloc_compare_types)
@@ -146,7 +146,7 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
         auto *adapter = new HwlocAdapter{child};
         vertex_descriptor_t child_vd;
 
-        if (yloc_type(child)->is_a<PCIDevice>()) {
+        if (hwloc_2_yloc_type(child)->is_a<PCIDevice>()) {
             std::string id = "bdfid:" + std::to_string(adapter->bdfid().value());
             child_vd = g.add_vertex(id);
             // std::cout << "hwloc pcidevice " << id << " vd: " << child_vd << "\n";
@@ -160,10 +160,10 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
 
         g[child_vd].add_adapter(adapter);
         if (g[child_vd].type == UnknownComponentType::ptr()) { // has no component type yet
-            g[child_vd].type = yloc_type(child);
+            g[child_vd].type = hwloc_2_yloc_type(child);
         } else {
             // sanity check /** TODO: implement is_a for runtime objects */
-            // assert(g[child_vd].type == yloc_type(obj));
+            // assert(g[child_vd].type == hwloc_2_yloc_type(obj));
         }
 #if USE_SUBGRAPH
         auto ret = boost::add_edge(vd, child_vd, Graph::edge_property_type{0, Edge{edge_type::CHILD}}, g.boost_graph());
@@ -229,9 +229,7 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     assert(root->type == HWLOC_OBJ_MACHINE);
 #if USE_SUBGRAPH
     /** TODO: Subgraph-logic if it is supposed to stay */
-    // printf("making hwloc graph...\n");
     auto root_vd = boost::add_vertex(m_subgraph);
-
     make_hwloc_graph(m_subgraph, t, root_vd, root);
 #else
     // printf("making hwloc graph...\n");
@@ -240,13 +238,14 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     char hostname[HOST_NAME_MAX];
     gethostname(hostname, HOST_NAME_MAX);
     auto root_vd = g.add_vertex("machine:" + std::string{hostname});
+    g[root_vd].m_description = std::string{hostname};
 
     g[root_vd].add_adapter(new HwlocAdapter{root});
     if (g[root_vd].type == UnknownComponentType::ptr()) { // has no component type yet
-        g[root_vd].type = yloc_type(root);
+        g[root_vd].type = hwloc_2_yloc_type(root);
     } else {
         // sanity check /** TODO: implement is_a for runtime objects */
-        // assert(g[root_vd].type == yloc_type(root));
+        // assert(g[root_vd].type == hwloc_2_yloc_type(root));
     }
 
     make_hwloc_graph(g, t, root_vd, root);
