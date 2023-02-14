@@ -72,8 +72,8 @@ static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::
                 num_interconnects++;
                 // std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
                 // std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
-                auto ed = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
-                ed = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
+                auto ed = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::GPU_INTERCONNECT}, g.boost_graph());
+                ed = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::GPU_INTERCONNECT}, g.boost_graph());
             }
         }
     }
@@ -116,11 +116,11 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
 
         // associate nvml device with graph node by pcie bdfid:
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
-        g[vd].tinfo.push_back(new NvmlAdapter{device});
+        g[vd].add_adapter(new NvmlAdapter{device});
         vertices[dev_index] = vd;
 
-        assert(g[vd].tinfo.type->is_a<PCIDevice>());
-        g[vd].tinfo.type = GPU::ptr();
+        assert(g[vd].type->is_a<PCIDevice>());
+        g[vd].type = GPU::ptr();
     }
     /** TODO: store this interconnect information? */
     uint64_t num_interconnects = yloc_nvml_gpu_interconnect(g, num_devices, vertices, devices);

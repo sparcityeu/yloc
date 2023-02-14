@@ -41,6 +41,9 @@ namespace yloc
                 {make_property_pair("throughput", &Adapter::throughput)},
                 {make_property_pair("latency", &Adapter::latency)},
                 {make_property_pair("frequency", &Adapter::frequency)},
+                /** TODO: maybe support multiple return types in Vertex::get("property") (e.g. Vertex::get<return_type>("property")) 
+                 * or change temperature scale to degree Kelvin and return type to uint64_t */
+                // {make_property_pair("temperature", &Adapter::temperature)},
                 {make_property_pair("power", &Adapter::power)},
                 {make_property_pair("usage", &Adapter::usage)},
                 {make_property_pair("load", &Adapter::load)},

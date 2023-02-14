@@ -31,18 +31,6 @@ static void filter_graph_example(Graph &g)
     write_graph_dot_file(fgv, std::string{"filtered_graph.dot"}, std::vector{"memory"s, "numa_affinity"s});
 }
 
-/* helper function because boost::num_vertices<GraphView> returns the number of vertices in the underlying graph.
-   the number of vertices contained in a graph view must be calculated */
-template <typename GraphView>
-size_t num_vertices_view(const GraphView &gv)
-{
-    size_t num_vertices = 0u;
-    for (auto vi = boost::vertices(gv).first; vi != boost::vertices(gv).second; vi++) {
-        num_vertices++;
-    }
-    return num_vertices;
-}
-
 /* example of finding distances from one vertex to others */
 static void find_distances(Graph &g)
 {

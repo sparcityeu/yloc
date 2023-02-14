@@ -9,6 +9,9 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Wextra)
 add_compile_options(-Wno-unused-parameter) # TODO: we need to fix the unused parameters...
 add_compile_options(-Wno-unused-but-set-parameter) # TODO: we need to fix the unused parameters...
+add_compile_options(-Wno-deprecated)
+add_compile_options(-Wno-deprecated-copy)
+add_compile_options(-Wno-parentheses)
 add_compile_options(-O2 -march=native)
 
 project(yloc VERSION 0.1 LANGUAGES CXX)

@@ -14,7 +14,7 @@ namespace yloc
     public:
         NvmlAdapter(obj_t obj) : m_obj(obj) {}
 
-        std::optional<std::string> as_string() const override
+        std::string to_string() const override
         {
             constexpr size_t MAX_NAME_LEN = NVML_DEVICE_NAME_V2_BUFFER_SIZE;
             char name[MAX_NAME_LEN];
