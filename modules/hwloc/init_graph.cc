@@ -23,8 +23,10 @@ using namespace yloc;
 static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
 {
     /** TODO: move that logic elsewhere and/or move type info to adapter */
-    /** TODO: implement missing hwloc types: (@see hwloc_compare_types)
-    Enumerations
+    /** TODO: implement missing hwloc types: (@see hwloc_compare_types) */
+
+/**
+    HWLOC object type Enumerations:
        enum hwloc_obj_type_t { HWLOC_OBJ_MACHINE, HWLOC_OBJ_PACKAGE,
            HWLOC_OBJ_CORE, HWLOC_OBJ_PU, HWLOC_OBJ_L1CACHE, HWLOC_OBJ_L2CACHE,
            HWLOC_OBJ_L3CACHE, HWLOC_OBJ_L4CACHE, HWLOC_OBJ_L5CACHE,
@@ -40,13 +42,13 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
            HWLOC_OBJ_OSDEV_NETWORK, HWLOC_OBJ_OSDEV_OPENFABRICS,
            HWLOC_OBJ_OSDEV_DMA, HWLOC_OBJ_OSDEV_COPROC }
        enum hwloc_compare_types_e { HWLOC_TYPE_UNORDERED }
-    */
+*/
+
     if (hwloc_obj_type_is_cache(obj->type)) {
-        /** TODO: resolve ambigous type, implement unified cache type */
+        /** TODO: implement unified cache type */
     }
 
     if (hwloc_obj_type_is_icache(obj->type)) {
-#if RESOLVED_AMBIGOUS_CACHE_TYPE
         if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L1ICACHE)) {
             return L1InstructionCache::ptr();
         } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L2ICACHE)) {
@@ -56,12 +58,8 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
         } else {
             return InstructionCache::ptr();
         }
-#else
-        return InstructionCache::ptr();
-#endif /* RESOLVED_AMBIGOUS_CACHE_TYPE */
     } else if (hwloc_obj_type_is_dcache(obj->type)) {
         /* Check whether an object type is a CPU Data or Unified Cache. Memory-side caches are not CPU caches. */
-#if RESOLVED_AMBIGOUS_CACHE_TYPE
         if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L1CACHE)) {
             return L1DataCache::ptr();
         } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_L2CACHE)) {
@@ -77,9 +75,6 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
         else {
             return DataCache::ptr();
         }
-#else
-        return DataCache::ptr();
-#endif /* RESOLVED_AMBIGOUS_CACHE_TYPE */
     } else if (hwloc_obj_type_is_memory(obj->type)) {
         /* This currently includes NUMA nodes and Memory-side caches. */
         return Memory::ptr();
