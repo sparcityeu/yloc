@@ -39,10 +39,10 @@ static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::
             NVML_P2P_CAPS_INDEX_PROP,
             NVML_P2P_CAPS_INDEX_UNKNOWN;
             */
-
             nvmlDeviceGetP2PStatus(devices[dev_ind_src], devices[dev_ind_dst], NVML_P2P_CAPS_INDEX_NVLINK, &status);
-            uint32_t hops;
-            if (NVML_P2P_STATUS_OK == status) {
+
+            uint32_t hops = 0;
+            if(NVML_P2P_STATUS_OK == status) {
                 hops = 1;
             }
 
@@ -62,18 +62,18 @@ static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::
             if(path == NVML_TOPOLOGY_INTERNAL) {
                 hops = 1;
             }
-#endif
 
             if (path == NVML_TOPOLOGY_SINGLE || NVML_TOPOLOGY_MULTIPLE || NVML_TOPOLOGY_HOSTBRIDGE || NVML_TOPOLOGY_NODE) {
-                std::cout << "at least same node\n";
+                // std::cout << "at least same node\n";
             }
+#endif
 
             if (hops == 1) {
                 num_interconnects++;
-                std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
-                std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
-                auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
-                ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
+                // std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
+                // std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
+                auto ed = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
+                ed = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
             }
         }
     }
@@ -88,13 +88,14 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
     uint16_t dev_id;
     uint64_t bdfid; // PCIe bus device function id
     CHECK_NVML_MSG(nvmlUnitGetCount(&num_units));
-    std::cout << "num nvml units: " << num_units << '\n';
+    // std::cout << "num nvml units: " << num_units << '\n';
 
     CHECK_NVML_MSG(nvmlDeviceGetCount_v2(&num_devices));
-    std::cout << "num nvml devices: " << num_devices << '\n';
+    // std::cout << "num nvml devices: " << num_devices << '\n';
 
     std::vector<vertex_descriptor_t> vertices(num_devices);
     std::vector<nvmlDevice_t> devices(num_devices);
+
     for (unsigned int dev_index = 0; dev_index < num_devices; ++dev_index) {
         // nvmlDeviceGetAttributes_v2 ??
         nvmlDevice_t device;
@@ -106,15 +107,13 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
 
         NvmlAdapter *a = new NvmlAdapter{device};
         bdfid = a->bdfid().value();
-        std::cout << "GPU BDFID=" << bdfid << '\n';
-
-        std::cout << "GPU NUMA AFFINITY=" << a->numa_affinity().value() << '\n';
+        // std::cout << "GPU BDFID=" << bdfid << '\n';
+        // std::cout << "GPU NUMA AFFINITY=" << a->numa_affinity().value() << '\n';
 
         nvmlMemory_t memory;
         CHECK_NVML_MSG(nvmlDeviceGetMemoryInfo(device, &memory));
-        std::cout << "GPU MEMORY VRAM=" << memory.total << '\n';
+        // std::cout << "GPU MEMORY VRAM=" << memory.total << '\n';
 
-        // std::cout << "nvml\n";
         // associate nvml device with graph node by pcie bdfid:
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
         g[vd].tinfo.push_back(new NvmlAdapter{device});
@@ -122,9 +121,8 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
 
         assert(g[vd].tinfo.type->is_a<PCIDevice>());
         g[vd].tinfo.type = GPU::ptr();
-        assert(g[vd].tinfo.type->is_a<Accelerator>());
-        assert(g[vd].tinfo.type->is_a<GPU>());
     }
     /** TODO: store this interconnect information? */
-    // uint64_t num_interconnects = yloc_nvml_gpu_interconnect(g, num_devices, vertices);
+    uint64_t num_interconnects = yloc_nvml_gpu_interconnect(g, num_devices, vertices, devices);
     return YLOC_STATUS_SUCCESS;
+}
