@@ -7,7 +7,7 @@ list(JOIN YLOC_MODULES_CPPNAMES ", " YLOC_MODULES_CPPNAMES)
 configure_file("modules.cc.in" "modules.cc")
 
 # Main library
-add_library(yloc STATIC
+add_library(yloc SHARED
     "init.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/modules.cc"
     # "util.cc"

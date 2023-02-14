@@ -4,6 +4,8 @@ set(YLOC_MODULES "")
 message(STATUS "Searching for available modules for yloc")
 file(GLOB modules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 
+include_directories("$<TARGET_PROPERTY:yloc,INTERFACE_INCLUDE_DIRECTORIES>")
+
 # Todo custom module order, necessary?
 # Custom order during cmake or only in YLOC_MODULES-list?
 
