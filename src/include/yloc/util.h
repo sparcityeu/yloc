@@ -97,4 +97,10 @@ namespace yloc
 
         boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
     }
+
+    template <>
+    inline void write_graph_dot_file<Graph>(const Graph &g, std::string dot_file_name, std::vector<std::string> vertex_properties)
+    {
+        write_graph_dot_file(g.boost_graph(), dot_file_name, vertex_properties);
+    }
 }

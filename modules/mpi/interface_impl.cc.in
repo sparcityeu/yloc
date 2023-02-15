@@ -1,0 +1,9 @@
+
+#include <yloc/modules/module.h>
+
+#include "interface_impl.h"
+
+namespace yloc
+{
+    Module * @MOD_CPPNAME@ = new ModuleMPI();
+}
