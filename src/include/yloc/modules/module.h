@@ -9,7 +9,6 @@ namespace yloc
     class Module
     {
     public:
-        /** TODO: how to avoid duplicated code, but have "pure" interface class Module? */
 #if USE_SUBGRAPH
         Module() : m_subgraph(root_graph().create_subgraph()) {}
 #else

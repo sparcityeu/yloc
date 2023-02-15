@@ -106,7 +106,7 @@ namespace yloc
             return m_graph[vd];
         }
 
-        auto &operator[](vertex_descriptor_t vd) const
+        const auto &operator[](vertex_descriptor_t vd) const
         {
             return m_graph[vd];
         }
@@ -125,8 +125,8 @@ namespace yloc
 #endif
 
     private:
-        boost_graph_t m_graph;
-        std::unordered_map<identifier_t, vertex_descriptor_t> m_identifier_map;
+        boost_graph_t m_graph{};
+        std::unordered_map<identifier_t, vertex_descriptor_t> m_identifier_map{};
     };
 
 

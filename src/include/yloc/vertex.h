@@ -24,7 +24,7 @@ namespace yloc
             m_adapters.push_back(a);
         }
 
-        std::vector<Adapter *> m_adapters;
+        std::vector<Adapter *> m_adapters{};
         std::string m_description{};
     };
 }

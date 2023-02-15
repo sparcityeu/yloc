@@ -7,8 +7,10 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(-Wall -Wextra)
+add_compile_options(-Weffc++)
 add_compile_options(-Wno-unused-parameter) # TODO: we need to fix the unused parameters...
 add_compile_options(-Wno-unused-but-set-parameter) # TODO: we need to fix the unused parameters...
+add_compile_options(-Wno-cast-function-type) # OpenMPI (v4.2.1) mpi.h warning
 add_compile_options(-Wno-deprecated)
 add_compile_options(-Wno-deprecated-copy)
 add_compile_options(-Wno-parentheses)
