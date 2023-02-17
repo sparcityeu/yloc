@@ -1,4 +1,5 @@
 #include <string>
+#include <cstdio>
 
 #include <mpi.h>
 
@@ -25,7 +26,7 @@ static vertex_descriptor_t make_supermuc_node(Graph &g, const char *name)
  * @param hostname Own hostname
  * @param hostname_length Length of hostname
  */
-static void make_supermuc_graph(Graph &g, char *hostname)
+static void make_supermuc_graph(Graph &g, const char *hostname)
 {
     int rank, nbproc;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -95,9 +96,15 @@ yloc_status_t ModuleSuperMUC::init_graph(Graph &g)
 
     // check whether hostname structure is same as supermuc's naming convention
     const int supermuc_hostname_len = 12;
-    char i[2], r[2], c[2], s[2];
+    if(hostname_length != supermuc_hostname_len) {
+        std::cerr << "hostname length does not match supermuc naming convention\n";
+        return YLOC_STATUS_INIT_ERROR;
+    }
+
+    char i[3], r[3], c[3], s[3];
     int nscan = sscanf(hostname, "i%2[0-9]r%2[0-9]c%2[0-9]s%2[0-9]", i, r, c, s);
-    if(nscan != 4 || hostname_length != supermuc_hostname_len) {
+    if(nscan != 4) {
+        std::cerr << "hostname pattern does not match supermuc naming convention\n";
         return YLOC_STATUS_INIT_ERROR;
     }
 

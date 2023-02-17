@@ -9,8 +9,7 @@
 
 using namespace yloc;
 
-
-static void make_mpi_graph(Graph &g, char *hostname)
+static void make_mpi_graph(Graph &g, const char *hostname)
 {
     int nbproc;
     MPI_Comm_size(MPI_COMM_WORLD, &nbproc);
@@ -19,7 +18,6 @@ static void make_mpi_graph(Graph &g, char *hostname)
 
     char hostnames[nbproc][MPI_MAX_PROCESSOR_NAME];
     MPI_Allgather(hostname, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, hostnames, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, MPI_COMM_WORLD);
-
 
     for (int i = 0; i < nbproc; i++) {
         vertex_descriptor_t node_vd = g.add_vertex("machine:" + std::string{hostnames[i]});

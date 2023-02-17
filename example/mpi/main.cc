@@ -37,13 +37,13 @@ static std::vector<std::pair<int, std::vector<int>>> find_distances(yloc::Graph 
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
-    yloc::init(YLOC_FULL | YLOC_ONGOING);
+    
+    assert(yloc::init(YLOC_FULL | YLOC_ONGOING) == YLOC_STATUS_SUCCESS);
 
     yloc::Graph &g = yloc::root_graph();
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int p = 0;
 
     std::function<bool(const yloc::vertex_descriptor_t &)> predicate = [&](const yloc::vertex_descriptor_t &v) -> bool {
         return g[v].type->is_a<yloc::MPIProcess>();
