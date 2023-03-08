@@ -52,15 +52,9 @@ static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::
                 num_interconnects++;
                 std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
                 std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
-#if USE_SUBGRAPH
-                /** TODO: pass subgraph instead of root graph? */
-                /** TODO: std::bald_alloc if add_edge (possibly resolved) */
-                // auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Graph::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
-                // ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Graph::edge_property_type{0, Edge{edge_type::YLOC_GPU_INTERCONNECT}}, g.boost_graph());
-#else
-                auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
-                ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g.boost_graph());
-#endif
+                
+                auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
+                ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
             }
         }
     }

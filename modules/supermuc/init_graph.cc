@@ -59,24 +59,24 @@ static void make_supermuc_graph(Graph &g, char *hostname)
         /** TODO: Move this logic to g.add_edge-method */
 
         // Check if there is already an edge between the nodes
-        if (!boost::edge(island_vd, rack_vd, g.boost_graph()).second) {
+        if (!boost::edge(island_vd, rack_vd, g).second) {
             /** TODO: Filter for only child/parent edges */
-            boost::add_edge(island_vd, rack_vd, Edge{edge_type::PARENT}, g.boost_graph());
-            boost::add_edge(rack_vd, island_vd, Edge{edge_type::CHILD}, g.boost_graph());
+            boost::add_edge(island_vd, rack_vd, Edge{edge_type::PARENT}, g);
+            boost::add_edge(rack_vd, island_vd, Edge{edge_type::CHILD}, g);
         }
 
         // Check if there is already an edge between the nodes
-        if (!boost::edge(rack_vd, column_vd, g.boost_graph()).second) {
+        if (!boost::edge(rack_vd, column_vd, g).second) {
             /** TODO: Filter for only child/parent edges */
-            boost::add_edge(rack_vd, column_vd, Edge{edge_type::PARENT}, g.boost_graph());
-            boost::add_edge(column_vd, rack_vd, Edge{edge_type::CHILD}, g.boost_graph());
+            boost::add_edge(rack_vd, column_vd, Edge{edge_type::PARENT}, g);
+            boost::add_edge(column_vd, rack_vd, Edge{edge_type::CHILD}, g);
         }
 
         // Check if there is already an edge between the nodes
-        if (!boost::edge(column_vd, slot_vd, g.boost_graph()).second) {
+        if (!boost::edge(column_vd, slot_vd, g).second) {
             /** TODO: Filter for only child/parent edges */
-            boost::add_edge(column_vd, slot_vd, Edge{edge_type::PARENT}, g.boost_graph());
-            boost::add_edge(slot_vd, column_vd, Edge{edge_type::CHILD}, g.boost_graph());
+            boost::add_edge(column_vd, slot_vd, Edge{edge_type::PARENT}, g);
+            boost::add_edge(slot_vd, column_vd, Edge{edge_type::CHILD}, g);
         }
     }
 }

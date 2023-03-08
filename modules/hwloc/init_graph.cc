@@ -160,13 +160,9 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
             // sanity check /** TODO: implement is_a for runtime objects */
             // assert(g[child_vd].type == hwloc_2_yloc_type(obj));
         }
-#if USE_SUBGRAPH
-        auto ret = boost::add_edge(vd, child_vd, Graph::edge_property_type{0, Edge{edge_type::CHILD}}, g.boost_graph());
-        ret = boost::add_edge(child_vd, vd, Graph::edge_property_type{0, Edge{edge_type::PARENT}}, g.boost_graph());
-#else
-        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::PARENT}, g.boost_graph());
-        ret = boost::add_edge(child_vd, vd, Edge{edge_type::CHILD}, g.boost_graph());
-#endif
+        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::PARENT}, g);
+        ret = boost::add_edge(child_vd, vd, Edge{edge_type::CHILD}, g);
+
         make_hwloc_graph(g, t, child_vd, child);
         child = hwloc_get_next_child(t, obj, child);
     }
@@ -222,12 +218,6 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
 
     hwloc_obj_t root = hwloc_get_root_obj(t);
     assert(root->type == HWLOC_OBJ_MACHINE);
-#if USE_SUBGRAPH
-    /** TODO: Subgraph-logic if it is supposed to stay */
-    auto root_vd = boost::add_vertex(m_subgraph);
-    make_hwloc_graph(m_subgraph, t, root_vd, root);
-#else
-    // printf("making hwloc graph...\n");
 
     // std::getenv("HOSTNAME") // HOSTNAME may be not set, so we use gethostname instead
     char hostname[HOST_NAME_MAX];
@@ -244,7 +234,6 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     }
 
     make_hwloc_graph(g, t, root_vd, root);
-#endif
 
     // TODO: lifetime of topology context?
     // hwloc_topology_destroy(t);

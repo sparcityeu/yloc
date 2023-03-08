@@ -29,10 +29,7 @@ namespace yloc
 
     int finalize()
     {
-        // free modules
-        for (auto *m : list_modules()) {
-            delete(m);
-        }
+        // free modules ?
 
         // exit threads of ongoing modules (nothing to do yet)
 

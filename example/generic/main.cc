@@ -20,7 +20,7 @@ static void filter_graph_example(Graph &g)
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
     // vertices are filtered by predicate "predicate"
-    auto fgv = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate);
+    auto fgv = boost::make_filtered_graph(g, boost::keep_all{}, predicate);
 
     // print vertices of resulting filtered graph view:
     // std::for_each(vertices(fgv).first, vertices(fgv).second, [&](const vertex_descriptor_t &v) {
@@ -44,7 +44,7 @@ static void find_distances(Graph &g)
     auto predicate_accelerator = [&](const vertex_descriptor_t &v) -> bool {
         return g[v].type->is_a<Accelerator>();
     };
-    auto fgv_accelerator = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_accelerator);
+    auto fgv_accelerator = boost::make_filtered_graph(g, boost::keep_all{}, predicate_accelerator);
 
     size_t num_vertices = num_vertices_view(fgv_accelerator);
     std::cout << "number of found accelerators: " << num_vertices_view(fgv_accelerator) << std::endl;
@@ -63,7 +63,7 @@ static void find_distances(Graph &g)
     std::function<bool(const vertex_descriptor_t &)> predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
         return g[v].type->is_a<LogicalCore>();
     };
-    auto fgv_pu = boost::make_filtered_graph(g.boost_graph(), boost::keep_all{}, predicate_pu);
+    auto fgv_pu = boost::make_filtered_graph(g, boost::keep_all{}, predicate_pu);
     std::cout << "number of Cores: " << num_vertices_view(fgv_pu) << std::endl;
 
     // here we use a vector as the underlying container to the property map for the distances,
@@ -71,12 +71,12 @@ static void find_distances(Graph &g)
     //
     // note: there must be space allocated for every vertex descriptor of the underlying graph
     //       using the default boost property map adaptor.
-    std::vector<int> distances(boost::num_vertices(g.boost_graph()));
-    auto dist_pmap = boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, g.boost_graph()));
+    std::vector<int> distances(boost::num_vertices(g));
+    auto dist_pmap = boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, g));
 
     // boost::on_tree_edge() adds 1 per edge, could be any distance metric
     auto vis = boost::make_bfs_visitor(boost::record_distances(dist_pmap, boost::on_tree_edge()));
-    boost::breadth_first_search(g.boost_graph(), *vi, visitor(vis));
+    boost::breadth_first_search(g, *vi, visitor(vis));
 
     // get the minimum distance to the PU's
     auto mindist = dist_pmap[*boost::vertices(fgv_pu).first];
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
     Graph & g = yloc::root_graph();
 
-    write_graph_dot_file(g.boost_graph(), std::string{"graph.dot"}, std::vector{"memory"s, "numa_affinity"s});
+    write_graph_dot_file(g, std::string{"graph.dot"}, std::vector{"memory"s, "numa_affinity"s});
     filter_graph_example(g);
 
     find_distances(g);

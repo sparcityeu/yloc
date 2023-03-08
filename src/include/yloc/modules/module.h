@@ -9,11 +9,6 @@ namespace yloc
     class Module
     {
     public:
-#if USE_SUBGRAPH
-        Module() : m_subgraph(root_graph().create_subgraph()) {}
-#else
-#endif /* USE_SUBGRAPH */
-
         /** TODO: use pure virtual destructor ? then we must override in sub-classes */
         virtual ~Module() = default; // 0;
 
@@ -35,13 +30,5 @@ namespace yloc
         //
         // An alternative would be to add a auto-update function to the interface,
         // this would be a good place to add an per-module interval
-
-        // virtual Graph & subgraph() = 0;
-
-    protected:
-#if USE_SUBGRAPH
-        Graph &m_subgraph; // module subgraph
-#else
-#endif /* USE_SUBGRAPH */
     };
 }

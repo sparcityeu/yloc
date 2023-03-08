@@ -72,8 +72,8 @@ static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::
                 num_interconnects++;
                 // std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
                 // std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
-                auto ed = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::GPU_INTERCONNECT}, g.boost_graph());
-                ed = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::GPU_INTERCONNECT}, g.boost_graph());
+                auto ed = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::GPU_INTERCONNECT}, g);
+                ed = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::GPU_INTERCONNECT}, g);
             }
         }
     }
