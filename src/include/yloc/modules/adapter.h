@@ -26,9 +26,9 @@ namespace yloc
         virtual ~Adapter() = default;
 
         /** predefined yloc-global property map */
-        static std::unordered_map<std::string_view, Property> &map()
+        static std::unordered_map<std::string_view, AbstractProperty *> &map()
         {
-            static std::unordered_map<std::string_view, Property> map{
+            static std::unordered_map<std::string_view, AbstractProperty *> map{
                 {make_property_pair("memory", &Adapter::memory)},
                 {make_property_pair("memory_usage", &Adapter::memory_usage)},
                 {make_property_pair("memory_load", &Adapter::memory_load)},
@@ -59,7 +59,7 @@ namespace yloc
          * 
          * @return std::unordered_map<std::string_view, Property>& 
          */
-        virtual std::unordered_map<std::string_view, Property> &mmap()
+        virtual std::unordered_map<std::string_view, AbstractProperty *> &module_map()
         {
             return map();
         }

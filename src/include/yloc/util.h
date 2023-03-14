@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include <yloc/graph.h>
 
@@ -26,7 +27,7 @@ namespace yloc
     template <class Graph, class Descriptor>
     void print_property(const Graph &g, Descriptor &d, const char *property)
     {
-        auto p = g[d].get(property);
+        auto p = g[d].template get<std::string>(property);
         std::cout << property << "=";
         if (p.has_value()) {
             std::cout << p.value() << '\n';
@@ -47,7 +48,7 @@ namespace yloc
                 std::stringstream ss;
                 ss << g[vd].to_string() + "\nVD=" + std::to_string(vd) << '\n';
                 for (auto &property : vertex_properties) {
-                    auto p = g[vd].get(property);
+                    auto p = g[vd].template get<std::string>(property);
                     if (p.has_value()) {
                         ss << property << "=" << p.value() << '\n';
                     }

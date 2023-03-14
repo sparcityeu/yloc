@@ -11,7 +11,7 @@ add_library(yloc SHARED
     "init.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/modules.cc"
     # "util.cc"
-    "vertex.cc"
+    # "vertex.cc"
 )
 
 target_link_libraries(yloc ${YLOC_MODULES})
