@@ -73,7 +73,9 @@ namespace yloc
 
         std::optional<AffinityMask> cpu_affinity_mask() const override
         {
-            assert(m_obj->cpuset != nullptr);
+            if (m_obj->cpuset == nullptr) {
+                return {};
+            }
             return hwloc_2_yloc_mask(m_obj->cpuset);
         }
 

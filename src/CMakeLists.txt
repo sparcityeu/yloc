@@ -9,8 +9,8 @@ configure_file("modules.cc.in" "modules.cc")
 # Main library
 add_library(yloc SHARED
     "init.cc"
+    "util.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/modules.cc"
-    # "util.cc"
     # "vertex.cc"
 )
 

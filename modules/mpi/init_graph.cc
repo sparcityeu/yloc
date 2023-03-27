@@ -1,11 +1,19 @@
-#include <string>
+#include "interface_impl.h"
+#include "mpi_adapter.h"
+#include <yloc/affinity.h>
+#include <yloc/yloc.h>
 
 #include <mpi.h>
 
-#include <yloc/yloc.h>
+#include <string>
 
-#include "interface_impl.h"
-#include "mpi_adapter.h"
+#include <cassert>
+#include <cstring>
+
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE /* See feature_test_macros(7) */
+#include <sched.h>
+#endif
 
 using namespace yloc;
 
@@ -19,15 +27,32 @@ static void make_mpi_graph(Graph &g, const char *hostname)
     char hostnames[nbproc][MPI_MAX_PROCESSOR_NAME];
     MPI_Allgather(hostname, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, hostnames, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, MPI_COMM_WORLD);
 
+    cpu_set_t cpuset;
+    sched_getaffinity(0, sizeof(cpu_set_t), &cpuset);
+    cpu_set_t cpusets[nbproc];
+    MPI_Allgather(&cpuset, sizeof(cpu_set_t), MPI_BYTE, cpusets, sizeof(cpu_set_t), MPI_BYTE, MPI_COMM_WORLD);
+
     for (int i = 0; i < nbproc; i++) {
         vertex_descriptor_t node_vd = g.add_vertex("machine:" + std::string{hostnames[i]});
+        // vertex_descriptor_t proc_vd = g.add_vertex("mpi_rank:" + std::to_string(i));
         vertex_descriptor_t proc_vd = g.add_vertex();
+
         g[proc_vd].type = MPIProcess::ptr();
-        g[proc_vd].add_adapter(new MPIAdapter{i});
+        MPIAdapter *adapter = new MPIAdapter{i};
+        g[proc_vd].add_adapter(adapter);
+
+        // get affinity of mpi processes on local node
+        if (!strcmp(hostnames[i], hostname)) {
+            AffinityMask mask{cpusets[i]};
+            if (mask.any()) {
+                adapter->set_cpu_affinity_mask(mask);
+                node_vd = lowest_containing_vertex(mask);
+            }
+        }
 
         // add edges from mpi process nodes to compute nodes
-        boost::add_edge(node_vd, proc_vd, Edge{edge_type::PARENT}, g.boost_graph());
-        boost::add_edge(proc_vd, node_vd, Edge{edge_type::CHILD}, g.boost_graph());
+        boost::add_edge(node_vd, proc_vd, Edge{edge_type::CHILD}, g);
+        boost::add_edge(proc_vd, node_vd, Edge{edge_type::PARENT}, g);
     }
 }
 
