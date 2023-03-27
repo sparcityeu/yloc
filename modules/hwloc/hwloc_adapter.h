@@ -1,10 +1,26 @@
 #pragma once
 
-#include <hwloc.h>
-#include <sstream>
+#include <yloc/affinity.h>
 #include <yloc/modules/adapter.h>
 
+#include <hwloc.h>
+
+#include <sstream>
+
 #define VERBOSE_HWLOC_ATTRIBUTES 0
+
+static yloc::AffinityMask hwloc_2_yloc_mask(hwloc_bitmap_t mask)
+{
+    yloc::AffinityMask yloc_mask{};
+    unsigned id;
+    hwloc_bitmap_foreach_begin(id, mask)
+    {
+        assert(id < NPROCESSORS_ONLN);
+        yloc_mask[id] = hwloc_bitmap_isset(mask, id);
+    }
+    hwloc_bitmap_foreach_end();
+    return yloc_mask;
+}
 
 namespace yloc
 {
@@ -54,6 +70,13 @@ namespace yloc
             }
             return {};
         }
+
+        std::optional<AffinityMask> cpu_affinity_mask() const override
+        {
+            assert(m_obj->cpuset != nullptr);
+            return hwloc_2_yloc_mask(m_obj->cpuset);
+        }
+
         /** abstract machine model end **/
 
         obj_t native_obj() const { return m_obj; }

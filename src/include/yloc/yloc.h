@@ -12,6 +12,7 @@
  * 8. ?
  */
 
+#include <yloc/affinity.h>
 #include <yloc/component_types.h> // is-a vertex/edge type relationship
 #include <yloc/graph.h>           // graph object and underlying boost graph
 #include <yloc/init.h>            // initialization / memory reclamation

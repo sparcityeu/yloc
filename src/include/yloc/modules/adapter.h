@@ -6,15 +6,19 @@
 #include <string_view>
 #include <unordered_map>
 
+#include <yloc/affinity.h>
 #include <yloc/modules/property.h>
 #include <yloc/yloc_status.h> // yloc_status_t
 
 /**
  * @brief Macro to define properties.
- * 
+ *
  */
-#define ADAPTER_PROPERTY(type, name) \
-    virtual std::optional<type> name() const { return std::optional<type>{}; }
+#define ADAPTER_PROPERTY(type, name)         \
+    virtual std::optional<type> name() const \
+    {                                        \
+        return std::optional<type>{};        \
+    }
 
 namespace yloc
 {
@@ -41,7 +45,7 @@ namespace yloc
                 {make_property_pair("throughput", &Adapter::throughput)},
                 {make_property_pair("latency", &Adapter::latency)},
                 {make_property_pair("frequency", &Adapter::frequency)},
-                /** TODO: maybe support multiple return types in Vertex::get("property") (e.g. Vertex::get<return_type>("property")) 
+                /** TODO: maybe support multiple return types in Vertex::get("property") (e.g. Vertex::get<return_type>("property"))
                  * or change temperature scale to degree Kelvin and return type to uint64_t */
                 // {make_property_pair("temperature", &Adapter::temperature)},
                 {make_property_pair("power", &Adapter::power)},
@@ -50,14 +54,15 @@ namespace yloc
                 {make_property_pair("pci_throughput", &Adapter::pci_throughput)},
                 {make_property_pair("pci_throughput_read", &Adapter::pci_throughput_read)},
                 {make_property_pair("pci_throughput_write", &Adapter::pci_throughput_write)},
-                {make_property_pair("mpi_rank", &Adapter::mpi_rank)}};
+                {make_property_pair("mpi_rank", &Adapter::mpi_rank)},
+                {make_property_pair("cpu_affinity_mask", &Adapter::cpu_affinity_mask)}};
             return map;
         }
 
         /**
-         * @brief 
-         * 
-         * @return std::unordered_map<std::string_view, Property>& 
+         * @brief
+         *
+         * @return std::unordered_map<std::string_view, Property>&
          */
         virtual std::unordered_map<std::string_view, AbstractProperty *> &module_map()
         {
@@ -183,7 +188,19 @@ namespace yloc
         ADAPTER_PROPERTY(uint64_t, pci_throughput_read)  // in bytes per second
         ADAPTER_PROPERTY(uint64_t, pci_throughput_write) // in bytes per second
 
-        ADAPTER_PROPERTY(uint64_t, mpi_rank) // rank in comm world
+        /**
+         * @brief Gets bit set describing components cpu affinity.
+         *
+         * @return Bitmask with bits set for cpus below component.
+         */
+        ADAPTER_PROPERTY(AffinityMask, cpu_affinity_mask)
+
+        /**
+         * @brief Gets MPI rank in comm world MPI communicator.
+         * 
+         * @return Rank in comm world.
+         */
+        ADAPTER_PROPERTY(uint64_t, mpi_rank)
 
         /** abstract machine model end */
     };
