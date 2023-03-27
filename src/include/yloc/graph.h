@@ -11,11 +11,11 @@
 namespace yloc
 {
     using boost_graph_t = boost::adjacency_list<
-        boost::vecS,           //  out-edge container selector
-        boost::vecS,           //  Vector container selector
-        boost::bidirectionalS, // sets bidirectional edge access
-        Vertex,                // vertex property
-        Edge>;                 // edge property
+        boost::vecS,           // out-edge list container selector
+        boost::vecS,           // vertex list container selector
+        boost::bidirectionalS, // sets bidirectional edges
+        Vertex,                // bundled vertex property
+        Edge>;                 // bundled edge property
 
     using edge_descriptor_t = typename boost::graph_traits<boost_graph_t>::edge_descriptor;
     using vertex_descriptor_t = typename boost::graph_traits<boost_graph_t>::vertex_descriptor;
@@ -93,8 +93,23 @@ namespace yloc
             return (*this)[m_identifier_map[id]];
         }
 
+        auto &operator[](edge_descriptor_t ed)
+        {
+            return this->boost_graph_t::operator[](ed);
+        }
+
+        const auto &operator[](edge_descriptor_t ed) const
+        {
+            return this->boost_graph_t::operator[](ed);
+        }
+
+        void set_root_vertex(vertex_descriptor_t vertex) noexcept { m_root_vertex = vertex; }
+
+        vertex_descriptor_t get_root_vertex() const noexcept { return m_root_vertex; }
+
     private:
         std::unordered_map<identifier_t, vertex_descriptor_t> m_identifier_map{};
+        vertex_descriptor_t m_root_vertex{};
     };
 
     /**

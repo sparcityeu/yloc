@@ -1,17 +1,47 @@
 #pragma once
 
-#include <iostream>
-#include <sstream>
-#include <string>
-
+#include <yloc/affinity.h>
 #include <yloc/graph.h>
 
+#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
 
+#include <functional> // move to implementation
+#include <iostream>
+#include <sstream>
+#include <string>
+
 namespace yloc
 {
+    vertex_descriptor_t lowest_containing_vertex(AffinityMask &mask, vertex_descriptor_t vertex)
+    {
+        Graph &g = yloc::root_graph();
+        auto fg = boost::filtered_graph(
+            g, [&](edge_descriptor_t edge) { return g[edge].type == edge_type::CHILD; }, boost::keep_all{});
+
+        // loop over child edges and return result of child vertex, if child vertex fully contains the mask
+        auto out_it = boost::out_edges(vertex, fg).first;
+        auto out_end = boost::out_edges(vertex, fg).second;
+        for (; out_it != out_end; ++out_it) {
+            edge_descriptor_t e = *out_it;
+            vertex_descriptor_t targ = boost::target(e, fg);
+
+            auto target_mask = g[targ].get<AffinityMask>("cpu_affinity_mask");
+            if (target_mask.has_value() && target_mask.value().is_containing(mask)) {
+                return lowest_containing_vertex(mask, targ);
+            }
+        }
+        return vertex;
+    }
+
+    vertex_descriptor_t lowest_containing_vertex(AffinityMask &mask)
+    {
+        vertex_descriptor_t root_vertex = yloc::root_graph().get_root_vertex();
+        return lowest_containing_vertex(mask, root_vertex);
+    }
+
     /* helper function because boost::num_vertices<GraphView> returns the number of vertices in the underlying graph.
        the number of vertices contained in a graph view must be calculated */
     template <class GraphView>
@@ -35,7 +65,7 @@ namespace yloc
             std::cout << "has no value\n";
         }
     }
-    
+
     template <class Graph>
     void write_graph_dot_file(const Graph &g, std::string dot_file_name, std::vector<std::string> vertex_properties)
     {

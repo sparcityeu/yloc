@@ -224,6 +224,7 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     gethostname(hostname, HOST_NAME_MAX);
     auto root_vd = g.add_vertex("machine:" + std::string{hostname});
     g[root_vd].m_description = std::string{hostname};
+    g.set_root_vertex(root_vd);
 
     g[root_vd].add_adapter(new HwlocAdapter{root});
     if (g[root_vd].type == UnknownComponentType::ptr()) { // has no component type yet
