@@ -16,6 +16,6 @@
 #include <yloc/component_types.h> // is-a vertex/edge type relationship
 #include <yloc/graph.h>           // graph object and underlying boost graph
 #include <yloc/init.h>            // initialization / memory reclamation
-// #include <yloc/query/query.h>     // simplified graph queries
+#include <yloc/query.h>           // simplified graph queries
 #include <yloc/util.h>            // utility functions
 #include <yloc/yloc_status.h>     // required ?
