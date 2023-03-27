@@ -160,8 +160,8 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
             // sanity check /** TODO: implement is_a for runtime objects */
             // assert(g[child_vd].type == hwloc_2_yloc_type(obj));
         }
-        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::PARENT}, g);
-        ret = boost::add_edge(child_vd, vd, Edge{edge_type::CHILD}, g);
+        auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::CHILD}, g);
+        ret = boost::add_edge(child_vd, vd, Edge{edge_type::PARENT}, g);
 
         make_hwloc_graph(g, t, child_vd, child);
         child = hwloc_get_next_child(t, obj, child);
