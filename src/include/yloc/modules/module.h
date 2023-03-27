@@ -1,6 +1,6 @@
 #pragma once
 
-#include <yloc/yloc_status.h> // yloc_status_t
+#include <yloc/status.h> // yloc_status_t
 
 namespace yloc
 {

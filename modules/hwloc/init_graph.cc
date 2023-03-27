@@ -6,7 +6,7 @@
 #include <yloc/graph.h>
 #include <yloc/modules/adapter.h>
 #include <yloc/modules/module.h>
-#include <yloc/yloc_status.h>
+#include <yloc/status.h>
 
 #include "hwloc_adapter.h"
 #include "interface_impl.h"

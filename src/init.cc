@@ -1,7 +1,7 @@
 #include <yloc/graph.h>
 #include <yloc/init.h>
 #include <yloc/modules/module.h>
-#include <yloc/yloc_status.h>
+#include <yloc/status.h>
 
 namespace yloc
 {

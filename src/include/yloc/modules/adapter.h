@@ -8,7 +8,7 @@
 
 #include <yloc/affinity.h>
 #include <yloc/modules/property.h>
-#include <yloc/yloc_status.h> // yloc_status_t
+#include <yloc/status.h> // yloc_status_t
 
 /**
  * @brief Macro to define properties.

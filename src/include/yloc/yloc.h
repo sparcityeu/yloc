@@ -18,4 +18,4 @@
 #include <yloc/init.h>            // initialization / memory reclamation
 #include <yloc/query.h>           // simplified graph queries
 #include <yloc/util.h>            // utility functions
-#include <yloc/yloc_status.h>     // required ?
+#include <yloc/status.h>     // required ?

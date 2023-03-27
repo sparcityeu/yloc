@@ -1,6 +1,6 @@
 #pragma once
 
-#include <yloc/yloc_status.h>
+#include <yloc/status.h>
 
 #include <vector>
 

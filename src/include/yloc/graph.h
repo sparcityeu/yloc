@@ -6,7 +6,7 @@
 
 #include <yloc/edge.h>
 #include <yloc/vertex.h>
-#include <yloc/yloc_status.h>
+#include <yloc/status.h>
 
 namespace yloc
 {
