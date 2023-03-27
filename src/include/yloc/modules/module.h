@@ -9,14 +9,16 @@ namespace yloc
     class Module
     {
     public:
+        enum class init_order : int { FIRST=0, SECOND=1 };
+
         /** TODO: use pure virtual destructor ? then we must override in sub-classes */
         virtual ~Module() = default; // 0;
 
         /**
          * @brief Initializes the module's subgraph and attaches to the root graph.
-         * 
+         *
          * @param graph The root graph
-         * @return yloc_status_t 
+         * @return yloc_status_t
          */
         virtual yloc_status_t init_graph(Graph &graph) = 0;
 
@@ -30,5 +32,8 @@ namespace yloc
         //
         // An alternative would be to add a auto-update function to the interface,
         // this would be a good place to add an per-module interval
+
+        init_order m_init_order{init_order::FIRST};
+        bool m_enabled{true};
     };
 }

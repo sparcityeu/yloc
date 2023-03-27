@@ -1,4 +1,3 @@
-
 #include <yloc/graph.h>
 #include <yloc/init.h>
 #include <yloc/modules/module.h>
@@ -19,8 +18,16 @@ namespace yloc
         // initialize static graph
         //  Graph & graph = root_graph();
 
-        for (auto *m : list_modules()) {
-            m->init_graph(root_graph());
+        auto modules = list_modules(); // list_modules creates new vector ...
+
+        std::sort(modules.begin(), modules.end(), [](yloc::Module *a, yloc::Module *b) {
+            return a->m_init_order < b->m_init_order;
+        });
+
+        for (auto *m : modules) {
+            if (m->m_enabled) {
+                m->init_graph(root_graph());
+            }
         }
 
         // store result of module init in global variable
