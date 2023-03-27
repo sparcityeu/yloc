@@ -10,7 +10,7 @@ using namespace yloc;
 
 int main(int argc, char *argv[])
 {
-    yloc::init(YLOC_FULL | YLOC_ONGOING);
+    yloc::init();
 
     Graph &g = yloc::root_graph();
 

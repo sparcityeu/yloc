@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
 
-    assert(yloc::init(YLOC_FULL | YLOC_ONGOING) == YLOC_STATUS_SUCCESS);
+    assert(yloc::init() == YLOC_STATUS_SUCCESS);
 
     yloc::Graph &g = yloc::root_graph();
 

@@ -87,9 +87,7 @@ static void find_distances(Graph &g)
 
 int main(int argc, char *argv[])
 {
-    // yloc::set_options/configure/...
-
-    yloc::init(YLOC_FULL | YLOC_ONGOING);
+    yloc::init();
 
     Graph &g = yloc::root_graph();
 
