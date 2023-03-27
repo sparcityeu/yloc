@@ -25,24 +25,24 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
     /** TODO: move that logic elsewhere and/or move type info to adapter */
     /** TODO: implement missing hwloc types: (@see hwloc_compare_types) */
 
-/**
-    HWLOC object type Enumerations:
-       enum hwloc_obj_type_t { HWLOC_OBJ_MACHINE, HWLOC_OBJ_PACKAGE,
-           HWLOC_OBJ_CORE, HWLOC_OBJ_PU, HWLOC_OBJ_L1CACHE, HWLOC_OBJ_L2CACHE,
-           HWLOC_OBJ_L3CACHE, HWLOC_OBJ_L4CACHE, HWLOC_OBJ_L5CACHE,
-           HWLOC_OBJ_L1ICACHE, HWLOC_OBJ_L2ICACHE, HWLOC_OBJ_L3ICACHE,
-           HWLOC_OBJ_GROUP, HWLOC_OBJ_NUMANODE, HWLOC_OBJ_BRIDGE,
-           HWLOC_OBJ_PCI_DEVICE, HWLOC_OBJ_OS_DEVICE, HWLOC_OBJ_MISC,
-           HWLOC_OBJ_MEMCACHE, HWLOC_OBJ_DIE }
-       enum hwloc_obj_cache_type_e { HWLOC_OBJ_CACHE_UNIFIED,
-           HWLOC_OBJ_CACHE_DATA, HWLOC_OBJ_CACHE_INSTRUCTION }
-       enum hwloc_obj_bridge_type_e { HWLOC_OBJ_BRIDGE_HOST,
-           HWLOC_OBJ_BRIDGE_PCI }
-       enum hwloc_obj_osdev_type_e { HWLOC_OBJ_OSDEV_BLOCK, HWLOC_OBJ_OSDEV_GPU,
-           HWLOC_OBJ_OSDEV_NETWORK, HWLOC_OBJ_OSDEV_OPENFABRICS,
-           HWLOC_OBJ_OSDEV_DMA, HWLOC_OBJ_OSDEV_COPROC }
-       enum hwloc_compare_types_e { HWLOC_TYPE_UNORDERED }
-*/
+    /**
+        HWLOC object type Enumerations:
+           enum hwloc_obj_type_t { HWLOC_OBJ_MACHINE, HWLOC_OBJ_PACKAGE,
+               HWLOC_OBJ_CORE, HWLOC_OBJ_PU, HWLOC_OBJ_L1CACHE, HWLOC_OBJ_L2CACHE,
+               HWLOC_OBJ_L3CACHE, HWLOC_OBJ_L4CACHE, HWLOC_OBJ_L5CACHE,
+               HWLOC_OBJ_L1ICACHE, HWLOC_OBJ_L2ICACHE, HWLOC_OBJ_L3ICACHE,
+               HWLOC_OBJ_GROUP, HWLOC_OBJ_NUMANODE, HWLOC_OBJ_BRIDGE,
+               HWLOC_OBJ_PCI_DEVICE, HWLOC_OBJ_OS_DEVICE, HWLOC_OBJ_MISC,
+               HWLOC_OBJ_MEMCACHE, HWLOC_OBJ_DIE }
+           enum hwloc_obj_cache_type_e { HWLOC_OBJ_CACHE_UNIFIED,
+               HWLOC_OBJ_CACHE_DATA, HWLOC_OBJ_CACHE_INSTRUCTION }
+           enum hwloc_obj_bridge_type_e { HWLOC_OBJ_BRIDGE_HOST,
+               HWLOC_OBJ_BRIDGE_PCI }
+           enum hwloc_obj_osdev_type_e { HWLOC_OBJ_OSDEV_BLOCK, HWLOC_OBJ_OSDEV_GPU,
+               HWLOC_OBJ_OSDEV_NETWORK, HWLOC_OBJ_OSDEV_OPENFABRICS,
+               HWLOC_OBJ_OSDEV_DMA, HWLOC_OBJ_OSDEV_COPROC }
+           enum hwloc_compare_types_e { HWLOC_TYPE_UNORDERED }
+    */
 
     if (hwloc_obj_type_is_cache(obj->type)) {
         /** TODO: implement unified cache type */
@@ -119,7 +119,7 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
     } else if (!hwloc_compare_types(obj->type, HWLOC_OBJ_DIE)) {
         return Misc::ptr(); // yloc type not implemented yet
     } else {
-        /** TODO: this assert triggers, so we miss a hwloc type here */
+        /** TODO: if this assert triggers, we miss a hwloc type here */
         assert(false); // sanity check
         return UnknownComponentType::ptr();
     }
@@ -183,37 +183,34 @@ static void check_hwloc_api_version()
     }
 }
 
-yloc_status_t ModuleHwloc::init_graph(Graph &g)
+static void set_hwloc_options(hwloc_topology_t &t)
 {
-    check_hwloc_api_version();
-
-    hwloc_topology_t t;
-    hwloc_topology_init(&t); // initialization
-
-    /**
-     * TODO: move the settings logic to other function (set_options)
-     *
-     */
-
     // some object types are filtered by default
     // see man hwlocality_object_types and hwlocality_configuration
     // control with hwloc_topology_set_flags() or
     // hwloc_topology_set_..._filter()
-
     hwloc_topology_set_all_types_filter(t, HWLOC_TYPE_FILTER_KEEP_IMPORTANT);
 
     // instruction cache and bridges are typically not important
     hwloc_topology_set_icache_types_filter(t, HWLOC_TYPE_FILTER_KEEP_NONE);
     hwloc_topology_set_type_filter(t, HWLOC_OBJ_BRIDGE, HWLOC_TYPE_FILTER_KEEP_NONE);
 
-    /*
-    if (*file != '0') { // FIXME: check for NULL instead? review interface ...
-        if (hwloc_topology_set_xml(t, file) == -1) {
-            // TODO: error handling of hwloc functions ...
-        }
-    }
-    */
+    // optionally load topology from xml file
+    // hwloc_topology_set_xml(t, file)
+}
 
+ModuleHwloc::~ModuleHwloc()
+{
+    hwloc_topology_destroy(m_topology);
+}
+
+yloc_status_t ModuleHwloc::init_graph(Graph &g)
+{
+    check_hwloc_api_version();
+
+    hwloc_topology_t &t = m_topology;
+    hwloc_topology_init(&t);
+    set_hwloc_options(t);
     hwloc_topology_load(t); // actual detection
 
     hwloc_obj_t root = hwloc_get_root_obj(t);
@@ -235,9 +232,5 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     }
 
     make_hwloc_graph(g, t, root_vd, root);
-
-    // TODO: lifetime of topology context?
-    // hwloc_topology_destroy(t);
-
     return YLOC_STATUS_SUCCESS;
 }

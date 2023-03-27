@@ -2,6 +2,8 @@
 
 #include <yloc/modules/module.h>
 
+struct hwloc_topology; // fwd decl
+
 namespace yloc
 {
     class ModuleHwloc : public Module
@@ -20,6 +22,9 @@ namespace yloc
             return YLOC_STATUS_NOT_YET_IMPLEMENTED;
         };
 
+        ~ModuleHwloc();
+
     private:
+        hwloc_topology *m_topology;
     };
 }
