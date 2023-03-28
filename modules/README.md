@@ -1,6 +1,6 @@
 # Writing a yloc Module
 
-Writing an own module involves implementing two classes: the new module class that implements the YlocModule interface, and the module's adapter class.
+Writing an own module involves implementing two classes: the new module class that implements the Module interface, and the module's adapter class.
 The adapter class specifies the list of available properties, and how these properties are accessed in the module.
 
 ---
@@ -11,9 +11,9 @@ The adapter class specifies the list of available properties, and how these prop
 #include <yloc/modules/module.h>
 
 using yloc::Graph;
-using yloc::YlocModule;
+using yloc::Module;
 
-class ExampleModule : public YlocModule
+class ExampleModule : public Module
 {
 
 public:
