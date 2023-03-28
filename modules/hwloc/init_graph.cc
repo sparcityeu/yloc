@@ -154,11 +154,11 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
         }
 
         g[child_vd].add_adapter(adapter);
-        if (g[child_vd].type == UnknownComponentType::ptr()) { // has no component type yet
-            g[child_vd].type = hwloc_2_yloc_type(child);
+        if (g[child_vd].m_type == UnknownComponentType::ptr()) { // has no component type yet
+            g[child_vd].m_type = hwloc_2_yloc_type(child);
         } else {
             // sanity check /** TODO: implement is_a for runtime objects */
-            // assert(g[child_vd].type == hwloc_2_yloc_type(obj));
+            // assert(g[child_vd].m_type == hwloc_2_yloc_type(obj));
         }
         auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::CHILD}, g);
         ret = boost::add_edge(child_vd, vd, Edge{edge_type::PARENT}, g);
@@ -224,11 +224,11 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     g.set_root_vertex(root_vd);
 
     g[root_vd].add_adapter(new HwlocAdapter{root});
-    if (g[root_vd].type == UnknownComponentType::ptr()) { // has no component type yet
-        g[root_vd].type = hwloc_2_yloc_type(root);
+    if (g[root_vd].m_type == UnknownComponentType::ptr()) { // has no component type yet
+        g[root_vd].m_type = hwloc_2_yloc_type(root);
     } else {
         // sanity check /** TODO: implement is_a for runtime objects */
-        // assert(g[root_vd].type == hwloc_2_yloc_type(root));
+        // assert(g[root_vd].m_type == hwloc_2_yloc_type(root));
     }
 
     make_hwloc_graph(g, t, root_vd, root);

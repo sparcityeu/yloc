@@ -119,7 +119,7 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
         g[vd].add_adapter(new NvmlAdapter{device});
         vertices[dev_index] = vd;
 
-        assert(g[vd].type->is_a<PCIDevice>());
+        assert(g[vd].is_a<PCIDevice>());
         g[vd].type = GPU::ptr();
     }
     /** TODO: store this interconnect information? */

@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     auto graph_view = boost::make_filtered_graph(g, boost::keep_all{}, [&](yloc::vertex_descriptor_t v) {
-        return g[v].type->is_a<yloc::MPIProcess>();
+        return g[v].is_a<yloc::MPIProcess>();
     });
 
     if (rank == 0) {

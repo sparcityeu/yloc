@@ -14,7 +14,7 @@ static void filter_graph_example(Graph &g)
 {
     // use predicate (f(v) -> bool) to filter the graph by object type "Cache"
     /*auto*/ std::function<bool(const vertex_descriptor_t &)> predicate = [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].type->is_a<Cache>();
+        return g[v].is_a<Cache>();
     };
 
     // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
@@ -35,7 +35,7 @@ static void find_distances(Graph &g)
 
     // first we query the graph for ...
     auto predicate_accelerator = [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].type->is_a<Accelerator>();
+        return g[v].is_a<Accelerator>();
     };
     auto fgv_accelerator = boost::make_filtered_graph(g, boost::keep_all{}, predicate_accelerator);
 
@@ -54,7 +54,7 @@ static void find_distances(Graph &g)
     // using lambdas as predicates, the graph view cannot be further filtered because
     // lambda closure type has a deleted copy assignment operator.
     std::function<bool(const vertex_descriptor_t &)> predicate_pu = [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].type->is_a<LogicalCore>();
+        return g[v].is_a<LogicalCore>();
     };
     auto fgv_pu = boost::make_filtered_graph(g, boost::keep_all{}, predicate_pu);
     std::cout << "number of PUs: " << num_vertices_view(fgv_pu) << std::endl;

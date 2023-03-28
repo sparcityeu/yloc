@@ -37,7 +37,7 @@ static void make_mpi_graph(Graph &g, const char *hostname)
         // vertex_descriptor_t proc_vd = g.add_vertex("mpi_rank:" + std::to_string(i));
         vertex_descriptor_t proc_vd = g.add_vertex();
 
-        g[proc_vd].type = MPIProcess::ptr();
+        g[proc_vd].m_type = MPIProcess::ptr();
         MPIAdapter *adapter = new MPIAdapter{i};
         g[proc_vd].add_adapter(adapter);
 

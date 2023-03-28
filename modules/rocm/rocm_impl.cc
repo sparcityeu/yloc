@@ -122,9 +122,9 @@ yloc_status_t ModuleRocm::init_graph(Graph &g)
         // std::cout << "yloc type: " << g[vd].type->to_string() << " vd: " << vd << '\n';
 
         g[vd].type = GPU::ptr();
-        assert(g[vd].type->is_a<PCIDevice>());
-        assert(g[vd].type->is_a<Accelerator>());
-        assert(g[vd].type->is_a<GPU>());
+        assert(g[vd].is_a<PCIDevice>());
+        assert(g[vd].is_a<Accelerator>());
+        assert(g[vd].is_a<GPU>());
     }
     /** TODO: store this interconnect information? */
     uint64_t num_interconnects = yloc_rocm_gpu_interconnect(g, num_devices, vertices);

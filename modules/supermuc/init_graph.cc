@@ -13,7 +13,7 @@ using namespace yloc;
 static vertex_descriptor_t make_supermuc_node(Graph &g, const char *name)
 {
     vertex_descriptor_t vd = g.add_vertex("system:" + std::string{name});
-    g[vd].type = Misc::ptr(); /** TODO: add component type for (logical) system interconnect components */
+    g[vd].m_type = Misc::ptr(); /** TODO: add component type for (logical) system interconnect components */
     g[vd].m_description = std::string{name};
     g[vd].add_adapter(new SuperMUCAdapter{name});
     return vd;
@@ -44,7 +44,7 @@ static void make_supermuc_graph(Graph &g, const char *hostname)
         
         // hostname: island,rack,column,slot
         slot_vd = g.add_vertex("machine:" + std::string{hostnames[i]});
-        g[slot_vd].type = Node::ptr();
+        g[slot_vd].m_type = Node::ptr();
         g[slot_vd].m_description = std::string{hostnames[i]};
         g[slot_vd].add_adapter(new SuperMUCAdapter{hostnames[i]});
         
