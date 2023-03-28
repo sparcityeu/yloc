@@ -21,10 +21,10 @@ namespace yloc
             // first search global yloc properties
             auto it = Adapter::map().find(property_name);
             if (it != Adapter::map().end()) {
-                auto *property = it->second;
+                auto property = it->second;
                 if (property->supports(typeid(RT))) {
                     for (std::shared_ptr<Adapter> a : m_adapters) {
-                        auto ret = dynamic_cast<Property<RT> *>(property)->value(a.get());
+                        auto ret = std::dynamic_pointer_cast<Property<RT>>(property)->value(a.get());
                         if (ret.has_value()) {
                             return ret;
                         }
@@ -36,9 +36,9 @@ namespace yloc
                 for (std::shared_ptr<Adapter> a : m_adapters) {
                     auto it = a->module_map().find(property_name);
                     if (it != a->module_map().end()) {
-                        auto *property = it->second;
+                        auto property = it->second;
                         if (property->supports(typeid(RT))) {
-                            auto ret = dynamic_cast<Property<RT> *>(property)->value(a.get());
+                            auto ret = std::dynamic_pointer_cast<Property<RT>>(property)->value(a.get());
                             if (ret.has_value()) {
                                 return ret;
                             }
@@ -75,7 +75,7 @@ namespace yloc
         // first search global yloc properties
         auto it = Adapter::map().find(property_name);
         if (it != Adapter::map().end()) {
-            auto *property = it->second;
+            auto property = it->second;
             for (std::shared_ptr<Adapter> a : m_adapters) {
                 auto ret = property->value_to_string(a.get());
                 if (ret.has_value()) {
@@ -88,7 +88,7 @@ namespace yloc
             for (std::shared_ptr<Adapter> a : m_adapters) {
                 auto it = a->module_map().find(property_name);
                 if (it != a->module_map().end()) {
-                    auto *property = it->second;
+                    auto property = it->second;
                     auto ret = property->value_to_string(a.get());
                     if (ret.has_value()) {
                         return ret;

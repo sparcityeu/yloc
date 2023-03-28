@@ -1,14 +1,15 @@
 #pragma once
 
+#include <yloc/affinity.h>
+#include <yloc/modules/property.h>
+#include <yloc/status.h> // yloc_status_t
+
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
-#include <yloc/affinity.h>
-#include <yloc/modules/property.h>
-#include <yloc/status.h> // yloc_status_t
 
 /**
  * @brief Macro to define properties.
@@ -28,9 +29,9 @@ namespace yloc
         virtual ~Adapter() = default;
 
         /** predefined yloc-global property map */
-        static std::unordered_map<std::string_view, AbstractProperty *> &map()
+        static std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>> &map()
         {
-            static std::unordered_map<std::string_view, AbstractProperty *> map{
+            static std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>> map{
                 {make_property_pair("memory", &Adapter::memory)},
                 {make_property_pair("memory_usage", &Adapter::memory_usage)},
                 {make_property_pair("memory_load", &Adapter::memory_load)},
@@ -56,11 +57,11 @@ namespace yloc
         }
 
         /**
-         * @brief
-         *
-         * @return std::unordered_map<std::string_view, Property>&
+         * @brief 
+         * 
+         * @return std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>>& 
          */
-        virtual std::unordered_map<std::string_view, AbstractProperty *> &module_map()
+        virtual std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>> &module_map()
         {
             return map();
         }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <sstream>
 
@@ -8,13 +9,13 @@ namespace yloc
     class Adapter;
 
     struct AbstractProperty {
-        virtual bool supports(const std::type_info & type) const = 0;
+        virtual bool supports(const std::type_info &type) const = 0;
         virtual std::optional<std::string> value_to_string(Adapter *a) const = 0;
     };
 
     /**
      * @brief Class holding the name of a property and its member function pointer in a module's adapter.
-     * 
+     *
      */
     template <class RT>
     class Property final : public AbstractProperty
@@ -24,7 +25,8 @@ namespace yloc
 
         Property(const char *name, property_fn_t pf) : m_name{name}, m_pf{pf} {}
 
-        bool supports(const std::type_info & type) const override {
+        bool supports(const std::type_info &type) const override
+        {
             return type == typeid(RT);
         }
 
@@ -32,7 +34,7 @@ namespace yloc
 
         /**
          * @brief Returns the module-specific property value of a graph element.
-         * 
+         *
          * @param a The module-specific adapter of a graph element
          * @return std::optional<RT> The property value
          */
@@ -41,10 +43,11 @@ namespace yloc
             return (a->*m_pf)();
         }
 
-        std::optional<std::string> value_to_string(Adapter *a) const override {
+        std::optional<std::string> value_to_string(Adapter *a) const override
+        {
             auto v = value(a);
             std::stringstream ss;
-            if(v.has_value()) {
+            if (v.has_value()) {
                 ss << v.value();
                 return ss.str();
             }
@@ -58,7 +61,7 @@ namespace yloc
 
     /**
      * @brief Creates a std::pair of (property string, property function).
-     * 
+     *
      * @tparam AdapterType The module-specific adapter type (derived from adapter class)
      * @tparam RT The type of the property
      * @param property_name The name of the the property
@@ -66,10 +69,12 @@ namespace yloc
      * @return std::pair<const char *, Property> The (property string, property function) pair
      */
     template <class AdapterType, class RT>
-    std::pair<const char *, AbstractProperty *> make_property_pair(const char *property_name, std::optional<RT> (AdapterType::*pf)() const)
+    std::pair<const char *, std::shared_ptr<AbstractProperty>>
+    make_property_pair(const char *property_name, std::optional<RT> (AdapterType::*pf)() const)
     {
-        return {property_name, new Property<RT>{property_name,
-            // upcasting the member function pointer to base (Adapter) is safe if unambiguous
-            static_cast<typename Property<RT>::property_fn_t>(pf)}};
+        return {property_name,
+                // upcasting the member function pointer to base (Adapter) is safe if unambiguous
+                std::make_shared<Property<RT>>(property_name,
+                                               static_cast<typename Property<RT>::property_fn_t>(pf))};
     }
 }
