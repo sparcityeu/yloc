@@ -1,11 +1,12 @@
 #pragma once
 
-#include <bitset>
+#include <boost/dynamic_bitset.hpp>
 
 #ifndef _GNU_SOURCE
 #    define _GNU_SOURCE
 #endif /* _GNU_SOURCE */
 #include <sched.h>
+#include <unistd.h>
 
 #ifdef YLOC_WITH_HWLOC
 #    include <hwloc.h>
@@ -13,29 +14,42 @@
 
 namespace yloc
 {
-    class AffinityMask : public std::bitset<NPROCESSORS_ONLN>
+    class AffinityMask : public boost::dynamic_bitset<>
     {
     public:
-        AffinityMask() {} // Default constructor. Constructs a bitset with all bits set to zero.
+        /**
+         * @brief Construct a new AffinityMask bitset with all bits set to zero.
+         * 
+         */
+        AffinityMask() : boost::dynamic_bitset<>{m_nprocs_online} {}
 
-        // Linux cpu set.
-        AffinityMask(cpu_set_t mask)
+        /**
+         * @brief Construct a new AffinityMask from a Linux cpu set.
+         * 
+         * @param mask 
+         */
+        AffinityMask(cpu_set_t mask) : boost::dynamic_bitset<>{m_nprocs_online}
         {
-            for (int cpu = 0; cpu < NPROCESSORS_ONLN; ++cpu) {
+            for (int cpu = 0; cpu < m_nprocs_online; ++cpu) {
                 (*this)[cpu] = CPU_ISSET(cpu, &mask);
             }
         }
 
 #if YLOC_WITH_HWLOC
+        /**
+         * @brief Construct a new AffinityMask from an hwloc bitmap.
+         * 
+         * @param mask 
+         */
         AffinityMask(hwloc_bitmap_t mask)
         {
-            if (mask == nullptr) { /* TODO */ }
-            AffinityMask yloc_mask{};
+            if (mask == nullptr) { /* TODO */
+            }
             unsigned id;
             hwloc_bitmap_foreach_begin(id, mask)
             {
-                assert(id < NPROCESSORS_ONLN);
-                yloc_mask[id] = hwloc_bitmap_isset(mask, id);
+                assert(id < m_nprocs_online);
+                (*this)[id] = hwloc_bitmap_isset(mask, id);
             }
             hwloc_bitmap_foreach_end();
         }
@@ -50,7 +64,7 @@ namespace yloc
         {
             cpu_set_t mask;
             CPU_ZERO(&mask);
-            for (int cpu = 0; cpu < NPROCESSORS_ONLN; ++cpu) {
+            for (int cpu = 0; cpu < m_nprocs_online; ++cpu) {
                 if ((*this)[cpu]) {
                     CPU_SET(cpu, &mask);
                 }
@@ -61,7 +75,7 @@ namespace yloc
 #if YLOC_WITH_HWLOC
         /**
          * @brief Type conversion from AffinityMask to hwloc_bitmap_t.
-         * Note: it is the users responsibility to free the allocated 
+         * Note: it is the users responsibility to free the allocated
          * memory with a call to hwloc_bitmap_free.
          *
          * @return hwloc_bitmap_t
@@ -69,9 +83,10 @@ namespace yloc
         operator hwloc_bitmap_t() const
         {
             hwloc_bitmap_t mask = hwloc_bitmap_alloc();
-            if (!mask) { /* TODO */ }
+            if (!mask) { /* TODO */
+            }
             hwloc_bitmap_zero(mask);
-            for (unsigned cpu = 0; cpu < NPROCESSORS_ONLN; ++cpu) {
+            for (unsigned cpu = 0; cpu < m_nprocs_online; ++cpu) {
                 if ((*this)[cpu]) {
                     hwloc_bitmap_set(mask, cpu);
                 }
@@ -89,5 +104,7 @@ namespace yloc
         {
             return other.is_contained_in(*this);
         }
+
+        inline const static size_t m_nprocs_online{static_cast<size_t>(sysconf(_SC_NPROCESSORS_ONLN))};
     };
 } // namespace yloc
