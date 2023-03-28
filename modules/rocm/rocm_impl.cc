@@ -1,7 +1,3 @@
-
-#include <iostream>
-#include <vector>
-
 #include <yloc/graph.h>
 #include <yloc/modules/adapter.h>
 #include <yloc/modules/module.h>
@@ -12,6 +8,10 @@
 #include "rocm_util.h"
 
 #include <rocm_smi/rocm_smi.h>
+
+#include <iostream>
+#include <memory>
+#include <vector>
 
 /** TODO: implement bandwidth and throughput properties */
 
@@ -52,7 +52,7 @@ static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::
                 num_interconnects++;
                 std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
                 std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
-                
+
                 auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
                 ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
             }
@@ -111,7 +111,7 @@ yloc_status_t ModuleRocm::init_graph(Graph &g)
         std::cout << "GPU MEMORY GTT=" << memory_total << '\n';
 
         // associate rocm device with graph node by pcie bdfid:
-        Adapter *adapter = new RocmAdapter{dev_index};
+        auto adapter = std::make_shared<RocmAdapter>(dev_index);
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
 
         g[vd].add_adapter(adapter);

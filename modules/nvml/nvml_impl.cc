@@ -1,7 +1,3 @@
-
-#include <iostream>
-#include <vector>
-
 #include <yloc/graph.h>
 #include <yloc/modules/adapter.h>
 #include <yloc/modules/module.h>
@@ -10,8 +6,12 @@
 #include "interface_impl.h"
 #include "nvml_adapter.h"
 #include "nvml_util.h"
+
 #include <nvml.h>
 
+#include <iostream>
+#include <memory>
+#include <vector>
 
 /** TODO: implement bandwidth and throughput properties */
 
@@ -42,7 +42,7 @@ static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::
             nvmlDeviceGetP2PStatus(devices[dev_ind_src], devices[dev_ind_dst], NVML_P2P_CAPS_INDEX_NVLINK, &status);
 
             uint32_t hops = 0;
-            if(NVML_P2P_STATUS_OK == status) {
+            if (NVML_P2P_STATUS_OK == status) {
                 hops = 1;
             }
 
@@ -105,7 +105,7 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
         nvmlPciInfo_t pci;
         CHECK_NVML_MSG(nvmlDeviceGetPciInfo_v3(device, &pci));
 
-        NvmlAdapter *a = new NvmlAdapter{device};
+        auto nvml_adapter = std::make_shared<NvmlAdapter>(device);
         bdfid = a->bdfid().value();
         // std::cout << "GPU BDFID=" << bdfid << '\n';
         // std::cout << "GPU NUMA AFFINITY=" << a->numa_affinity().value() << '\n';
@@ -116,7 +116,7 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
 
         // associate nvml device with graph node by pcie bdfid:
         auto vd = g.add_vertex("bdfid:" + std::to_string(bdfid));
-        g[vd].add_adapter(new NvmlAdapter{device});
+        g[vd].add_adapter(nvml_adapter);
         vertices[dev_index] = vd;
 
         assert(g[vd].is_a<PCIDevice>());

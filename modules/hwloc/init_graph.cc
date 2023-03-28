@@ -1,8 +1,3 @@
-
-#include <hwloc.h>
-#include <iostream>
-#include <unistd.h> // gethostname
-
 #include <yloc/graph.h>
 #include <yloc/modules/adapter.h>
 #include <yloc/modules/module.h>
@@ -10,6 +5,13 @@
 
 #include "hwloc_adapter.h"
 #include "interface_impl.h"
+
+#include <hwloc.h>
+
+#include <iostream>
+#include <memory>
+
+#include <unistd.h> // gethostname
 
 // enum aliases for backwards compatibility (from hwloc documentation)
 #if HWLOC_API_VERSION < 0x00010b00
@@ -138,7 +140,7 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
     // for all children of obj: add_adapter new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        auto *adapter = new HwlocAdapter{child};
+        auto adapter = std::make_shared<HwlocAdapter>(child);
         vertex_descriptor_t child_vd;
 
         if (hwloc_2_yloc_type(child)->is_a<PCIDevice>()) {
@@ -223,7 +225,7 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     g[root_vd].m_description = std::string{hostname};
     g.set_root_vertex(root_vd);
 
-    g[root_vd].add_adapter(new HwlocAdapter{root});
+    g[root_vd].add_adapter(std::make_shared<HwlocAdapter>(root));
     if (g[root_vd].m_type == UnknownComponentType::ptr()) { // has no component type yet
         g[root_vd].m_type = hwloc_2_yloc_type(root);
     } else {

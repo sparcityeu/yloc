@@ -22,7 +22,7 @@
 
 namespace yloc
 {
-    class Adapter // TODO: Maybe separate between VertexAdapter and EdgeAdapter
+    class Adapter /*: public std::enable_shared_from_this<Adapter>*/ // TODO: Maybe separate between VertexAdapter and EdgeAdapter
     {
     public:
         virtual ~Adapter() = default;
@@ -193,7 +193,7 @@ namespace yloc
 
         /**
          * @brief Gets MPI rank in comm world MPI communicator.
-         * 
+         *
          * @return Rank in comm world.
          */
         ADAPTER_PROPERTY(uint64_t, mpi_rank)

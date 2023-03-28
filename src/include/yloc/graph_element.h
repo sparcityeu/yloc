@@ -1,13 +1,14 @@
 #pragma once
 
+#include <yloc/component_types.h>
+#include <yloc/modules/adapter.h>
+#include <yloc/modules/property.h>
+
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include <yloc/component_types.h>
-#include <yloc/modules/adapter.h>
-#include <yloc/modules/property.h>
 
 namespace yloc
 {
@@ -22,8 +23,8 @@ namespace yloc
             if (it != Adapter::map().end()) {
                 auto *property = it->second;
                 if (property->supports(typeid(RT))) {
-                    for (Adapter *a : m_adapters) {
-                        auto ret = dynamic_cast<Property<RT> *>(property)->value(a);
+                    for (std::shared_ptr<Adapter> a : m_adapters) {
+                        auto ret = dynamic_cast<Property<RT> *>(property)->value(a.get());
                         if (ret.has_value()) {
                             return ret;
                         }
@@ -32,12 +33,12 @@ namespace yloc
             }
             // then search custom module-specific properties
             else {
-                for (Adapter *a : m_adapters) {
+                for (std::shared_ptr<Adapter> a : m_adapters) {
                     auto it = a->module_map().find(property_name);
                     if (it != a->module_map().end()) {
                         auto *property = it->second;
                         if (property->supports(typeid(RT))) {
-                            auto ret = dynamic_cast<Property<RT> *>(property)->value(a);
+                            auto ret = dynamic_cast<Property<RT> *>(property)->value(a.get());
                             if (ret.has_value()) {
                                 return ret;
                             }
@@ -48,17 +49,22 @@ namespace yloc
             return {};
         }
 
-        template <class Component>
-        bool is_a() const noexcept { return m_type->is_a<Component>(); }
+        template <class ComponentType>
+        bool is_a() const noexcept { return m_type->is_a<ComponentType>(); }
 
         std::string to_string() const { return std::string{m_type->to_string()} + ": " + m_description; }
 
-        void add_adapter(Adapter *a)
+        [[deprecated("use void add_adapter(std::shared_ptr<Adapter> a) instead")]] void add_adapter(Adapter *a)
+        {
+            m_adapters.push_back(std::shared_ptr<Adapter>{a});
+        }
+
+        void add_adapter(std::shared_ptr<Adapter> a)
         {
             m_adapters.push_back(a);
         }
 
-        std::vector<Adapter *> m_adapters{};
+        std::vector<std::shared_ptr<Adapter>> m_adapters{};
         std::string m_description{};
         const Component *m_type{UnknownComponentType::ptr()};
     };
@@ -70,8 +76,8 @@ namespace yloc
         auto it = Adapter::map().find(property_name);
         if (it != Adapter::map().end()) {
             auto *property = it->second;
-            for (Adapter *a : m_adapters) {
-                auto ret = property->value_to_string(a);
+            for (std::shared_ptr<Adapter> a : m_adapters) {
+                auto ret = property->value_to_string(a.get());
                 if (ret.has_value()) {
                     return ret;
                 }
@@ -79,11 +85,11 @@ namespace yloc
         }
         // then search custom module-specific properties
         else {
-            for (Adapter *a : m_adapters) {
+            for (std::shared_ptr<Adapter> a : m_adapters) {
                 auto it = a->module_map().find(property_name);
                 if (it != a->module_map().end()) {
                     auto *property = it->second;
-                    auto ret = property->value_to_string(a);
+                    auto ret = property->value_to_string(a.get());
                     if (ret.has_value()) {
                         return ret;
                     }
