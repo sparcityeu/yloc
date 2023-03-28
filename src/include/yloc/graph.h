@@ -1,12 +1,12 @@
 #pragma once
 
-#include <unordered_map>
+
+#include <yloc/graph_element.h>
+#include <yloc/status.h>
 
 #include <boost/graph/adjacency_list.hpp>
 
-#include <yloc/edge.h>
-#include <yloc/vertex.h>
-#include <yloc/status.h>
+#include <unordered_map>
 
 namespace yloc
 {

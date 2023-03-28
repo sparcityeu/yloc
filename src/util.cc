@@ -13,7 +13,7 @@ namespace yloc
 
         Graph &g = yloc::root_graph();
         auto fg = boost::filtered_graph(
-            g, [&](edge_descriptor_t edge) { return g[edge].type == edge_type::CHILD; }, boost::keep_all{});
+            g, [&](edge_descriptor_t edge) { return g[edge].m_edgetype == edge_type::CHILD; }, boost::keep_all{});
 
         std::vector<vertex_descriptor_t> candidates{};
 
@@ -24,7 +24,7 @@ namespace yloc
             edge_descriptor_t e = *out_it;
             vertex_descriptor_t target = boost::target(e, fg);
             auto target_mask = g[target].get<AffinityMask>("cpu_affinity_mask");
-            if (target_mask.has_value() && target_mask.value().is_containing(mask) && !g[target].type->is_a<MPIProcess>()) {
+            if (target_mask.has_value() && target_mask.value().is_containing(mask) && !g[target].is_a<MPIProcess>()) {
                 candidates.push_back(target);
             }
         }

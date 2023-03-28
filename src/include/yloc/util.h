@@ -66,7 +66,7 @@ namespace yloc
                 ss << ((edgetype == edge_type::PARENT) ? "parent" : "child");
                 return ss.str();
             },
-            boost::get(&yloc::Edge::type, g));
+            boost::get(&yloc::Edge::m_edgetype, g));
 
         boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
     }

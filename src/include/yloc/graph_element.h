@@ -11,9 +11,8 @@
 
 namespace yloc
 {
-    /* bundled internal (common) vertex properties */
-    struct Vertex {
-        const Component *type{UnknownComponentType::ptr()};
+    /* vertex / edge properties */
+    struct GraphElement {
 
         template <class RT>
         std::optional<RT> get(std::string_view property_name) const
@@ -22,7 +21,7 @@ namespace yloc
             auto it = Adapter::map().find(property_name);
             if (it != Adapter::map().end()) {
                 auto *property = it->second;
-                if(property->supports(typeid(RT))) {
+                if (property->supports(typeid(RT))) {
                     for (Adapter *a : m_adapters) {
                         auto ret = dynamic_cast<Property<RT> *>(property)->value(a);
                         if (ret.has_value()) {
@@ -37,7 +36,7 @@ namespace yloc
                     auto it = a->module_map().find(property_name);
                     if (it != a->module_map().end()) {
                         auto *property = it->second;
-                        if(property->supports(typeid(RT))) {
+                        if (property->supports(typeid(RT))) {
                             auto ret = dynamic_cast<Property<RT> *>(property)->value(a);
                             if (ret.has_value()) {
                                 return ret;
@@ -49,7 +48,10 @@ namespace yloc
             return {};
         }
 
-        std::string to_string() const { return std::string{type->to_string()} + ": " + m_description; }
+        template <class Component>
+        bool is_a() const noexcept { return m_type->is_a<Component>(); }
+
+        std::string to_string() const { return std::string{m_type->to_string()} + ": " + m_description; }
 
         void add_adapter(Adapter *a)
         {
@@ -58,10 +60,11 @@ namespace yloc
 
         std::vector<Adapter *> m_adapters{};
         std::string m_description{};
+        const Component *m_type{UnknownComponentType::ptr()};
     };
 
     template <>
-    inline std::optional<std::string> Vertex::get<std::string>(std::string_view property_name) const
+    inline std::optional<std::string> GraphElement::get<std::string>(std::string_view property_name) const
     {
         // first search global yloc properties
         auto it = Adapter::map().find(property_name);
@@ -89,4 +92,17 @@ namespace yloc
         }
         return {};
     }
+
+    struct Vertex : public GraphElement {
+    };
+
+    enum class edge_type : int { PARENT,
+                                 CHILD,
+                                 GPU_INTERCONNECT,
+                                 EDGE_TYPE_MAX };
+
+    struct Edge : public GraphElement {
+        Edge(edge_type type) : m_edgetype{type} {}
+        edge_type m_edgetype;
+    };
 }
