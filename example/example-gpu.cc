@@ -14,9 +14,7 @@ int main(int argc, char *argv[])
 
     Graph &g = yloc::root_graph();
 
-    auto fgv = boost::make_filtered_graph(g, boost::keep_all{}, [&](const vertex_descriptor_t &v) -> bool {
-        return g[v].is_a<GPU>();
-    });
+    auto fgv = boost::make_filtered_graph(g, boost::keep_all{}, [&](vertex_t v) { return g[v].is_a<GPU>(); });
 
     while (1) {
         size_t gpu = 0;

@@ -20,13 +20,12 @@ int main(int argc, char *argv[])
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    auto graph_view = boost::make_filtered_graph(g, boost::keep_all{}, [&](yloc::vertex_descriptor_t v) {
-        return g[v].is_a<yloc::MPIProcess>();
-    });
+    auto graph_view = boost::make_filtered_graph(
+        g, boost::keep_all{}, [&](yloc::vertex_t v) { return g[v].is_a<yloc::MPIProcess>(); });
 
     if (rank == 0) {
         for (auto v1 : boost::make_iterator_range(boost::vertices(graph_view))) {
-            auto dist = yloc::bfs_distance_vector(v1);
+            auto dist = yloc::bfs_distance_vector(g, v1);
             std::cout << "distance from mpi rank " << g[v1].get<uint64_t>("mpi_rank").value() << '\n';
             for (auto v2 : boost::make_iterator_range(boost::vertices(graph_view))) {
                 std::cout << "to " << g[v2].get<uint64_t>("mpi_rank").value() << ": " << dist[v2] << '\n';
