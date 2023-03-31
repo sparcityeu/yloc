@@ -20,7 +20,7 @@
 using namespace yloc;
 
 /** TODO: */
-static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices, std::vector<nvmlDevice_t> &devices)
+static uint64_t yloc_nvml_gpu_interconnect(Graph &g, uint32_t num_devices, std::vector<vertex_t> &vertices, std::vector<nvmlDevice_t> &devices)
 {
     uint64_t num_interconnects = 0;
     // get connectivity and topology between devices: (assuming symmetric connection)
@@ -93,7 +93,7 @@ yloc_status_t ModuleNvml::init_graph(Graph &g)
     CHECK_NVML_MSG(nvmlDeviceGetCount_v2(&num_devices));
     // std::cout << "num nvml devices: " << num_devices << '\n';
 
-    std::vector<vertex_descriptor_t> vertices(num_devices);
+    std::vector<vertex_t> vertices(num_devices);
     std::vector<nvmlDevice_t> devices(num_devices);
 
     for (unsigned int dev_index = 0; dev_index < num_devices; ++dev_index) {

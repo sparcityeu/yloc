@@ -34,9 +34,8 @@ static void make_mpi_graph(Graph &g, const char *hostname)
     MPI_Allgather(&cpuset, sizeof(cpu_set_t), MPI_BYTE, cpusets, sizeof(cpu_set_t), MPI_BYTE, MPI_COMM_WORLD);
 
     for (int i = 0; i < nbproc; i++) {
-        vertex_descriptor_t node_vd = g.add_vertex("machine:" + std::string{hostnames[i]});
-        vertex_descriptor_t proc_vd = g.add_vertex("mpi_rank:" + std::to_string(i));
-        // vertex_descriptor_t proc_vd = g.add_vertex();
+        vertex_t node_vd = g.add_vertex("machine:" + std::string{hostnames[i]});
+        vertex_t proc_vd = g.add_vertex("mpi_rank:" + std::to_string(i));
 
         g[proc_vd].m_type = MPIProcess::ptr();
         auto adapter = std::make_shared<MPIAdapter>(i);

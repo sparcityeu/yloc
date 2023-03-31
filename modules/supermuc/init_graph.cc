@@ -12,9 +12,9 @@
 
 using namespace yloc;
 
-static vertex_descriptor_t make_supermuc_node(Graph &g, const char *name)
+static vertex_t make_supermuc_node(Graph &g, const char *name)
 {
-    vertex_descriptor_t vd = g.add_vertex("system:" + std::string{name});
+    vertex_t vd = g.add_vertex("system:" + std::string{name});
     g[vd].m_type = Misc::ptr(); /** TODO: add component type for (logical) system interconnect components */
     g[vd].m_description = std::string{name};
     g[vd].add_adapter(std::make_shared<SuperMUCAdapter>(name));
@@ -39,10 +39,10 @@ static void make_supermuc_graph(Graph &g, const char *hostname)
     MPI_Allgather(hostname, 32, MPI_CHAR, hostnames, 32, MPI_CHAR, MPI_COMM_WORLD);
 
     for (int i = 0; i < nbproc; i++) {
-        vertex_descriptor_t island_vd;
-        vertex_descriptor_t rack_vd;
-        vertex_descriptor_t column_vd;
-        vertex_descriptor_t slot_vd;
+        vertex_t island_vd;
+        vertex_t rack_vd;
+        vertex_t column_vd;
+        vertex_t slot_vd;
 
         // hostname: island,rack,column,slot
         slot_vd = g.add_vertex("machine:" + std::string{hostnames[i]});

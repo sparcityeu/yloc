@@ -17,7 +17,7 @@
 
 using namespace yloc;
 
-static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::vector<vertex_descriptor_t> &vertices)
+static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::vector<vertex_t> &vertices)
 {
     uint64_t num_interconnects = 0;
     // get connectivity and topology between devices: (assuming symmetric connection)
@@ -25,7 +25,8 @@ static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::
         for (uint32_t dev_ind_dst = dev_ind_src + 1; dev_ind_dst < num_devices; ++dev_ind_dst) {
             bool p2p_accessible;
             CHECK_ROCM_MSG(rsmi_is_P2P_accessible(dev_ind_src, dev_ind_dst, &p2p_accessible));
-            std::cout << "device " << dev_ind_src << " and " << dev_ind_dst << " are P2P " << (p2p_accessible ? "accessible" : "not accessible") << '\n';
+            std::cout << "device " << dev_ind_src << " and " << dev_ind_dst << " are P2P "
+                      << (p2p_accessible ? "accessible" : "not accessible") << '\n';
 
             // get link type
             RSMI_IO_LINK_TYPE link_type;
@@ -53,8 +54,10 @@ static uint64_t yloc_rocm_gpu_interconnect(Graph &g, uint32_t num_devices, std::
                 std::cout << "link gpu indices: " << dev_ind_src << " <-> " << dev_ind_dst << '\n';
                 std::cout << "link graph vds: " << vertices[dev_ind_src] << " <-> " << vertices[dev_ind_dst] << '\n';
 
-                auto ret = boost::add_edge(vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
-                ret = boost::add_edge(vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
+                auto ret = boost::add_edge(
+                    vertices[dev_ind_src], vertices[dev_ind_dst], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
+                ret = boost::add_edge(
+                    vertices[dev_ind_dst], vertices[dev_ind_src], Edge{edge_type::YLOC_GPU_INTERCONNECT}, g);
             }
         }
     }
@@ -70,7 +73,7 @@ yloc_status_t ModuleRocm::init_graph(Graph &g)
     CHECK_ROCM_MSG(rsmi_num_monitor_devices(&num_devices));
     std::cout << "num rocm devices: " << num_devices << '\n';
 
-    std::vector<vertex_descriptor_t> vertices(num_devices);
+    std::vector<vertex_t> vertices(num_devices);
     // std::cout << vertices.size() << '\n';
 
     if (VERBOSE_ROCM) {
@@ -96,7 +99,8 @@ yloc_status_t ModuleRocm::init_graph(Graph &g)
         bandwidth_pcie_max = f.frequency[f.num_supported - 1] * bandwidth.lanes[f.num_supported - 1];
         bandwidth_pcie_current = f.frequency[f.current] * bandwidth.lanes[f.current];
         std::cout << "GPU PCIE BANDWIDTH[bit/s]=" << bandwidth_pcie_current << " MAX=" << bandwidth_pcie_max << '\n';
-        std::cout << "GPU PCIE BANDWIDTH[GB/s]=" << bandwidth_pcie_current * 1.e-9 / 8 << " MAX=" << bandwidth_pcie_max * 1.e-9 / 8 << '\n';
+        std::cout << "GPU PCIE BANDWIDTH[GB/s]=" << bandwidth_pcie_current * 1.e-9 / 8
+                  << " MAX=" << bandwidth_pcie_max * 1.e-9 / 8 << '\n';
 
         uint32_t numa_node;
         CHECK_ROCM_MSG(rsmi_topo_numa_affinity_get(dev_index, &numa_node));

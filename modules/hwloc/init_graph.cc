@@ -135,13 +135,13 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
  * @param vd
  * @param obj
  */
-static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t vd, hwloc_obj_t obj)
+static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_t vd, hwloc_obj_t obj)
 {
     // for all children of obj: add_adapter new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
         auto adapter = std::make_shared<HwlocAdapter>(child);
-        vertex_descriptor_t child_vd;
+        vertex_t child_vd;
 
         if (hwloc_2_yloc_type(child)->is_a<PCIDevice>()) {
             std::string id = "bdfid:" + std::to_string(adapter->bdfid().value());

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <yloc/graph_element.h>
 #include <yloc/status.h>
 
@@ -10,15 +9,14 @@
 
 namespace yloc
 {
-    using boost_graph_t = boost::adjacency_list<
-        boost::vecS,           // out-edge list container selector
-        boost::vecS,           // vertex list container selector
-        boost::bidirectionalS, // sets bidirectional edges
-        Vertex,                // bundled vertex property
-        Edge>;                 // bundled edge property
+    using boost_graph_t = boost::adjacency_list<boost::vecS,           // out-edge list container selector
+                                                boost::vecS,           // vertex list container selector
+                                                boost::bidirectionalS, // sets bidirectional edges
+                                                Vertex,                // bundled vertex property
+                                                Edge>;                 // bundled edge property
 
-    using edge_descriptor_t = typename boost::graph_traits<boost_graph_t>::edge_descriptor;
-    using vertex_descriptor_t = typename boost::graph_traits<boost_graph_t>::vertex_descriptor;
+    using edge_t = typename boost::graph_traits<boost_graph_t>::edge_descriptor;
+    using vertex_t = typename boost::graph_traits<boost_graph_t>::vertex_descriptor;
 
     class Graph : public boost_graph_t
     {
@@ -44,7 +42,7 @@ namespace yloc
         /**
          * @brief Adds a new unnamed vertex to the graph.
          */
-        vertex_descriptor_t add_vertex()
+        vertex_t add_vertex()
         {
             return boost::add_vertex(*this);
         }
@@ -57,7 +55,7 @@ namespace yloc
          *
          * @param id The identifier of the vertex.
          */
-        vertex_descriptor_t add_vertex(identifier_t id)
+        vertex_t add_vertex(identifier_t id)
         {
             auto iter = m_identifier_map.find(id);
             if (iter != m_identifier_map.end()) {
@@ -71,7 +69,7 @@ namespace yloc
         /**
          * @brief Provides access to vertices of the underlying boost graph.
          */
-        auto &operator[](vertex_descriptor_t vd)
+        auto &operator[](vertex_t vd)
         {
             return this->boost_graph_t::operator[](vd);
         }
@@ -79,7 +77,7 @@ namespace yloc
         /**
          * @brief Provides access to vertices of the underlying boost graph.
          */
-        const auto &operator[](vertex_descriptor_t vd) const
+        const auto &operator[](vertex_t vd) const
         {
             return this->boost_graph_t::operator[](vd);
         }
@@ -93,23 +91,29 @@ namespace yloc
             return (*this)[m_identifier_map[id]];
         }
 
-        auto &operator[](edge_descriptor_t ed)
+        auto &operator[](edge_t ed)
         {
             return this->boost_graph_t::operator[](ed);
         }
 
-        const auto &operator[](edge_descriptor_t ed) const
+        const auto &operator[](edge_t ed) const
         {
             return this->boost_graph_t::operator[](ed);
         }
 
-        void set_root_vertex(vertex_descriptor_t vertex) noexcept { m_root_vertex = vertex; }
+        void set_root_vertex(vertex_t vertex) noexcept
+        {
+            m_root_vertex = vertex;
+        }
 
-        vertex_descriptor_t get_root_vertex() const noexcept { return m_root_vertex; }
+        vertex_t get_root_vertex() const noexcept
+        {
+            return m_root_vertex;
+        }
 
     private:
-        std::unordered_map<identifier_t, vertex_descriptor_t> m_identifier_map{};
-        vertex_descriptor_t m_root_vertex{};
+        std::unordered_map<identifier_t, vertex_t> m_identifier_map{};
+        vertex_t m_root_vertex{};
     };
 
     /**
@@ -118,4 +122,4 @@ namespace yloc
      * @return Graph&
      */
     Graph &root_graph();
-}
+} // namespace yloc
