@@ -105,6 +105,7 @@ There are CLI-Options to:
 * filter component properties
 * specify dynamic probing
 * specify output format and file
+
 See command `yloc-cli --help` for further information.
 
 ---
