@@ -99,8 +99,9 @@ TODO
 
 ### CLI
 
-The `yloc-cli` executable provides a quick way of filtering hardware information.
-There are CLI-Options to: 
+The `yloc-cli` executable provides a quick way of filtering hardware information. 
+
+There are CLI-Options to:
 * filter component types
 * filter component properties
 * specify dynamic probing
