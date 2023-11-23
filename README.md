@@ -97,6 +97,16 @@ cmake -DENABLE_EXAMPLE=OFF ..
 
 TODO
 
+### CLI
+
+The `yloc-cli` executable provides a quick way of filtering hardware information.
+There are CLI-Options to: 
+* filter component types
+* filter component properties
+* specify dynamic probing
+* specify output format and file
+See command `yloc-cli --help` for further information.
+
 ---
 
 ## yloc Modules
