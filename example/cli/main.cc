@@ -425,13 +425,23 @@ int main(int argc, char *argv[])
         // Try monolithic version
         std::set<std::string> component_types = get_component_types(&g, false);
 
-        // Error when component_to_filter is not in available component_types
+        // plausibility check of the components_to_filter argument
         for (const std::string &component_to_filter : components_to_filter) {
             bool invalid_component_found = false;
-            if (component_types.find(component_to_filter) == component_types.end()) {
+            // it is checked, whether any of the component_types actually contains the component name to filter by
+            if (!std::any_of(component_types.begin(), component_types.end(), [&](const std::string &component) -> bool {
+                return component.find(component_to_filter) != std::string::npos;
+            }))
+            {
                 invalid_component_found = true;
                 printf("Component type [%s] is not available.\n", component_to_filter.c_str());
+
             }
+
+/*            if (component_types.find(component_to_filter) == component_types.end()) {
+                invalid_component_found = true;
+                printf("Component type [%s] is not available.\n", component_to_filter.c_str());
+            }*/
             if (invalid_component_found) {
                 printf("See `yloc-cli -L` for a list of available component types.\n\n");
             //            return YLOC_STATUS_NOT_FOUND;
