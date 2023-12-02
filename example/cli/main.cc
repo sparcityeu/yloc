@@ -51,7 +51,7 @@ std::set<std::string> get_component_types(Graph *g, bool print = true)
     for (const auto& v : vertices) {
         // todo: also print the hierarchy of the types
         component_type = v.m_property.type->to_string();
-        // set will insert only unique values per default
+        // set will insert only unique values by default
         available_component_types.insert(component_type);
     }
 
@@ -149,7 +149,6 @@ void write_csv(const Graph& g, const std::string& file_name, VertexPropertiesWri
             while(elapsed_time < probing_period) {
                 write_vertex_info_to_csv(g, out, vpw);
 
-                // boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
                 printf("File [%s] written.\n", file_name.c_str());
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
@@ -285,8 +284,7 @@ void write_graph_dot_format(const Graph& g, const std::vector<std::string>& vert
 }
 
 /**
- * Writes Graph in dot-format either to std::cout (default)
- * or to file of given name.
+ * Based on the output format, the method call is delegated to specialised methods.
  *
  * @tparam Graph
  * @param g
@@ -315,7 +313,6 @@ bool is_valid_format(const std::string& output_format)
 
 int main(int argc, char *argv[])
 {
-    // todo: extract init to method
     // MPI_Init(&argc, &argv);
     yloc::init();
 
@@ -325,10 +322,12 @@ int main(int argc, char *argv[])
     std::string output_file, output_file_extension, output_format;
     std::vector<std::string> file_parts;
     std::vector<std::string> properties_to_filter;
-
-    // Defaults
-    std::vector<std::string> vertex_properties = DEFAULT_VECTOR_PROPERTIES;
     bool filter_components_flag;
+
+    // std::vector<std::string> vertex_properties = DEFAULT_VECTOR_PROPERTIES;
+    auto all_vertex_properties = get_properties(&g, false);
+    // Default
+    std::vector<std::string> vertex_properties = std::vector<std::string>(all_vertex_properties.begin(), all_vertex_properties.end());
 
     int argument;
     int option_index = 0;
@@ -438,18 +437,14 @@ int main(int argc, char *argv[])
 
             }
 
-/*            if (component_types.find(component_to_filter) == component_types.end()) {
-                invalid_component_found = true;
-                printf("Component type [%s] is not available.\n", component_to_filter.c_str());
-            }*/
             if (invalid_component_found) {
                 printf("See `yloc-cli -L` for a list of available component types.\n\n");
-            //            return YLOC_STATUS_NOT_FOUND;
+                return YLOC_STATUS_NOT_FOUND;
             }
         }
 
         // use predicate (f(v) -> bool) to filter the graph by component type
-        /*auto*/ std::function<bool(const vertex_descriptor_t &)> predicate = [&](const vertex_descriptor_t &v) -> bool {
+        /*auto*/ std::function<bool(const vertex_descriptor_t &)> vertex_predicate = [&](const vertex_descriptor_t &v) -> bool {
             // todo: an option to get all the component types in the hierarchy is needed
             auto vertex_component = g[v].type;
             std::string vertex_component_type = vertex_component->to_string();
@@ -460,14 +455,12 @@ int main(int argc, char *argv[])
             // vertex_component_type must be one of the components_to_filter
             // return components_to_filter.find(vertex_component_type) != components_to_filter.end();
         };
-        // edges are filtered by predicate "boost::keep_all{}" (keeping all edges)
-        // vertices are filtered by predicate "predicate"
+        // all edges will be kept
         /*auto*/ std::function<bool(const edge_descriptor_t &)> edge_predicate = [&](const edge_descriptor_t &v) -> bool {
             return true;
             };
-            // vertex_component_type must be one of the components_to_filter
-            // return components_to_filter.find(vertex_component_type) != components_to_filter.end();
-        auto fgv = boost::make_filtered_graph(g, edge_predicate, predicate);
+
+        auto fgv = boost::make_filtered_graph(g, edge_predicate, vertex_predicate);
 
         write_graph(fgv, vertex_properties, output_format, output_file);
     } else {

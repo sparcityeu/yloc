@@ -67,6 +67,7 @@ private:
 
 // Default Constants
 const std::array<std::string, 2> VALID_OUTPUT_FORMATS = {"dot", "csv"};
+// todo: discuss necessity
 const std::vector<std::string> DEFAULT_VECTOR_PROPERTIES = {"memory", "numa_affinity"};
 const int DEFAULT_PROBING_FREQUENCY = 1000; // in milliseconds [ms]
 const int DEFAULT_PROBING_PERIOD = 60000; // in milliseconds [ms]
