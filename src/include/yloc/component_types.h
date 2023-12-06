@@ -31,6 +31,10 @@
         {                                              \
             return #type_name;                         \
         }                                              \
+        virtual bool test_component(const Component *other) const override \
+        {                                              \
+            return nullptr != dynamic_cast<const type_name *>(other); \
+        }                                              \
     };
 
 namespace yloc
@@ -45,6 +49,12 @@ namespace yloc
         bool is_a() const
         {
             return nullptr != dynamic_cast<const ComponentType *>(this);
+        }
+
+        virtual bool test_component(const Component *other) const {
+            // Trivial cast, will always return true
+            // return nullptr != dynamic_cast<const Component *>(other);
+            return true;
         }
 
         virtual const char *to_string() const
