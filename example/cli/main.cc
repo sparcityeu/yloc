@@ -1,7 +1,6 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>      // write_graphviz
-#include <cstdio>
 #include <getopt.h>
 #include <regex>
 #include <sstream>
@@ -17,19 +16,19 @@ using namespace yloc;
 
 bool dynamic_probing_flag = false;
 int probing_frequency = DEFAULT_PROBING_FREQUENCY;
-int probing_period = DEFAULT_PROBING_PERIOD;
+int probing_period;
 
 void print_modules()
 {
     auto modules = list_modules();
 
     if (!empty(modules)) {
-        printf("Available modules:\n");
+        std::cout << "Available modules:\n";
     }
 
     for (auto *m : modules) {
         if (m->m_enabled) {
-            printf("%s\n", boost::core::demangled_name(typeid(*m)).c_str());
+            std::cout << boost::core::demangled_name(typeid(*m)).c_str() << "\n";
         }
     }
 }
@@ -57,9 +56,9 @@ std::set<std::string> get_component_types(Graph *g, bool print = true)
 
     if (print) {
         if (!empty(available_component_types)) {
-            printf("Available component-types:\n");
+            std::cout << "Available component-types:\n";
             for (const auto& c : available_component_types) {
-                printf("%s\n", c.c_str());
+                std::cout <<c.c_str() << "\n";
             }
         }
     }
@@ -97,9 +96,9 @@ std::set<std::string> get_properties(Graph *g, bool print = true)
 
     if (print) {
         if (!empty(properties)) {
-            printf("Component-Properties:\n");
+            std::cout << "Component-Properties:\n";
             for (const auto& p : properties) {
-                printf("%s\n", p.c_str());
+                std::cout << p.c_str() << "\n";
             }
         }
     }
@@ -146,24 +145,26 @@ void write_csv(const Graph& g, const std::string& file_name, VertexPropertiesWri
         out << csv_header;
 
         if (dynamic_probing_flag) {
-            while(elapsed_time < probing_period) {
+            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
+            while(elapsed_time < probing_period || probing_period == -1) {
                 write_vertex_info_to_csv(g, out, vpw);
 
-                printf("File [%s] written.\n", file_name.c_str());
+                print_file_written(file_name);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
                 elapsed_time += probing_frequency;
             }
         } else {
             write_vertex_info_to_csv(g, out, vpw);
-            printf("File [%s] written.\n", file_name.c_str());
+            print_file_written(file_name);
         }
     } else {
         std::ostream& out = std::cout;
         out << csv_header;
 
         if (dynamic_probing_flag) {
-            while(elapsed_time < probing_period) {
+            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
+            while(elapsed_time < probing_period || probing_period == -1) {
                 write_vertex_info_to_csv(g, out, vpw);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
@@ -221,14 +222,15 @@ void write_dot(const Graph& g, const std::string& file_name, VertexPropertiesWri
         std::ofstream ofs{file_name};
 
         if (dynamic_probing_flag) {
-            while(elapsed_time < probing_period) {
+            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
+            while(elapsed_time < probing_period || probing_period == -1) {
                 // File is getting open and closed, so that content will be overwritten and not appended.
                 if (!ofs.is_open()) {
                     ofs.open(file_name);
                 }
                 boost::write_graphviz(ofs, g, vpw, epw);
                 ofs.close();
-                printf("File [%s] written.\n", file_name.c_str());
+                print_file_written(file_name);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
 
@@ -236,11 +238,12 @@ void write_dot(const Graph& g, const std::string& file_name, VertexPropertiesWri
             }
         } else {
             boost::write_graphviz(ofs, g, vpw, epw);
-            printf("File [%s] written.\n", file_name.c_str());
+            print_file_written(file_name);
         }
     } else {
         if (dynamic_probing_flag) {
-            while(elapsed_time < probing_period) {
+            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
+            while(elapsed_time < probing_period || probing_period == -1) {
                 boost::write_graphviz(std::cout, g, vpw, epw);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
@@ -303,12 +306,8 @@ void write_graph(const Graph& g, const std::vector<std::string>& vertex_properti
 
 bool is_valid_format(const std::string& output_format)
 {
-    bool is_valid = std::find(VALID_OUTPUT_FORMATS.begin(), VALID_OUTPUT_FORMATS.end(), output_format)
+    return std::find(VALID_OUTPUT_FORMATS.begin(), VALID_OUTPUT_FORMATS.end(), output_format)
                     != VALID_OUTPUT_FORMATS.end();
-    if (!is_valid) {
-        printf("Format [%s] is not supported. Check option -O for supported output formats.\n", output_format.c_str());
-    }
-    return is_valid;
 }
 
 int main(int argc, char *argv[])
@@ -331,7 +330,7 @@ int main(int argc, char *argv[])
 
     int argument;
     int option_index = 0;
-    while ((argument = getopt_long(argc, argv, "hMCPOc:p:d::l:o:f:", long_options, &option_index)) != -1) {
+    while ((argument = getopt_long(argc, argv, "hMCPOc:p:d:q:o:f:", long_options, &option_index)) != -1) {
         switch (argument) {
             case 'h':
                 show_help();
@@ -358,31 +357,30 @@ int main(int argc, char *argv[])
                 break;
             case 'd':
                 dynamic_probing_flag = true;
-                if (OPTIONAL_ARGUMENT_IS_PRESENT) {
-                    probing_frequency = (int) std::strtol(optarg, nullptr, 10);
-                }
-                break;
-            case 'l':
                 probing_period = (int) std::strtol(optarg, nullptr, 10);
+                break;
+            case 'q':
+                probing_frequency = (int) std::strtol(optarg, nullptr, 10);
                 break;
             case 'o':
                 output_file = optarg;
                 file_parts = parse_string(output_file, ".");
                 if (file_parts.size() > 1) {
-                    output_file_extension = file_parts.back();
-                    if (!is_valid_format(output_file_extension)) {
-                        return YLOC_STATUS_INVALID_ARGS;
+                    auto file_extension = file_parts.back();
+                    if (is_valid_format(file_extension)) {
+                        output_file_extension = file_extension;
                     }
                 }
                 break;
             case 'f':
                 output_format = optarg;
                 if (!is_valid_format(output_format)) {
+                    std::cerr << "Format [" << output_format.c_str() << "] is not supported. Check option -O for supported output formats.\n";
                     return YLOC_STATUS_INVALID_ARGS;
                 }
                 break;
             default:
-                printf("Incorrect Command-line parameter given.\n");
+                std::cerr << "Incorrect Command-line parameter given.\n\n";
                 show_help();
                 return YLOC_STATUS_INVALID_ARGS;
         }
@@ -404,10 +402,10 @@ int main(int argc, char *argv[])
                 bool invalid_property_found = false;
                 if (properties.find(property_to_filter) == properties.end()) {
                     invalid_property_found = true;
-                    printf("Property [%s] is not available.\n", property_to_filter.c_str());
+                    std::cerr << "Property [" << property_to_filter.c_str() << "] is not available.\n";
                 }
                 if (invalid_property_found) {
-                    printf("See `yloc-cli -P` for a list of available properties.\n\n");
+                    std::cerr << "See `yloc-cli -P` for a list of available properties.\n";
                     return YLOC_STATUS_NOT_FOUND;
                 }
         }
@@ -433,12 +431,12 @@ int main(int argc, char *argv[])
             }))
             {
                 invalid_component_found = true;
-                printf("Component type [%s] is not available.\n", component_to_filter.c_str());
+                std::cerr << "Component type [" << component_to_filter.c_str() << "] is not available.\n";
 
             }
 
             if (invalid_component_found) {
-                printf("See `yloc-cli -L` for a list of available component types.\n\n");
+                std::cerr << "See `yloc-cli -L` for a list of available component types.\n";
                 return YLOC_STATUS_NOT_FOUND;
             }
         }
