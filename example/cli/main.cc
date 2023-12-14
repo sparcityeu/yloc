@@ -432,7 +432,6 @@ int main(int argc, char *argv[])
             {
                 invalid_component_found = true;
                 std::cerr << "Component type [" << component_to_filter.c_str() << "] is not available.\n";
-
             }
 
             if (invalid_component_found) {
