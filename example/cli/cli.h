@@ -42,8 +42,8 @@ static struct option long_options[] =
         {"list-component-types", no_argument, nullptr, 'C'},
         {"list-properties-per-component", no_argument, nullptr, 'P'},
         {"list-output-formats", no_argument, nullptr, 'O'},
-        {"component-types", required_argument, nullptr, 'c'},
-        {"vertex-properties", required_argument, nullptr, 'p'},
+        {"filter-component-types", required_argument, nullptr, 'c'},
+        {"filter-hardware-properties", required_argument, nullptr, 'p'},
         {"dynamic-probing-period", required_argument, nullptr, 'd'},
         {"dynamic-probing-frequency", required_argument, nullptr, 'q'},
         {"output", required_argument, nullptr, 'o'},
@@ -58,7 +58,7 @@ public:
     template < class VertexOrEdge >
     void operator()(std::ostream& out, const VertexOrEdge& v) const
     {
-        out << get(name, v);
+        out << (name, v);
     }
 
 private:
@@ -115,8 +115,8 @@ void show_help()
            "                            based on the abstract machine model at ylocs core;\n"
            "                            listed component types can be used to filter\n"
            "                            specific information, see option -c\n"
-           "  -P, --list-properties-per-component\n"
-           "                            list properties per component type and exit;\n"
+           "  -P, --list-hardware-properties\n"
+           "                            list hardware properties and exit;\n"
            "                            based on the abstract machine model at ylocs core;\n"
            "                            listed properties can be used to filter\n"
            "                            specific information, see option -p\n"
@@ -126,10 +126,10 @@ void show_help()
            "                            file extension for option -o\n"
            "                            and also as argument for option -f\n"
            "\n"
-           "  -c, --components=COMPONENT1,COMPONENT2\n"
-           "                            only include listed component-types in resulting graph\n"
-           "  -p, --vertex-properties=PROPERTY1,PROPERTY2\n"
-           "                            only include listed properties in vertices of resulting graph\n"
+           "  -c, --filter-component-types=COMPONENT1,COMPONENT2\n"
+           "                            only include listed component-types in resulting output\n"
+           "  -p, --filter-hardware-properties=PROPERTY1,PROPERTY2\n"
+           "                            only include listed properties in resulting output\n"
            "  -d, --dynamic-probing-period=PROBING-PERIOD\n"
            "                            periodically probe hardware to see dynamic changes;\n"
            "                            process will keep running until the given PROBING-PERIOD is\n"
