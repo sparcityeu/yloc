@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
             }
 
             if (invalid_component_found) {
-                std::cerr << "See `yloc-cli -L` for a list of available component types.\n";
+                std::cerr << "See `yloc-cli -C` for a list of available component types.\n";
                 return YLOC_STATUS_NOT_FOUND;
             }
         }
