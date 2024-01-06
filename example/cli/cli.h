@@ -101,7 +101,9 @@ std::string date_time_in_milliseconds()
 void show_help()
 {
     std::cout << "Usage: yloc-cli [OPTION]...\n"
-           "Get a graph representation of the hardware topology of your system.\n"
+           "Get information about the hardware topology of your system.\n"
+           "Output can be formatted as dot for graph representation,\n"
+           "or as csv for tabular representation.\n"
            "If no additional OPTION is given, the command will print\n"
            "a dot-format graph representation of the host machine to stdout.\n"
            "\n"
@@ -129,7 +131,7 @@ void show_help()
            "  -c, --filter-component-types=COMPONENT1,COMPONENT2\n"
            "                            only include listed component-types in resulting output\n"
            "  -p, --filter-hardware-properties=PROPERTY1,PROPERTY2\n"
-           "                            only include listed properties in resulting output\n"
+           "                            only include listed hardware properties in resulting output\n"
            "  -d, --dynamic-probing-period=PROBING-PERIOD\n"
            "                            periodically probe hardware to see dynamic changes;\n"
            "                            process will keep running until the given PROBING-PERIOD is\n"
@@ -160,6 +162,17 @@ void show_help()
            "                            -f will determine format regardless of any file-extension\n"
            "  -h, --help        display this help and exit\n"
            "\n"
+           "Examples\n"
+           "  Get overview of hardware topology\n"
+           "                            yloc-cli\n"
+           "  Pipe output to GrahpViz to get an image\n"
+           "                            yloc-cli | dot -Tpng > full_graph.png\n"
+           "  Filter specific information\n"
+           "                            yloc-cli -c Core,Cache -p numa_affinity,memory\n"
+           "  Monitor hardware properties\n"
+           "                            yloc-cli -d 4000 -q 1000 -f csv\n"
+           "  Start an endless run\n"
+           "                            yloc-cli -d -1 -f csv -o hardware_information.txt\n"
            "Further information: <https://github.com/sparcityeu/yloc>\n";
 }
 
