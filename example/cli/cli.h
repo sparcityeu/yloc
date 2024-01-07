@@ -167,6 +167,8 @@ void show_help()
            "                            yloc-cli\n"
            "  Pipe output to GrahpViz to get an image\n"
            "                            yloc-cli | dot -Tpng > full_graph.png\n"
+           "  Pipe output to GrahpViz to open as image in a new window\n"
+           "                            yloc-cli | dot -Tx11\n"
            "  Filter specific information\n"
            "                            yloc-cli -c Core,Cache -p numa_affinity,memory\n"
            "  Monitor hardware properties\n"
