@@ -37,10 +37,12 @@ using namespace yloc;
 
 static struct option long_options[] =
     {
+        {"Help", no_argument, nullptr, 'H'},
+        // included for consistency with other CLIs
         {"help", no_argument, nullptr, 'h'},
         {"list-modules", no_argument, nullptr, 'M'},
         {"list-component-types", no_argument, nullptr, 'C'},
-        {"list-properties-per-component", no_argument, nullptr, 'P'},
+        {"list-hardware-properties", no_argument, nullptr, 'P'},
         {"list-output-formats", no_argument, nullptr, 'O'},
         {"filter-component-types", required_argument, nullptr, 'c'},
         {"filter-hardware-properties", required_argument, nullptr, 'p'},

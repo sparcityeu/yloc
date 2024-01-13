@@ -330,9 +330,10 @@ int main(int argc, char *argv[])
 
     int argument;
     int option_index = 0;
-    while ((argument = getopt_long(argc, argv, "hMCPOc:p:d:q:o:f:", long_options, &option_index)) != -1) {
+    while ((argument = getopt_long(argc, argv, "hHMCPOc:p:d:q:o:f:", long_options, &option_index)) != -1) {
         switch (argument) {
             case 'h':
+            case 'H':
                 show_help();
                 return YLOC_STATUS_SUCCESS;
             case 'M':
