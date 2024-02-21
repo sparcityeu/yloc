@@ -63,122 +63,78 @@ been designed with these principles in mind:
 
 ---
 
-## Documentation
-
-### Requirements, Download, Build and Install
+## Requirements, Download, Build and Install
 
 `yloc` uses the CMake build system.
-In order to configure the software create a build folder and call `cmake <yloc-root>`  from within.
+In order to configure the software create a build folder and call `cmake <yloc-root>` from within a build folder.
 
-```
+```bash
 git clone <yloc-repo>/yloc.git
 cd yloc
 mkdir -p build ; cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 
 CMake will check for dependencies and fail with according messages if they are not met.
 Otherwise build files are generated that can be executed either with `make` or `cmake --build .`
 
-By default `yloc` only depends on the Boost Graph Library.
+By default `yloc` depends on the Boost Graph Library.
+For the moment, `yloc` also depends on `hwloc` as the primary source of topology information.
 There are further dependencies for the different modules, altough they aren't usually mandatory.
-For the moment we strongly recommend `hwloc` as primary source of topology information.
 
 There are CMake options to change the default build of yloc.
 To list all available options use `cmake -L` from the build folder.
 At the moment there are options to enable or disable specific modules: `ENABLE_<MODULE>`.
 They can be set using `cmake -D`:
 
-```
+```bash
 cmake -DENABLE_EXAMPLE=OFF ..
 ```
 
-### API Reference
+## API Reference
 
-TODO
+Yloc uses the Boost Graph Library (BGL) to represent the hardware topology in a graph.
+A topology graph can be created by constructing a `yloc::Graph` object.
+Its class is compatible with BGL and can be used e.g. in the BGL algorithms.
+
+See the examples in the `example` folder and the documentation in the `build/doc` folder for further details.
+
+### Vertex / Edge Property API
+
+Text about properties
+
+```CPP
+yloc::Graph graph{};
+
+for(auto vertex : boost::vertices(graph)) {
+  // query property (e.g. "memory") of vertex:
+  auto val = graph[vertex].get<uint64_t>("property_name");
+   // access property value of vertex:
+  if(val.has_value()) val.get();
+}
+
+for(auto edge : boost::edges(graph)) {
+  // query property (e.g. "latency") of edge:
+  auto val = graph[edge].get<uint64_t>("property_name");
+   // access property value of edge:
+  if(val.has_value()) val.get();
+}
+```
+
+### Query API
 
 ---
 
 ## yloc Modules
 
-Writing an own module involves implementing two classes: the new module class that implements the YlocModule interface, and the module's adapter class.
-The adapter class specifies the list of available properties, and how these properties are accessed in the module.
-
----
-
-### Module Interface
-
-```CPP
-#include <yloc/modules/module.h>
-
-using yloc::Graph;
-using yloc::YlocModule;
-
-class ExampleModule : public YlocModule
-{
-
-public:
-    void init_graph(Graph &graph) override
-    {
-        return;
-    }
-
-    void export_graph(const Graph &graph, void **output) const override
-    {
-        output = nullptr; return;
-    }
-
-    void update_graph(Graph &graph) override
-    {
-        return;
-    }
-
-private:
-};
-
-```
-
-### Module Adapter
-
-```CPP
-#include <yloc/modules/adapter.h>
-
-class MyAdapter : public yloc::Adapter
-{
-    using obj_t = MyTopologyObjectType;
-
-public:
-    MyAdapter(obj_t obj) : m_obj(obj) {}
-
-    std::optional<std::string> as_string() const override
-    {
-        /* string representation of object */
-    }
-
-    std::optional<uint64_t> memory() const override
-    {
-        /* implementation for memory property */
-    }
-
-    /* [...] */
-
-    std::optional<uint64_t> my_custom_property() const override
-    {
-        /* implementation for custom property */
-    }
-
-    obj_t native_obj() const { return m_obj; }
-
-private:
-    obj_t m_obj;
-};
-```
+The yloc topology graph is generated and modified by modules.
+Yloc can be extended via custom modules. See the [Module Readme](./modules/README.md) for how to write a module.
 
 ---
 
 ### Supported Topology Information Systems
 
-Yloc implements modules for the following topology information systems:
+Yloc currently implements modules for the following topology information systems:
 
 - [hwloc](https://www.open-mpi.org/projects/hwloc/)
 - [ROCm System Management Interface (ROCm SMI) Library](https://github.com/RadeonOpenCompute/rocm_smi_lib)
