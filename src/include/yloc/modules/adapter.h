@@ -67,7 +67,6 @@ namespace yloc
         }
 
         /* virtual Module *        source() = 0; */
-        /* virtual vertex_descriptor_t source_descriptor() { return m_vd; } */
 
         /**
          * @brief Gets string representation of component.

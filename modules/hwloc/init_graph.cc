@@ -171,7 +171,7 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_t vd, hwloc_ob
 }
 
 /* runtime check for matching hwloc abi from hwloc documentation */
-static void check_hwloc_api_version()
+yloc_status_t check_hwloc_api_version()
 {
     /** TODO: probably move that piece of code to constructor of hwloc module */
     unsigned version = hwloc_get_api_version();
@@ -181,8 +181,9 @@ static void check_hwloc_api_version()
                 "You may need to point LD_LIBRARY_PATH to the right hwloc library.\n"
                 "Aborting since the new ABI is not backward compatible.\n",
                 __func__, HWLOC_API_VERSION, version);
-        exit(EXIT_FAILURE);
+        return YLOC_STATUS_INIT_ERROR;
     }
+    return YLOC_STATUS_SUCCESS;
 }
 
 static void set_hwloc_options(hwloc_topology_t &t)
@@ -208,7 +209,10 @@ ModuleHwloc::~ModuleHwloc()
 
 yloc_status_t ModuleHwloc::init_graph(Graph &g)
 {
-    check_hwloc_api_version();
+    yloc_status_t ret;
+    if((ret = check_hwloc_api_version()) != YLOC_STATUS_SUCCESS) {
+        return ret;
+    }
 
     hwloc_topology_t &t = m_topology;
     hwloc_topology_init(&t);

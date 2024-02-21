@@ -23,7 +23,7 @@ namespace yloc
             if (it != Adapter::map().end()) {
                 auto property = it->second;
                 if (property->supports(typeid(RT))) {
-                    for (std::shared_ptr<Adapter> a : m_adapters) {
+                    for (const auto &a : m_adapters) {
                         auto ret = std::dynamic_pointer_cast<Property<RT>>(property)->value(a.get());
                         if (ret.has_value()) {
                             return ret;
@@ -33,7 +33,7 @@ namespace yloc
             }
             // then search custom module-specific properties
             else {
-                for (std::shared_ptr<Adapter> a : m_adapters) {
+                for (const auto &a : m_adapters) {
                     auto it = a->module_map().find(property_name);
                     if (it != a->module_map().end()) {
                         auto property = it->second;
@@ -49,19 +49,20 @@ namespace yloc
             return {};
         }
 
-        template <class ComponentType>
-        bool is_a() const noexcept { return m_type->is_a<ComponentType>(); }
-
-        std::string to_string() const { return std::string{m_type->to_string()} + ": " + m_description; }
-
-        [[deprecated("use void add_adapter(std::shared_ptr<Adapter> a) instead")]] void add_adapter(Adapter *a)
+        void add_adapter(std::shared_ptr<Adapter> &&a)
         {
-            m_adapters.push_back(std::shared_ptr<Adapter>{a});
+            m_adapters.push_back(std::move(a));
         }
 
-        void add_adapter(std::shared_ptr<Adapter> a)
+        template <class ComponentType>
+        bool is_a() const noexcept
         {
-            m_adapters.push_back(a);
+            return m_type->is_a<ComponentType>();
+        }
+
+        std::string to_string() const
+        {
+            return std::string{m_type->to_string()} + ": " + m_description;
         }
 
         std::vector<std::shared_ptr<Adapter>> m_adapters{};
@@ -76,7 +77,7 @@ namespace yloc
         auto it = Adapter::map().find(property_name);
         if (it != Adapter::map().end()) {
             auto property = it->second;
-            for (std::shared_ptr<Adapter> a : m_adapters) {
+            for (const auto &a : m_adapters) {
                 auto ret = property->value_to_string(a.get());
                 if (ret.has_value()) {
                     return ret;
@@ -85,7 +86,7 @@ namespace yloc
         }
         // then search custom module-specific properties
         else {
-            for (std::shared_ptr<Adapter> a : m_adapters) {
+            for (const auto &a : m_adapters) {
                 auto it = a->module_map().find(property_name);
                 if (it != a->module_map().end()) {
                     auto property = it->second;

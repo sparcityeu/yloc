@@ -17,20 +17,20 @@
 /** TODO: Fox multiple inheritance from non-virtual base class */
 
 /** @brief Helper macro for type declaration. */
-#define YLOC_DECLARE_TYPE(type_name, ...)              \
-    class type_name : virtual public __VA_ARGS__       \
-    {                                                  \
-    public:                                            \
-        virtual ~type_name() = default;                \
-        inline static const type_name *ptr()           \
-        {                                              \
-            static const type_name s;                  \
-            return &s;                                 \
-        }                                              \
-        virtual const char *to_string() const override \
-        {                                              \
-            return #type_name;                         \
-        }                                              \
+#define YLOC_DECLARE_TYPE(type_name, ...)                                                                              \
+    class type_name : virtual public __VA_ARGS__                                                                       \
+    {                                                                                                                  \
+    public:                                                                                                            \
+        virtual ~type_name() = default;                                                                                \
+        inline static const type_name *ptr() noexcept                                                                  \
+        {                                                                                                              \
+            static const type_name s;                                                                                  \
+            return &s;                                                                                                 \
+        }                                                                                                              \
+        virtual const char *to_string() const noexcept override                                                        \
+        {                                                                                                              \
+            return #type_name;                                                                                         \
+        }                                                                                                              \
     };
 
 namespace yloc
@@ -42,12 +42,12 @@ namespace yloc
         virtual ~Component() = default;
 
         template <class ComponentType>
-        bool is_a() const
+        bool is_a() const noexcept
         {
             return nullptr != dynamic_cast<const ComponentType *>(this);
         }
 
-        virtual const char *to_string() const
+        virtual const char *to_string() const noexcept
         {
             return "Component";
         }
@@ -166,4 +166,4 @@ namespace yloc
 
     YLOC_DECLARE_TYPE(LogicalComponent, Component)
     YLOC_DECLARE_TYPE(MPIProcess, LogicalComponent)
-}
+} // namespace yloc
