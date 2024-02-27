@@ -77,6 +77,8 @@ namespace yloc
                     case edge_type::GPU_INTERCONNECT:
                         ss << "gpu2gpu";
                         break;
+                    default:
+                        break;
                     }
                 }
                 return ss.str();
