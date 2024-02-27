@@ -20,7 +20,7 @@ namespace yloc
         yloc_status_t update_graph(Graph &graph) override
         {
             return YLOC_STATUS_NOT_SUPPORTED;
-        };
+        }
 
     private:
     };
