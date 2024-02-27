@@ -40,7 +40,10 @@ namespace yloc
     }
 
     template <class Graph>
-    void write_graph_dot_file(const Graph &g, std::string dot_file_name, std::vector<std::string> vertex_properties)
+    void write_graph_dot_file(const Graph &g,
+                              std::string dot_file_name,
+                              std::vector<std::string> vertex_properties,
+                              bool edge_labels = false)
     {
         std::ofstream ofs{dot_file_name};
 
@@ -62,8 +65,20 @@ namespace yloc
 
         auto epmt = boost::make_transform_value_property_map(
             [&](edge_type edgetype) {
-                std::stringstream ss;
-                ss << ((edgetype == edge_type::PARENT) ? "parent" : "child");
+                std::stringstream ss{};
+                if (edge_labels) {
+                    switch (edgetype) {
+                    case edge_type::PARENT:
+                        ss << "parent";
+                        break;
+                    case edge_type::CHILD:
+                        ss << "child";
+                        break;
+                    case edge_type::GPU_INTERCONNECT:
+                        ss << "gpu2gpu";
+                        break;
+                    }
+                }
                 return ss.str();
             },
             boost::get(&Edge::m_edgetype, g));
