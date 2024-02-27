@@ -26,9 +26,9 @@ int main(int argc, char *argv[])
     if (rank == 0) {
         for (auto v1 : boost::make_iterator_range(boost::vertices(graph_view))) {
             auto dist = yloc::bfs_distance_vector(g, v1);
-            std::cout << "distance from mpi rank " << g[v1].get<uint64_t>("mpi_rank").value() << '\n';
+            std::cout << "distance from mpi rank " << g[v1].get("mpi_rank").value() << '\n';
             for (auto v2 : boost::make_iterator_range(boost::vertices(graph_view))) {
-                std::cout << "to " << g[v2].get<uint64_t>("mpi_rank").value() << ": " << dist[v2] << '\n';
+                std::cout << "to " << g[v2].get("mpi_rank").value() << ": " << dist[v2] << '\n';
             }
         }
 

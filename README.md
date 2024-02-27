@@ -108,14 +108,14 @@ yloc::Graph graph{};
 
 for(auto vertex : boost::vertices(graph)) {
   // query property (e.g. "memory") of vertex:
-  auto val = graph[vertex].get<uint64_t>("property_name");
+  auto val = graph[vertex].get("property_name");
    // access property value of vertex:
   if(val.has_value()) val.get();
 }
 
 for(auto edge : boost::edges(graph)) {
   // query property (e.g. "latency") of edge:
-  auto val = graph[edge].get<uint64_t>("property_name");
+  auto val = graph[edge].get("property_name");
    // access property value of edge:
   if(val.has_value()) val.get();
 }

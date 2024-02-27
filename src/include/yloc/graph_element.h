@@ -15,7 +15,14 @@ namespace yloc
     /* vertex / edge properties */
     struct GraphElement {
 
-        template <class RT>
+        /**
+         * @brief Gets the graph element's value of property with name property_name
+         * 
+         * @tparam RT - The value type of the property (default uint64_t)
+         * @param property_name - The property name
+         * @return std::optional<RT> - The value of the property
+         */
+        template <class RT = uint64_t>
         std::optional<RT> get(std::string_view property_name) const
         {
             // first search global yloc properties
@@ -48,7 +55,7 @@ namespace yloc
             }
             return {};
         }
-
+        
         void add_adapter(std::shared_ptr<Adapter> &&a)
         {
             m_adapters.push_back(std::move(a));
