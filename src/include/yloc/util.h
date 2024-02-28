@@ -87,4 +87,17 @@ namespace yloc
 
         boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
     }
+
+
+    template <class Graph>
+    auto vertex_range(const Graph &graph)
+    {
+        return boost::make_iterator_range(boost::vertices(graph));
+    }
+
+    template <class Graph>
+    auto edge_range(const Graph &graph)
+    {
+        return boost::make_iterator_range(boost::edges(graph));
+    }
 } // namespace yloc

@@ -1,6 +1,7 @@
 #include <vector>
 
 #include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/visitors.hpp>
 #include <mpi.h>
 
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
 
-    if(yloc::init() != YLOC_STATUS_SUCCESS) {
+    if (yloc::init() != YLOC_STATUS_SUCCESS) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
@@ -25,11 +26,14 @@ int main(int argc, char *argv[])
     auto graph_view = boost::make_filtered_graph(
         g, boost::keep_all{}, [&](yloc::vertex_t v) { return g[v].is_a<yloc::MPIProcess>(); });
 
+    // yloc::vertices(graph_view);
+    yloc::vertex_range(graph_view);
+
     if (rank == 0) {
-        for (auto v1 : boost::make_iterator_range(boost::vertices(graph_view))) {
+        for (auto v1 : yloc::vertex_range(graph_view)) {
             auto dist = yloc::bfs_distance_vector(g, v1);
             std::cout << "distance from mpi rank " << g[v1].get("mpi_rank").value() << '\n';
-            for (auto v2 : boost::make_iterator_range(boost::vertices(graph_view))) {
+            for (auto v2 : yloc::vertex_range(graph_view)) {
                 std::cout << "to " << g[v2].get("mpi_rank").value() << ": " << dist[v2] << '\n';
             }
         }

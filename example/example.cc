@@ -1,3 +1,4 @@
+#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>      // write_graphviz
 #include <boost/property_map/property_map.hpp>
@@ -57,7 +58,7 @@ static void find_distances(Graph &g)
 
     // get the minimum distance to the PU's
     auto mindist = distances[*boost::vertices(fgv_pu).first];
-    for (auto vd : boost::make_iterator_range(boost::vertices(fgv_pu))) {
+    for (auto vd : yloc::vertex_range(fgv_pu)) {
         if (distances[vd] < mindist) {
             mindist = distances[vd];
         }
@@ -68,7 +69,7 @@ static void find_distances(Graph &g)
     auto fgv_pu_min =
         boost::make_filtered_graph(fgv_pu, boost::keep_all{}, [&](vertex_t v) { return !(distances[v] > mindist); });
 
-    for (auto vd : boost::make_iterator_range(boost::vertices(fgv_pu_min))) {
+    for (auto vd : yloc::vertex_range(fgv_pu_min)) {
         std::cout << "#hops [" << *vi << " -> " << vd << "] = " << distances[vd] << "\n";
     }
 }
