@@ -1,9 +1,7 @@
-find_package(Doxygen)
-
 option(BUILD_DOC "Build documentation") # default: OFF
-if (CMAKE_BUILD_TYPE MATCHES "^[Rr]elease" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
-    set(BUILD_DOC ON)
-endif()
+#if (CMAKE_BUILD_TYPE MATCHES "^[Rr]elease" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+#    set(BUILD_DOC ON)
+#endif()
 
 # check if Doxygen is installed
 find_package(Doxygen)

@@ -93,6 +93,19 @@ cmake -DENABLE_EXAMPLE=OFF ..
 
 ## API Reference
 
+To generate the documentation in HTML or PDF format run:
+
+```bash
+cd build
+cmake .. -DBUILD_DOC=ON
+# html reference manual created in docs/html/index.html
+
+# to generate the reference manual as pdf:
+cd docs/latex
+make -j
+# generates refman.pdf in docs/latex
+```
+
 Yloc uses the Boost Graph Library (BGL) to represent the hardware topology in a graph.
 A topology graph can be created by constructing a `yloc::Graph` object.
 Its class is compatible with BGL and can be used e.g. in the BGL algorithms.

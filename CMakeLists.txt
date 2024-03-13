@@ -25,5 +25,7 @@ include_directories("${CMAKE_SOURCE_DIR}/src/include")
 add_subdirectory(modules)
 add_subdirectory(src)
 add_subdirectory(example)
+
 # build the documentation
-# add_subdirectory(docs)
+add_subdirectory(docs)
+
