@@ -42,3 +42,6 @@ Makefile
 
 # Dot files (graphwiz)
 *.dot
+
+# PDF output
+*.pdf
