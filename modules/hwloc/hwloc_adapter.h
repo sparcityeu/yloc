@@ -9,19 +9,6 @@
 
 #define VERBOSE_HWLOC_ATTRIBUTES 0
 
-static yloc::AffinityMask hwloc_2_yloc_mask(hwloc_bitmap_t mask)
-{
-    yloc::AffinityMask yloc_mask{};
-    unsigned id;
-    hwloc_bitmap_foreach_begin(id, mask)
-    {
-        assert(id < NPROCESSORS_ONLN);
-        yloc_mask[id] = hwloc_bitmap_isset(mask, id);
-    }
-    hwloc_bitmap_foreach_end();
-    return yloc_mask;
-}
-
 namespace yloc
 {
     class HwlocAdapter : public Adapter
@@ -76,7 +63,7 @@ namespace yloc
             if (m_obj->cpuset == nullptr) {
                 return {};
             }
-            return hwloc_2_yloc_mask(m_obj->cpuset);
+            return m_obj->cpuset;
         }
 
         /** abstract machine model end **/

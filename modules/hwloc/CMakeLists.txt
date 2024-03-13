@@ -15,3 +15,5 @@ find_package(HWLOC REQUIRED)
 
 target_include_directories(${MOD_TARGET} PRIVATE ${HWLOC_INCLUDE_DIRS})
 target_link_libraries(${MOD_TARGET} ${HWLOC_LIBRARIES})
+
+add_compile_definitions(YLOC_WITH_HWLOC=1)
