@@ -63,27 +63,42 @@ been designed with these principles in mind:
 
 ---
 
-## Requirements, Download, Build and Install
+## Requirements, Build and Install
 
-`yloc` uses the CMake build system.
-In order to configure the software create a build folder and call `cmake <yloc-root>` from within a build folder.
+### Requirements
 
-```bash
-git clone <yloc-repo>/yloc.git
-cd yloc
-mkdir -p build ; cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-```
-
-CMake will check for dependencies and fail with according messages if they are not met.
-Otherwise build files are generated that can be executed either with `make` or `cmake --build .`
+`yloc` uses the CMake build system (required CMake version 3.12+).
 
 By default `yloc` depends on the Boost Graph Library.
 For the moment, `yloc` also depends on `hwloc` as the primary source of topology information.
 There are further dependencies for the different modules, altough they aren't usually mandatory.
 
+
+### Building
+
+In order to configure the software, create a build folder and run `cmake <yloc-root>` from within a build folder.
+
+For example:
+
+```bash
+cd yloc
+mkdir -p build ; cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j
+```
+
+CMake will check for dependencies and fail with according messages if they are not met.
+Otherwise build files are generated that can be executed either with `make` or `cmake --build .`
+
 There are CMake options to change the default build of yloc.
 To list all available options use `cmake -L` from the build folder.
+
+At the moment there are options to enable or disable specific modules: `YLOC_ENABLE_<MODULE>`.
+They can be set using `cmake -D`, for example to deactivate usage of the NVML module:
+
+```bash
+cmake -DYLOC_ENABLE_NVML=OFF ..
+```
 
 ### Installation
 
