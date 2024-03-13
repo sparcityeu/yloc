@@ -84,11 +84,15 @@ There are further dependencies for the different modules, altough they aren't us
 
 There are CMake options to change the default build of yloc.
 To list all available options use `cmake -L` from the build folder.
-At the moment there are options to enable or disable specific modules: `ENABLE_<MODULE>`.
-They can be set using `cmake -D`:
+
+### Installation
 
 ```bash
-cmake -DENABLE_EXAMPLE=OFF ..
+cd build
+cmake --install-prefix <install folder>
+make install
+# uninstall:
+# xargs rm < install_manifest.txt
 ```
 
 ## API Reference
