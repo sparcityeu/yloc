@@ -21,18 +21,7 @@ namespace yloc
          * @return yloc_status_t
          */
         virtual yloc_status_t init_graph(Graph &graph) = 0;
-
-        virtual yloc_status_t export_graph(const Graph &graph, void **output) = 0;
-
-        virtual yloc_status_t update_graph(Graph &graph) = 0;
-        // Manual(?) trigger for an update on the graph
-        // Thread logic in module or in init?
-        // Probably both, modules that require push logic need internal threads.
-        // Otherwise keep thread logic in init or modules
-        //
-        // An alternative would be to add a auto-update function to the interface,
-        // this would be a good place to add an per-module interval
-
+        
         init_order m_init_order{init_order::FIRST};
         bool m_enabled{true};
     };
