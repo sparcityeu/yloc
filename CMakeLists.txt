@@ -18,6 +18,8 @@ add_compile_definitions(NPROCESSORS_ONLN=${NPROCESSORS_ONLN})
 # path for cmake files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(ClangTidy)
+
 include_directories("${CMAKE_SOURCE_DIR}/src/include")
 
 add_subdirectory(modules)
