@@ -47,7 +47,7 @@ static struct option long_options[] =
         {"filter-component-types", required_argument, nullptr, 'c'},
         {"filter-hardware-properties", required_argument, nullptr, 'p'},
         {"dynamic-probing-period", required_argument, nullptr, 'd'},
-        {"dynamic-probing-frequency", required_argument, nullptr, 'q'},
+        {"dynamic-probing-interval", required_argument, nullptr, 'i'},
         {"output", required_argument, nullptr, 'o'},
         {"output-format", required_argument, nullptr, 'f'},
         {nullptr, 0, nullptr, 0}
@@ -142,19 +142,19 @@ void show_help()
            "                            process will keep running until the given\n"
            "                            PROBING-PERIOD is reached, the PROBING-PERIOD should\n"
            "                            be in milliseconds;\n"
-           "                            the default probing-frequency is 1000 ms,\n"
+           "                            the default probing-interval is 1000 ms,\n"
            "                            setting the PROBING-PERIOD to -1, triggers an\n"
            "                            endless run;\n"
-           "                            a custom probing-frequency can be set with\n"
+           "                            a custom probing-interval can be set with -i;\n"
            "                            if an output-file is given and format is dot, the\n"
            "                            output-file will be overwritten for each sampling\n"
            "                            point (to enable live observation of a graph);\n"
            "                            csv output will be appended (to enable further\n"
            "                            analysis)\n"
-           "  -q, --dynamic-probing-frequency=PROBING-FREQUENCY\n"
-           "                            sets a custom PROBING-FREQUENCY for the probing\n"
+           "  -q, --dynamic-probing-interval=PROBING-INTERVAL\n"
+           "                            sets a custom probing interval for the probing\n"
            "                            period;\n"
-           "                            PROBING-FREQUENCY must be in milliseconds\n"
+           "                            PROBING-INTERVAL must be in milliseconds\n"
            "                            (default 1000 ms);\n"
            "                            only has an effect when used together with\n"
            "                            option -d;\n"
