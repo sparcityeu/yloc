@@ -26,9 +26,6 @@ int main(int argc, char *argv[])
     auto graph_view = boost::make_filtered_graph(
         g, boost::keep_all{}, [&](yloc::vertex_t v) { return g[v].is_a<yloc::MPIProcess>(); });
 
-    // yloc::vertices(graph_view);
-    yloc::vertex_range(graph_view);
-
     if (rank == 0) {
         for (auto v1 : yloc::vertex_range(graph_view)) {
             auto dist = yloc::bfs_distance_vector(g, v1);

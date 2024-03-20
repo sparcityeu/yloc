@@ -19,14 +19,14 @@ namespace yloc
     public:
         /**
          * @brief Construct a new AffinityMask bitset with all bits set to zero.
-         * 
+         *
          */
         AffinityMask() : boost::dynamic_bitset<>{m_nprocs_online} {}
 
         /**
          * @brief Construct a new AffinityMask from a Linux cpu set.
-         * 
-         * @param mask 
+         *
+         * @param mask
          */
         AffinityMask(cpu_set_t mask) : boost::dynamic_bitset<>{m_nprocs_online}
         {
@@ -38,12 +38,13 @@ namespace yloc
 #if YLOC_WITH_HWLOC
         /**
          * @brief Construct a new AffinityMask from an hwloc bitmap.
-         * 
-         * @param mask 
+         *
+         * @param mask
          */
-        AffinityMask(hwloc_bitmap_t mask)
+        AffinityMask(hwloc_bitmap_t mask) : boost::dynamic_bitset<>{m_nprocs_online}
         {
-            if (mask == nullptr) { /* TODO */
+            if (mask == nullptr) {
+                /* TODO */
             }
             unsigned id;
             hwloc_bitmap_foreach_begin(id, mask)
