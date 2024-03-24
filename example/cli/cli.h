@@ -151,7 +151,7 @@ void show_help()
            "                            point (to enable live observation of a graph);\n"
            "                            csv output will be appended (to enable further\n"
            "                            analysis)\n"
-           "  -q, --dynamic-probing-interval=PROBING-INTERVAL\n"
+           "  -i, --dynamic-probing-interval=PROBING-INTERVAL\n"
            "                            sets a custom probing interval for the probing\n"
            "                            period;\n"
            "                            PROBING-INTERVAL must be in milliseconds\n"
@@ -186,7 +186,7 @@ void show_help()
            "  Filter specific information\n"
            "                            yloc-cli -c Core,Cache -p numa_affinity,memory\n"
            "  Monitor hardware properties\n"
-           "                            yloc-cli -d 4000 -q 1000 -f csv\n"
+           "                            yloc-cli -d 4000 -i 1000 -f csv\n"
            "  Start an endless run\n"
            "                            yloc-cli -d -1 -f csv -o hardware_information.txt\n"
            "Further information: <https://github.com/sparcityeu/yloc>\n";
