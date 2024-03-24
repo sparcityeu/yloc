@@ -60,7 +60,7 @@ public:
     template < class VertexOrEdge >
     void operator()(std::ostream& out, const VertexOrEdge& v) const
     {
-        out << (name, v);
+        out << get(name, v);
     }
 
 private:
