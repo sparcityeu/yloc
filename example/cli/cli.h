@@ -69,7 +69,7 @@ private:
 
 // Default Constants
 const std::array<std::string, 2> VALID_OUTPUT_FORMATS = {"dot", "csv"};
-const int DEFAULT_PROBING_FREQUENCY = 1000; // in milliseconds [ms]
+const int DEFAULT_PROBING_INTERVAL = 1000; // in milliseconds [ms]
 
 /**
  * compare: https://stackoverflow.com/a/35157784

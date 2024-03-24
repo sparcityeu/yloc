@@ -15,7 +15,7 @@
 using namespace yloc;
 
 bool dynamic_probing_flag = false;
-int probing_frequency = DEFAULT_PROBING_FREQUENCY;
+int probing_interval = DEFAULT_PROBING_INTERVAL;
 int probing_period;
 
 void print_modules()
@@ -151,8 +151,8 @@ void write_csv(const Graph& g, const std::string& file_name, VertexPropertiesWri
 
                 print_file_written(file_name);
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
-                elapsed_time += probing_frequency;
+                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
+                elapsed_time += probing_interval;
             }
         } else {
             write_vertex_info_to_csv(g, out, vpw);
@@ -167,9 +167,9 @@ void write_csv(const Graph& g, const std::string& file_name, VertexPropertiesWri
             while(elapsed_time < probing_period || probing_period == -1) {
                 write_vertex_info_to_csv(g, out, vpw);
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
+                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
 
-                elapsed_time += probing_frequency;
+                elapsed_time += probing_interval;
             }
         } else {
             write_vertex_info_to_csv(g, out, vpw);
@@ -232,9 +232,9 @@ void write_dot(const Graph& g, const std::string& file_name, VertexPropertiesWri
                 ofs.close();
                 print_file_written(file_name);
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
+                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
 
-                elapsed_time += probing_frequency;
+                elapsed_time += probing_interval;
             }
         } else {
             boost::write_graphviz(ofs, g, vpw, epw);
@@ -246,9 +246,9 @@ void write_dot(const Graph& g, const std::string& file_name, VertexPropertiesWri
             while(elapsed_time < probing_period || probing_period == -1) {
                 boost::write_graphviz(std::cout, g, vpw, epw);
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_frequency));
+                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
 
-                elapsed_time += probing_frequency;
+                elapsed_time += probing_interval;
             }
         } else {
             boost::write_graphviz(std::cout, g, vpw, epw);
@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 
     int argument;
     int option_index = 0;
-    while ((argument = getopt_long(argc, argv, "hHMCPOc:p:d:q:o:f:", long_options, &option_index)) != -1) {
+    while ((argument = getopt_long(argc, argv, "hHMCPOc:p:d:i:o:f:", long_options, &option_index)) != -1) {
         switch (argument) {
             case 'h':
             case 'H':
@@ -360,8 +360,8 @@ int main(int argc, char *argv[])
                 dynamic_probing_flag = true;
                 probing_period = (int) std::strtol(optarg, nullptr, 10);
                 break;
-            case 'q':
-                probing_frequency = (int) std::strtol(optarg, nullptr, 10);
+            case 'i':
+                probing_interval = (int) std::strtol(optarg, nullptr, 10);
                 break;
             case 'o':
                 output_file = optarg;
