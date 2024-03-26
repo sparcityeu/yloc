@@ -17,14 +17,12 @@ been designed with these principles in mind:
   represent any labelled relationship between these hardware
   components.
 
-
 * **Support for multiple data sources:** Since our data
   representation format is very general, the tool has the ability to
   ingest and combine data from a variety of sources. In terms of our
   yloc prototype implementation, the ability to support multiple data
   sources is aided by a module system that makes it comparatively easy
   to add new data sources, such as vendor-specific tools.
-
 
 * **Basic abstract machine model:** To attach semantic
   meaning to the components of the topology graph (nodes and edges), a
@@ -33,7 +31,6 @@ been designed with these principles in mind:
   hardware found in high performance computing systems, but is also
   extensible in order to allow it to evolve to cover future hardware
   developments.
-
 
 * **Unification and integration of data sources:** Since yloc
   allows data from multiple sources to be integrated into a single
@@ -69,10 +66,9 @@ been designed with these principles in mind:
 
 `yloc` uses the CMake build system (required CMake version 3.12+).
 
-By default `yloc` depends on the Boost Graph Library.
+By default `yloc` depends on the [Boost](https://www.boost.org/) [Graph Library](https://www.boost.org/doc/libs/1_84_0/libs/graph/doc/index.html) (BGL).
 For the moment, `yloc` also depends on `hwloc` as the primary source of topology information.
-There are further dependencies for the different modules, altough they aren't usually mandatory.
-
+There are further dependencies for the different modules, although they aren't usually mandatory.
 
 ### Building
 
@@ -112,7 +108,7 @@ make install
 
 ## API Reference
 
-To generate the documentation in HTML or PDF format run:
+To generate the full documentation in HTML or PDF format run:
 
 ```bash
 cd build
@@ -125,27 +121,52 @@ make -j
 # generates refman.pdf in docs/latex
 ```
 
-Yloc uses the Boost Graph Library (BGL) to represent the hardware topology in a graph.
+Yloc uses the  [Boost](https://www.boost.org/) [Graph Library](https://www.boost.org/doc/libs/1_84_0/libs/graph/doc/index.html) (BGL) to represent the hardware topology in a graph data structure.
+
 A topology graph can be created by constructing a `yloc::Graph` object.
-Its class is compatible with BGL and can be used e.g. in the BGL algorithms.
+Its class is compatible with BGL and can be used with the BGL API and the algorithms.
 
 See the examples in the `example` folder and the documentation in the `build/doc` folder for further details.
 
-### Vertex / Edge Property API
+### Vertex and Edge Query API
 
-Text about properties
+Iterating over all vertices in the topology graph:
 
 ```CPP
-yloc::Graph graph{};
+yloc::Graph &graph;
+for(auto vertex_id : yloc::vertex_range(graph)) {
+  auto &vertex = graph[vertex_id];
+}
+```
 
-for(auto vertex : boost::vertices(graph)) {
+Iterating over all edges in the topology graph:
+
+```CPP
+for(auto edge_id : yloc::edge_range(graph)) {
+  auto &edge = graph[edge_id];
+}
+```
+
+#### Component Types
+
+TODO
+
+#### Component Properties
+
+TODO
+
+```CPP
+yloc::Graph &graph;
+
+// default type return type of method 'get("property_name")' is std::optional<std::uint64_t>
+for(auto vertex : yloc::vertex_range(graph)) {
   // query property (e.g. "memory") of vertex:
   auto val = graph[vertex].get("property_name");
    // access property value of vertex:
   if(val.has_value()) val.get();
 }
 
-for(auto edge : boost::edges(graph)) {
+for(auto edge : yloc::edge_range(graph)) {
   // query property (e.g. "latency") of edge:
   auto val = graph[edge].get("property_name");
    // access property value of edge:
@@ -153,7 +174,70 @@ for(auto edge : boost::edges(graph)) {
 }
 ```
 
-### Query API
+### Algorithm API
+
+A `yloc::Graph` is-a BGL graph (bidirectional adjacency list with vectors as containers for vertices and edges) and can be used with the BGL algorithms.
+However, yloc implements several commonly used graph algorithms (using BGL) for ease of use.
+
+#### Breath First Search
+
+Determining, for example, the number of hops from a start vertex to other vertices in the graph can be done with `yloc::bfs_distance_vector`.
+The default behavior of `yloc::bfs_distance_vector` is to count the number of hops to other vertices in BFS traversal and return the values in a vector.
+
+```CPP
+yloc::Graph &graph;
+yloc::vertex_t start = *boost::vertices(graph).first;
+auto distances = yloc::bfs_distance_vector(graph, start);
+for (auto v_other : yloc::vertex_range(graph)) {
+    // distances[v_other] is the number of hops 
+    // from vertex 'start' to 'v_other'
+}
+```
+
+Sometimes it might be desireable to take other factors into account, for example the type of edges in the BFS traversal.
+Therefore, `yloc::bfs_distance_vector` takes a lambda as a third parameter, that will be executed when a tree edge is traversed during BFS.
+
+The following example adds `10` to the distance each time a network interconnect edge is traversed as a tree edge during BFS in addition to counting the number of hops.
+
+```CPP
+auto distances = yloc::bfs_distance_vector(graph, start, 
+    [&](edge<Graph> edge, int val_pre) {
+        return val_pre + 1 
+               + (graph[edge].is_a<NetworkInterconnect> ? 10 : 0);
+        }
+    );
+```
+
+#### Dijkstra Shortest Path
+
+TODO: `yloc::dijkstra_path_distance_vector`
+
+```CPP
+yloc::Graph &graph;
+yloc::vertex_t start = *boost::vertices(graph).first;
+
+std::unordered_map<yloc::edge_t, std::uint64_t> edge_latency_map =
+    yloc::make_edge_weight_map(graph, 
+        [&](yloc::edge_t edge) { return graph[edge].get(std::string{"latency"}).value_or(0); });
+
+auto pair = yloc::dijkstra_path_distance_vector(graph, start, edge_latency_map);
+
+std::vector<yloc::vertex_t> predecessors = pair.first;  // shortest path information
+std::vector<std::uint64_t>  distances    = pair.second; // minimum distances to vertices
+```
+
+### Affinity Mask API
+
+TODO
+
+```CPP
+```
+
+---
+
+## Examples
+
+Please see the folder `example` for further examples.
 
 ---
 
@@ -168,10 +252,10 @@ Yloc can be extended via custom modules. See the [Module Readme](./modules/READM
 
 Yloc currently implements modules for the following topology information systems:
 
-- [hwloc](https://www.open-mpi.org/projects/hwloc/)
-- [ROCm System Management Interface (ROCm SMI) Library](https://github.com/RadeonOpenCompute/rocm_smi_lib)
-- [NVIDIA Management Library (NVML)](https://developer.nvidia.com/nvidia-management-library-nvml)
-
+* [hwloc](https://www.open-mpi.org/projects/hwloc/)
+* [ROCm System Management Interface (ROCm SMI) Library](https://github.com/RadeonOpenCompute/rocm_smi_lib)
+* [NVIDIA Management Library (NVML)](https://developer.nvidia.com/nvidia-management-library-nvml)
+* MPI
 
 <!--
 ### Tested Architectures
