@@ -11,4 +11,4 @@ namespace yloc
 
     class Module;
     std::vector<Module *> list_modules();
-}
+} // namespace yloc

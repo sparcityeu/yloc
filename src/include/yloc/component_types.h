@@ -1,9 +1,9 @@
 #pragma once
 
-/** TODO: Documentation, ie.:
- * Add ASCII Art of type hierarchy here
- * Add description to classes and their purpose
- */
+#include <string>
+#include <unordered_map>
+
+/** TODO: Add description to classes and their purpose */
 
 /** TODO: CPU-type that combines CPUCore and L1,2,3... Caches? */
 /** TODO: Unified Cache, subclasses that inherit from L1Data und L1Instruction */
@@ -17,24 +17,28 @@
 /** TODO: Fox multiple inheritance from non-virtual base class */
 
 /** @brief Helper macro for type declaration. */
-#define YLOC_DECLARE_TYPE(type_name, ...)              \
-    class type_name : virtual public __VA_ARGS__       \
-    {                                                  \
-    public:                                            \
-        virtual ~type_name() = default;                \
-        inline static const type_name *ptr()           \
-        {                                              \
-            static const type_name s;                  \
-            return &s;                                 \
-        }                                              \
-        virtual const char *to_string() const override \
-        {                                              \
-            return #type_name;                         \
-        }                                              \
-        virtual bool test_component(const Component *other) const override \
-        {                                              \
-            return nullptr != dynamic_cast<const type_name *>(other); \
-        }                                              \
+#define YLOC_DECLARE_TYPE(type_name, ...)                                                                              \
+    class type_name : virtual public __VA_ARGS__                                                                       \
+    {                                                                                                                  \
+    public:                                                                                                            \
+        virtual ~type_name() = default;                                                                                \
+        inline static const type_name *ptr() noexcept                                                                  \
+        {                                                                                                              \
+            static const type_name s{};                                                                                \
+            return &s;                                                                                                 \
+        }                                                                                                              \
+        virtual const char *to_string() const noexcept override                                                        \
+        {                                                                                                              \
+            return #type_name;                                                                                         \
+        }                                                                                                              \
+        virtual bool test_component(const Component *other) const override                                             \
+        {                                                                                                              \
+            return nullptr != dynamic_cast<const type_name *>(other);                                                  \
+        }                                                                                                              \
+        inline static const bool insert_type_once{[]() {                                                               \
+            Component::map()[#type_name] = reinterpret_cast<const Component *>(ptr());                                 \
+            return true;                                                                                               \
+        }()};                                                                                                          \
     };
 
 namespace yloc
@@ -46,20 +50,39 @@ namespace yloc
         virtual ~Component() = default;
 
         template <class ComponentType>
-        bool is_a() const
+        bool is_a() const noexcept
         {
             return nullptr != dynamic_cast<const ComponentType *>(this);
         }
 
-        virtual bool test_component(const Component *other) const {
+        /**
+         * @brief Tests whether another component type is derived from this component type.
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        virtual bool test_component(const Component *other) const
+        {
             // Trivial cast, will always return true
             // return nullptr != dynamic_cast<const Component *>(other);
             return true;
         }
 
-        virtual const char *to_string() const
+        virtual const char *to_string() const noexcept
         {
             return "Component";
+        }
+
+        /**
+         * @brief Returns reference to map with all component strings as keys and components as values.
+         *
+         * @return std::unordered_map<std::string, const Component *>&
+         */
+        static auto &map()
+        {
+            static std::unordered_map<std::string, const Component *> map{};
+            return map;
         }
     };
 
@@ -69,6 +92,9 @@ namespace yloc
 
     /** @brief Null-type. */
     YLOC_DECLARE_TYPE(UnknownComponentType, Component)
+
+    // YLOC_DECLARE_TYPE(VertexComponent, Component)
+    // YLOC_DECLARE_TYPE(EdgeComponent, Component)
 
     YLOC_DECLARE_TYPE(Node, Component)
 
@@ -176,4 +202,4 @@ namespace yloc
 
     YLOC_DECLARE_TYPE(LogicalComponent, Component)
     YLOC_DECLARE_TYPE(MPIProcess, LogicalComponent)
-}
+} // namespace yloc

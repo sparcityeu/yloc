@@ -14,10 +14,10 @@ foreach(module ${modules})
     if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${module} AND
        EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${module}/CMakeLists.txt)
         string(TOUPPER "${module}" MOD_VAR)
-        set(ENABLE_${MOD_VAR} ON CACHE BOOL "Enable module yloc-${module}.")
+        set(YLOC_ENABLE_${MOD_VAR} ON CACHE BOOL "Enable module yloc-${module}.")
 
         # Check variable from cache to allow disabling of unwanted modules
-        if(${ENABLE_${MOD_VAR}})
+        if(${YLOC_ENABLE_${MOD_VAR}})
             # Add directory and library target within
             set(MOD_TARGET "yloc-${module}")
             add_subdirectory(${module})
@@ -30,7 +30,7 @@ foreach(module ${modules})
                 message(STATUS "Module ${MOD_TARGET} is not available")
             endif()
         else()
-            message(STATUS "Not building module ${MOD_TARGET} (ENABLE_${MOD_VAR} is ${ENABLE_${MOD_VAR}})")
+            message(STATUS "Not building module ${MOD_TARGET} (YLOC_ENABLE_${MOD_VAR} is ${YLOC_ENABLE_${MOD_VAR}})")
         endif()
     endif()
 endforeach()

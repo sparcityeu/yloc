@@ -1,8 +1,3 @@
-
-#include <hwloc.h>
-#include <iostream>
-#include <unistd.h> // gethostname
-
 #include <yloc/graph.h>
 #include <yloc/modules/adapter.h>
 #include <yloc/modules/module.h>
@@ -10,6 +5,13 @@
 
 #include "hwloc_adapter.h"
 #include "interface_impl.h"
+
+#include <hwloc.h>
+
+#include <iostream>
+#include <memory>
+
+#include <unistd.h> // gethostname
 
 // enum aliases for backwards compatibility (from hwloc documentation)
 #if HWLOC_API_VERSION < 0x00010b00
@@ -133,13 +135,13 @@ static const yloc::Component *hwloc_2_yloc_type(hwloc_obj_t obj)
  * @param vd
  * @param obj
  */
-static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t vd, hwloc_obj_t obj)
+static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_t vd, hwloc_obj_t obj)
 {
     // for all children of obj: add_adapter new vertex to graph and set edges
     hwloc_obj_t child = hwloc_get_next_child(t, obj, NULL);
     while (child) {
-        auto *adapter = new HwlocAdapter{child};
-        vertex_descriptor_t child_vd;
+        auto adapter = std::make_shared<HwlocAdapter>(child);
+        vertex_t child_vd;
 
         if (hwloc_2_yloc_type(child)->is_a<PCIDevice>()) {
             std::string id = "bdfid:" + std::to_string(adapter->bdfid().value());
@@ -154,11 +156,11 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
         }
 
         g[child_vd].add_adapter(adapter);
-        if (g[child_vd].type == UnknownComponentType::ptr()) { // has no component type yet
-            g[child_vd].type = hwloc_2_yloc_type(child);
+        if (g[child_vd].m_type == UnknownComponentType::ptr()) { // has no component type yet
+            g[child_vd].m_type = hwloc_2_yloc_type(child);
         } else {
             // sanity check /** TODO: implement is_a for runtime objects */
-            // assert(g[child_vd].type == hwloc_2_yloc_type(obj));
+            // assert(g[child_vd].m_type == hwloc_2_yloc_type(obj));
         }
         auto ret = boost::add_edge(vd, child_vd, Edge{edge_type::CHILD}, g);
         ret = boost::add_edge(child_vd, vd, Edge{edge_type::PARENT}, g);
@@ -169,7 +171,7 @@ static void make_hwloc_graph(Graph &g, hwloc_topology_t t, vertex_descriptor_t v
 }
 
 /* runtime check for matching hwloc abi from hwloc documentation */
-static void check_hwloc_api_version()
+yloc_status_t check_hwloc_api_version()
 {
     /** TODO: probably move that piece of code to constructor of hwloc module */
     unsigned version = hwloc_get_api_version();
@@ -179,8 +181,9 @@ static void check_hwloc_api_version()
                 "You may need to point LD_LIBRARY_PATH to the right hwloc library.\n"
                 "Aborting since the new ABI is not backward compatible.\n",
                 __func__, HWLOC_API_VERSION, version);
-        exit(EXIT_FAILURE);
+        return YLOC_STATUS_INIT_ERROR;
     }
+    return YLOC_STATUS_SUCCESS;
 }
 
 static void set_hwloc_options(hwloc_topology_t &t)
@@ -206,7 +209,10 @@ ModuleHwloc::~ModuleHwloc()
 
 yloc_status_t ModuleHwloc::init_graph(Graph &g)
 {
-    check_hwloc_api_version();
+    yloc_status_t ret;
+    if((ret = check_hwloc_api_version()) != YLOC_STATUS_SUCCESS) {
+        return ret;
+    }
 
     hwloc_topology_t &t = m_topology;
     hwloc_topology_init(&t);
@@ -223,12 +229,12 @@ yloc_status_t ModuleHwloc::init_graph(Graph &g)
     g[root_vd].m_description = std::string{hostname};
     g.set_root_vertex(root_vd);
 
-    g[root_vd].add_adapter(new HwlocAdapter{root});
-    if (g[root_vd].type == UnknownComponentType::ptr()) { // has no component type yet
-        g[root_vd].type = hwloc_2_yloc_type(root);
+    g[root_vd].add_adapter(std::make_shared<HwlocAdapter>(root));
+    if (g[root_vd].m_type == UnknownComponentType::ptr()) { // has no component type yet
+        g[root_vd].m_type = hwloc_2_yloc_type(root);
     } else {
         // sanity check /** TODO: implement is_a for runtime objects */
-        // assert(g[root_vd].type == hwloc_2_yloc_type(root));
+        // assert(g[root_vd].m_type == hwloc_2_yloc_type(root));
     }
 
     make_hwloc_graph(g, t, root_vd, root);

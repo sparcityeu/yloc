@@ -1,14 +1,15 @@
 #pragma once
 
+#include <yloc/affinity.h>
+#include <yloc/modules/property.h>
+#include <yloc/status.h> // yloc_status_t
+
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
-#include <yloc/affinity.h>
-#include <yloc/modules/property.h>
-#include <yloc/status.h> // yloc_status_t
 
 /**
  * @brief Macro to define properties.
@@ -22,17 +23,15 @@
 
 namespace yloc
 {
-    class Adapter // TODO: Maybe separate between VertexAdapter and EdgeAdapter
+    class Adapter /*: public std::enable_shared_from_this<Adapter>*/ // TODO: Maybe separate between VertexAdapter and EdgeAdapter
     {
     public:
-        /** TODO: Deconstructor and lifetime of native objects */
-        // Adapter() = default;
         virtual ~Adapter() = default;
 
         /** predefined yloc-global property map */
-        static std::unordered_map<std::string_view, AbstractProperty *> &map()
+        static std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>> &map()
         {
-            static std::unordered_map<std::string_view, AbstractProperty *> map{
+            static std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>> map{
                 {make_property_pair("memory", &Adapter::memory)},
                 {make_property_pair("memory_usage", &Adapter::memory_usage)},
                 {make_property_pair("memory_load", &Adapter::memory_load)},
@@ -45,9 +44,7 @@ namespace yloc
                 {make_property_pair("throughput", &Adapter::throughput)},
                 {make_property_pair("latency", &Adapter::latency)},
                 {make_property_pair("frequency", &Adapter::frequency)},
-                /** TODO: maybe support multiple return types in Vertex::get("property") (e.g. Vertex::get<return_type>("property"))
-                 * or change temperature scale to degree Kelvin and return type to uint64_t */
-                // {make_property_pair("temperature", &Adapter::temperature)},
+                {make_property_pair("temperature", &Adapter::temperature)},
                 {make_property_pair("power", &Adapter::power)},
                 {make_property_pair("usage", &Adapter::usage)},
                 {make_property_pair("load", &Adapter::load)},
@@ -60,17 +57,16 @@ namespace yloc
         }
 
         /**
-         * @brief
-         *
-         * @return std::unordered_map<std::string_view, Property>&
+         * @brief 
+         * 
+         * @return std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>>& 
          */
-        virtual std::unordered_map<std::string_view, AbstractProperty *> &module_map()
+        virtual std::unordered_map<std::string_view, std::shared_ptr<AbstractProperty>> &module_map()
         {
             return map();
         }
 
         /* virtual Module *        source() = 0; */
-        /* virtual vertex_descriptor_t source_descriptor() { return m_vd; } */
 
         /**
          * @brief Gets string representation of component.
@@ -197,7 +193,7 @@ namespace yloc
 
         /**
          * @brief Gets MPI rank in comm world MPI communicator.
-         * 
+         *
          * @return Rank in comm world.
          */
         ADAPTER_PROPERTY(uint64_t, mpi_rank)

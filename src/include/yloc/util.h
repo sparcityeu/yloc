@@ -13,7 +13,7 @@
 
 namespace yloc
 {
-    vertex_descriptor_t lowest_containing_vertex(AffinityMask &mask);
+    vertex_t lowest_containing_vertex(AffinityMask &mask);
 
     /* helper function because boost::num_vertices<GraphView> returns the number of vertices in the underlying graph.
        the number of vertices contained in a graph view must be calculated */
@@ -40,14 +40,17 @@ namespace yloc
     }
 
     template <class Graph>
-    void write_graph_dot_file(const Graph &g, std::string dot_file_name, std::vector<std::string> vertex_properties)
+    void write_graph_dot_file(const Graph &g,
+                              std::string dot_file_name,
+                              std::vector<std::string> vertex_properties,
+                              bool edge_labels = false)
     {
         std::ofstream ofs{dot_file_name};
 
         // we need to define how to transform the vertices/edges to string labels.
         // implemented using make_transform_value_property_map() before creating a label writer
         auto vpmt = boost::make_transform_value_property_map(
-            [&](yloc::vertex_descriptor_t vd) {
+            [&](vertex_t vd) {
                 std::stringstream ss;
                 ss << g[vd].to_string() + "\nVD=" + std::to_string(vd) << '\n';
                 for (auto &property : vertex_properties) {
@@ -61,13 +64,40 @@ namespace yloc
             boost::get(boost::vertex_index, g));
 
         auto epmt = boost::make_transform_value_property_map(
-            [&](yloc::edge_type edgetype) {
-                std::stringstream ss;
-                ss << ((edgetype == edge_type::PARENT) ? "parent" : "child");
+            [&](edge_type edgetype) {
+                std::stringstream ss{};
+                if (edge_labels) {
+                    switch (edgetype) {
+                    case edge_type::PARENT:
+                        ss << "parent";
+                        break;
+                    case edge_type::CHILD:
+                        ss << "child";
+                        break;
+                    case edge_type::GPU_INTERCONNECT:
+                        ss << "gpu2gpu";
+                        break;
+                    default:
+                        break;
+                    }
+                }
                 return ss.str();
             },
-            boost::get(&yloc::Edge::type, g));
+            boost::get(&Edge::m_edgetype, g));
 
         boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
     }
-}
+
+
+    template <class Graph>
+    auto vertex_range(const Graph &graph)
+    {
+        return boost::make_iterator_range(boost::vertices(graph));
+    }
+
+    template <class Graph>
+    auto edge_range(const Graph &graph)
+    {
+        return boost::make_iterator_range(boost::edges(graph));
+    }
+} // namespace yloc

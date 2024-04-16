@@ -49,7 +49,7 @@ std::set<std::string> get_component_types(Graph *g, bool print = true)
     std::string component_type;
     for (const auto& v : vertices) {
         // todo: also print the hierarchy of the types
-        component_type = v.m_property.type->to_string();
+        component_type = v.m_property.m_type->to_string();
         // set will insert only unique values by default
         available_component_types.insert(component_type);
     }
@@ -195,9 +195,9 @@ void write_graph_csv_format(const Graph& g, const std::vector<std::string> &vert
     // we need to define how to transform the vertices/edges to string labels.
     // implemented using make_transform_value_property_map() before creating a label writer
     auto vpmt = boost::make_transform_value_property_map(
-        [&](yloc::vertex_descriptor_t vd) {
+        [&](yloc::vertex_t vd) {
             std::stringstream ss;
-            ss << std::to_string(vd) + "," + g[vd].type->to_string();
+            ss << std::to_string(vd) + "," + g[vd].m_type->to_string();
             for (auto &property : vertex_properties) {
                 auto p = g[vd].template get<std::string>(property);
                 if (p.has_value()) {
@@ -262,7 +262,7 @@ void write_graph_dot_format(const Graph& g, const std::vector<std::string>& vert
     // we need to define how to transform the vertices/edges to string labels.
     // implemented using make_transform_value_property_map() before creating a label writer
     auto vpmt = boost::make_transform_value_property_map(
-        [&](yloc::vertex_descriptor_t vd) {
+        [&](yloc::vertex_t vd) {
             std::stringstream ss;
             ss << g[vd].to_string() + "\nVD=" + std::to_string(vd) << '\n';
             for (auto& property : vertex_properties) {
@@ -281,7 +281,7 @@ void write_graph_dot_format(const Graph& g, const std::vector<std::string>& vert
             ss << ((edgetype == edge_type::PARENT) ? "parent" : "child");
             return ss.str();
         },
-        boost::get(&yloc::Edge::type, g));
+        boost::get(&yloc::Edge::m_edgetype, g));
 
     write_dot(g, file_name, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
 }
@@ -442,9 +442,9 @@ int main(int argc, char *argv[])
         }
 
         // use predicate (f(v) -> bool) to filter the graph by component type
-        /*auto*/ std::function<bool(const vertex_descriptor_t &)> vertex_predicate = [&](const vertex_descriptor_t &v) -> bool {
+        /*auto*/ std::function<bool(const vertex_t &)> vertex_predicate = [&](const vertex_t &v) -> bool {
             // todo: an option to get all the component types in the hierarchy is needed
-            auto vertex_component = g[v].type;
+            auto vertex_component = g[v].m_type;
             std::string vertex_component_type = vertex_component->to_string();
             // filter if any of the component types contains a given string, e.g. Cache in L1DataCache etc.
             return std::any_of(components_to_filter.begin(), components_to_filter.end(), [&](const std::string &component) -> bool {
@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
             // return components_to_filter.find(vertex_component_type) != components_to_filter.end();
         };
         // all edges will be kept
-        /*auto*/ std::function<bool(const edge_descriptor_t &)> edge_predicate = [&](const edge_descriptor_t &v) -> bool {
+        /*auto*/ std::function<bool(const edge_t &)> edge_predicate = [&](const edge_t &v) -> bool {
             return true;
             };
 

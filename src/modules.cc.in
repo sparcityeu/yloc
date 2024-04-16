@@ -3,10 +3,10 @@
 
 namespace yloc
 {
-    class YlocModule;
-    extern YlocModule *@YLOC_MODULES_DECLARATIONS@;
+    class Module;
+    extern Module *@YLOC_MODULES_DECLARATIONS@;
 
-    std::vector<YlocModule *> list_modules() {
+    std::vector<Module *> list_modules() {
         return {@YLOC_MODULES_CPPNAMES@};
     }
 }
