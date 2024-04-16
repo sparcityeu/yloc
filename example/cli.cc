@@ -28,7 +28,7 @@ void print_modules()
 
     for (auto *m : modules) {
         if (m->m_enabled) {
-            std::cout << boost::core::demangled_name(typeid(*m)).c_str() << "\n";
+            std::cout << boost::core::demangled_name(typeid(*m)) << "\n";
         }
     }
 }
@@ -40,30 +40,13 @@ void print_modules()
  * @param bool print    (if true, result will be printed to stdout)
  * @return
  */
-std::set<std::string> get_component_types(Graph *g, bool print = true)
+void print_component_types()
 {
-    auto vertices = g->m_vertices;
+    std::cout << "Available component-types:\n";
 
-    std::set<std::string> available_component_types;
-
-    std::string component_type;
-    for (const auto& v : vertices) {
-        // todo: also print the hierarchy of the types
-        component_type = v.m_property.m_type->to_string();
-        // set will insert only unique values by default
-        available_component_types.insert(component_type);
+    for (const auto& [k, v] : Component::map()) {
+        std::cout << v->to_string() << "\n";
     }
-
-    if (print) {
-        if (!empty(available_component_types)) {
-            std::cout << "Available component-types:\n";
-            for (const auto& c : available_component_types) {
-                std::cout <<c.c_str() << "\n";
-            }
-        }
-    }
-
-    return available_component_types;
 }
 
 /**
@@ -98,7 +81,7 @@ std::set<std::string> get_properties(Graph *g, bool print = true)
         if (!empty(properties)) {
             std::cout << "Component-Properties:\n";
             for (const auto& p : properties) {
-                std::cout << p.c_str() << "\n";
+                std::cout << p << "\n";
             }
         }
     }
@@ -312,7 +295,6 @@ bool is_valid_format(const std::string& output_format)
 
 int main(int argc, char *argv[])
 {
-    // MPI_Init(&argc, &argv);
     yloc::init();
 
     Graph &g = yloc::root_graph();
@@ -321,7 +303,7 @@ int main(int argc, char *argv[])
     std::string output_file, output_file_extension, output_format;
     std::vector<std::string> file_parts;
     std::vector<std::string> properties_to_filter;
-    bool filter_components_flag;
+    bool filter_components_flag = false;
 
     // std::vector<std::string> vertex_properties = DEFAULT_VECTOR_PROPERTIES;
     auto all_vertex_properties = get_properties(&g, false);
@@ -340,7 +322,7 @@ int main(int argc, char *argv[])
                 print_modules();
                 return YLOC_STATUS_SUCCESS;
             case 'C':
-                get_component_types(&g);
+                print_component_types();
                 return YLOC_STATUS_SUCCESS;
             case 'P':
                 get_properties(&g);
@@ -376,7 +358,7 @@ int main(int argc, char *argv[])
             case 'f':
                 output_format = optarg;
                 if (!is_valid_format(output_format)) {
-                    std::cerr << "Format [" << output_format.c_str() << "] is not supported. Check option -O for supported output formats.\n";
+                    std::cerr << "Format [" << output_format << "] is not supported. Check option -O for supported output formats.\n";
                     return YLOC_STATUS_INVALID_ARGS;
                 }
                 break;
@@ -403,7 +385,7 @@ int main(int argc, char *argv[])
                 bool invalid_property_found = false;
                 if (properties.find(property_to_filter) == properties.end()) {
                     invalid_property_found = true;
-                    std::cerr << "Property [" << property_to_filter.c_str() << "] is not available.\n";
+                    std::cerr << "Property [" << property_to_filter << "] is not available.\n";
                 }
                 if (invalid_property_found) {
                     std::cerr << "See `yloc-cli -P` for a list of available properties.\n";
@@ -421,37 +403,30 @@ int main(int argc, char *argv[])
         std::vector<std::string> components_to_filter = parse_string(component_filter_string, ",");
 
         // Try monolithic version
-        std::set<std::string> component_types = get_component_types(&g, false);
+        const auto &component_types = yloc::Component::map();
+        bool components_valid = true;
 
         // plausibility check of the components_to_filter argument
-        for (const std::string &component_to_filter : components_to_filter) {
-            bool invalid_component_found = false;
+        for (const auto &component_to_filter : components_to_filter) {
+            bool component_valid = component_types.find(component_to_filter) != component_types.end();
             // it is checked, whether any of the component_types actually contains the component name to filter by
-            if (!std::any_of(component_types.begin(), component_types.end(), [&](const std::string &component) -> bool {
-                return component.find(component_to_filter) != std::string::npos;
-            }))
-            {
-                invalid_component_found = true;
-                std::cerr << "Component type [" << component_to_filter.c_str() << "] is not available.\n";
+            if (!component_valid) {
+                components_valid = false;
+                std::cerr << "Component type [" << component_to_filter << "] is not available.\n";
             }
+        }
 
-            if (invalid_component_found) {
-                std::cerr << "See `yloc-cli -C` for a list of available component types.\n";
-                return YLOC_STATUS_NOT_FOUND;
-            }
+        if(!components_valid) {
+            std::cerr << "See `yloc-cli -C` for a list of available component types.\n";
+            return YLOC_STATUS_NOT_FOUND;
         }
 
         // use predicate (f(v) -> bool) to filter the graph by component type
         /*auto*/ std::function<bool(const vertex_t &)> vertex_predicate = [&](const vertex_t &v) -> bool {
-            // todo: an option to get all the component types in the hierarchy is needed
-            auto vertex_component = g[v].m_type;
-            std::string vertex_component_type = vertex_component->to_string();
             // filter if any of the component types contains a given string, e.g. Cache in L1DataCache etc.
-            return std::any_of(components_to_filter.begin(), components_to_filter.end(), [&](const std::string &component) -> bool {
-                return vertex_component_type.find(component) != std::string::npos;
+            return std::any_of(components_to_filter.begin(), components_to_filter.end(), [&](auto component_str) -> bool {
+                return component_types.find(component_str)->second->test_component(g[v].m_type);
             });
-            // vertex_component_type must be one of the components_to_filter
-            // return components_to_filter.find(vertex_component_type) != components_to_filter.end();
         };
         // all edges will be kept
         /*auto*/ std::function<bool(const edge_t &)> edge_predicate = [&](const edge_t &v) -> bool {
@@ -466,7 +441,5 @@ int main(int argc, char *argv[])
     }
 
     yloc::finalize();
-    // MPI_Finalize();
-
     return YLOC_STATUS_SUCCESS;
 }
