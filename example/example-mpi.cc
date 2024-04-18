@@ -1,4 +1,5 @@
 #include <vector>
+#include <fstream>
 
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/filtered_graph.hpp>
@@ -34,7 +35,8 @@ int main(int argc, char *argv[])
                 std::cout << "to " << g[v2].get("mpi_rank").value() << ": " << dist[v2] << '\n';
             }
         }
-        yloc::write_graph_dot_file(g, "mpi_graph.dot"s, std::vector{"mpi_rank"s});
+        std::ofstream out_file{"mpi_graph.dot"s};
+        yloc::write_graph_dot(g, out_file, std::vector{"mpi_rank"s});
     }
 
     yloc::finalize();

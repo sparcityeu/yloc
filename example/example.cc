@@ -6,6 +6,7 @@
 #include <yloc/yloc.h>
 
 #include <vector>
+#include <fstream>
 
 using namespace yloc;
 using namespace std::string_literals;
@@ -20,7 +21,8 @@ static void filter_graph_example(Graph &g)
     // vertices are filtered by predicate "predicate"
     auto fgv = boost::make_filtered_graph(g, boost::keep_all{}, predicate);
 
-    write_graph_dot_file(fgv, std::string{"filtered_graph.dot"}, std::vector{"memory"s, "numa_affinity"s});
+    std::ofstream out_file{"filtered_graph.dot"};
+    write_graph_dot(fgv, out_file, std::vector{"memory"s, "numa_affinity"s});
 }
 
 /* example of finding distances from one vertex to others */
@@ -80,7 +82,8 @@ int main(int argc, char *argv[])
 
     yloc::Graph &g = yloc::root_graph();
 
-    write_graph_dot_file(g, std::string{"graph.dot"}, std::vector{"memory"s, "numa_affinity"s});
+    std::ofstream out_file{"graph.dot"};
+    write_graph_dot(g, out_file, std::vector{"memory"s, "numa_affinity"s});
 
     filter_graph_example(g);
 

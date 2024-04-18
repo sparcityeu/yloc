@@ -40,13 +40,11 @@ namespace yloc
     }
 
     template <class Graph>
-    void write_graph_dot_file(const Graph &g,
-                              std::string dot_file_name,
-                              std::vector<std::string> vertex_properties,
-                              bool edge_labels = false)
+    void write_graph_dot(const Graph &g,
+                         std::ostream &out,
+                         std::vector<std::string> vertex_properties,
+                         bool edge_labels = false)
     {
-        std::ofstream ofs{dot_file_name};
-
         // we need to define how to transform the vertices/edges to string labels.
         // implemented using make_transform_value_property_map() before creating a label writer
         auto vpmt = boost::make_transform_value_property_map(
@@ -85,7 +83,7 @@ namespace yloc
             },
             boost::get(&Edge::m_edgetype, g));
 
-        boost::write_graphviz(ofs, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
+        boost::write_graphviz(out, g, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
     }
 
 

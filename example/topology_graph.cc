@@ -12,16 +12,18 @@ int main(int argc, char *argv[])
     // yloc::set_options/configure/...
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <dot file> [list of properties]\n";
+        return EXIT_FAILURE;
     }
 
     // MPI_Init(&argc, &argv);
-    yloc::init(YLOC_FULL | YLOC_ONGOING);
+    yloc::init();
 
     Graph &g = yloc::root_graph();
 
     std::ofstream ofs{argv[1]};
+    std::vector<std::string> properties(argv+2,argv+argc);
 
-    // write_graph_dot_file(g, ofs, argv, argc);
+    write_graph_dot(g, ofs, properties);
 
     yloc::finalize();
     // MPI_Finalize();
