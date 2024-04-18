@@ -89,7 +89,7 @@ std::set<std::string> get_properties(Graph *g, bool print = true)
     return properties;
 }
 
-std::vector<std::string> parse_string(std::string& s, const std::string& delimiter)
+std::vector<std::string> split_string(std::string& s, const std::string& delimiter)
 {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
     std::string token;
@@ -118,46 +118,15 @@ void write_vertex_info_to_csv(const Graph& g, std::ostream& out, VertexPropertie
     }
 }
 
-template <class Graph, typename VertexPropertiesWriter>
-void write_csv(const Graph& g, const std::string& file_name, VertexPropertiesWriter vpw, const std::string& csv_header)
-{
-    int elapsed_time = 0;
-
-    if (!file_name.empty()) {
-        std::ofstream out{file_name};
-        out << csv_header;
-
-        if (dynamic_probing_flag) {
-            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
-            while(elapsed_time < probing_period || probing_period == -1) {
-                write_vertex_info_to_csv(g, out, vpw);
-
-                print_file_written(file_name);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
-                elapsed_time += probing_interval;
-            }
-        } else {
-            write_vertex_info_to_csv(g, out, vpw);
-            print_file_written(file_name);
-        }
-    } else {
-        std::ostream& out = std::cout;
-        out << csv_header;
-
-        if (dynamic_probing_flag) {
-            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
-            while(elapsed_time < probing_period || probing_period == -1) {
-                write_vertex_info_to_csv(g, out, vpw);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
-
-                elapsed_time += probing_interval;
-            }
-        } else {
-            write_vertex_info_to_csv(g, out, vpw);
-        }
+void write_csv_header(std::ostream &out, const std::vector<std::string> &vertex_properties) {
+    std::string csv_header = "vertex_id,vertex_type";
+    for (auto const& property : vertex_properties) {
+        csv_header += ',';
+        csv_header += property;
     }
+    csv_header += ",timestamp\n";
+
+    out << csv_header;
 }
 
 /**
@@ -166,15 +135,8 @@ void write_csv(const Graph& g, const std::string& file_name, VertexPropertiesWri
  * @param g
  */
 template<class Graph>
-void write_graph_csv_format(const Graph& g, const std::vector<std::string> &vertex_properties, const std::string &file_name = "")
+void write_graph_csv_format(const Graph& g, std::ostream &out, const std::vector<std::string> &vertex_properties)
 {
-    std::string csv_header = "vertex_id,vertex_type";
-    for (auto const& property : vertex_properties) {
-        csv_header += ',';
-        csv_header += property;
-    }
-    csv_header += ",timestamp\n";
-
     // we need to define how to transform the vertices/edges to string labels.
     // implemented using make_transform_value_property_map() before creating a label writer
     auto vpmt = boost::make_transform_value_property_map(
@@ -193,80 +155,7 @@ void write_graph_csv_format(const Graph& g, const std::vector<std::string> &vert
         },
         boost::get(boost::vertex_index, g));
 
-    write_csv(g, file_name, csv_writer(vpmt), csv_header);
-}
-
-template <class Graph, typename VertexPropertiesWriter, typename EdgePropertiesWriter>
-void write_dot(const Graph& g, const std::string& file_name, VertexPropertiesWriter vpw, EdgePropertiesWriter epw)
-{
-    int elapsed_time = 0;
-
-    if (!file_name.empty()) {
-        std::ofstream ofs{file_name};
-
-        if (dynamic_probing_flag) {
-            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
-            while(elapsed_time < probing_period || probing_period == -1) {
-                // File is getting open and closed, so that content will be overwritten and not appended.
-                if (!ofs.is_open()) {
-                    ofs.open(file_name);
-                }
-                boost::write_graphviz(ofs, g, vpw, epw);
-                ofs.close();
-                print_file_written(file_name);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
-
-                elapsed_time += probing_interval;
-            }
-        } else {
-            boost::write_graphviz(ofs, g, vpw, epw);
-            print_file_written(file_name);
-        }
-    } else {
-        if (dynamic_probing_flag) {
-            // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
-            while(elapsed_time < probing_period || probing_period == -1) {
-                boost::write_graphviz(std::cout, g, vpw, epw);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
-
-                elapsed_time += probing_interval;
-            }
-        } else {
-            boost::write_graphviz(std::cout, g, vpw, epw);
-        }
-    }
-}
-
-template <class Graph>
-void write_graph_dot_format(const Graph& g, const std::vector<std::string>& vertex_properties, const std::string& file_name = "")
-{
-    // we need to define how to transform the vertices/edges to string labels.
-    // implemented using make_transform_value_property_map() before creating a label writer
-    auto vpmt = boost::make_transform_value_property_map(
-        [&](yloc::vertex_t vd) {
-            std::stringstream ss;
-            ss << g[vd].to_string() + "\nVD=" + std::to_string(vd) << '\n';
-            for (auto& property : vertex_properties) {
-                auto p = g[vd].template get<std::string>(property);
-                if (p.has_value()) {
-                    ss << property << "=" << p.value() << '\n';
-                }
-            }
-            return ss.str();
-        },
-        boost::get(boost::vertex_index, g));
-
-    auto epmt = boost::make_transform_value_property_map(
-        [&](yloc::edge_type edgetype) {
-            std::stringstream ss;
-            ss << ((edgetype == edge_type::PARENT) ? "parent" : "child");
-            return ss.str();
-        },
-        boost::get(&yloc::Edge::m_edgetype, g));
-
-    write_dot(g, file_name, boost::make_label_writer(vpmt), boost::make_label_writer(epmt));
+    write_vertex_info_to_csv(g, out, csv_writer(vpmt));
 }
 
 /**
@@ -274,16 +163,55 @@ void write_graph_dot_format(const Graph& g, const std::vector<std::string>& vert
  *
  * @tparam Graph
  * @param g
- * @param file_name     optional
  * @param vertex_properties optional
+ * @param output_format optional
+ * @param file_name     optional
  */
 template <class Graph>
 void write_graph(const Graph& g, const std::vector<std::string>& vertex_properties = std::vector<std::string>{"memory", "numa_affinity"}, const std::string& output_format = "dot", const std::string& file_name = "")
 {
-    if (output_format == "dot") {
-        write_graph_dot_format(g, vertex_properties, file_name);
-    } else if (output_format == "csv") {
-        write_graph_csv_format(g, vertex_properties, file_name);
+    std::ofstream out_file;
+    if (!file_name.empty()) {
+        out_file.open(file_name);
+    }
+    std::ostream & out = (!file_name.empty() ? out_file : std::cout);
+
+    if (output_format == "csv") {
+        write_csv_header(out, vertex_properties);
+    }
+
+    int elapsed_time = 0;
+    if (dynamic_probing_flag) {
+        // the user should be able to trigger an infinite loop by explicitly setting the probing_period to -1
+        while(elapsed_time < probing_period || probing_period == -1) {
+            if (output_format == "dot") {
+                // File is getting open and closed, so that content will be overwritten and not appended.
+                if (!file_name.empty() && !out_file.is_open()) {
+                    out_file.open(file_name);
+                }
+                yloc::write_graph_dot(g, out, vertex_properties);
+                if(!file_name.empty()) { // (out != std::cout)
+                    out_file.close();
+                }
+            } else if (output_format == "csv") {
+                write_graph_csv_format(g, out, vertex_properties);
+            }
+            if (!file_name.empty()) {
+                print_file_written(file_name);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(probing_interval));
+            elapsed_time += probing_interval;
+        }
+    } else {
+        if (output_format == "dot") {
+            yloc::write_graph_dot(g, out, vertex_properties);
+        } else if (output_format == "csv") {
+            write_graph_csv_format(g, out, vertex_properties);
+        }
+        if (!file_name.empty()) {
+            print_file_written(file_name);
+        }
     }
 }
 
@@ -336,7 +264,7 @@ int main(int argc, char *argv[])
                 break;
             case 'p':
                 properties_filter_string = optarg;
-                properties_to_filter = parse_string(properties_filter_string, ",");
+                properties_to_filter = split_string(properties_filter_string, ",");
                 break;
             case 'd':
                 dynamic_probing_flag = true;
@@ -347,7 +275,7 @@ int main(int argc, char *argv[])
                 break;
             case 'o':
                 output_file = optarg;
-                file_parts = parse_string(output_file, ".");
+                file_parts = split_string(output_file, ".");
                 if (file_parts.size() > 1) {
                     auto file_extension = file_parts.back();
                     if (is_valid_format(file_extension)) {
@@ -400,7 +328,7 @@ int main(int argc, char *argv[])
     if (filter_components_flag) {
 
         // filter_string can contain multiple component types separated by commas
-        std::vector<std::string> components_to_filter = parse_string(component_filter_string, ",");
+        std::vector<std::string> components_to_filter = split_string(component_filter_string, ",");
 
         // Try monolithic version
         const auto &component_types = yloc::Component::map();
