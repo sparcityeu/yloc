@@ -96,12 +96,12 @@ namespace yloc
         }
 #endif /* YLOC_WITH_HWLOC */
 
-        bool is_contained_in(AffinityMask &other) const
+        bool is_contained_in(const AffinityMask &other) const
         {
             return (other & *this) == *this;
         }
 
-        bool is_containing(AffinityMask &other) const
+        bool is_containing(const AffinityMask &other) const
         {
             return other.is_contained_in(*this);
         }
