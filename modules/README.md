@@ -1,11 +1,13 @@
 # Writing a yloc Module
 
+`yloc` is designed in a modular way. This makes it simple to extend it by writing own modules.
+
 Writing an own module involves implementing two classes: the new module class that implements the Module interface, and the module's adapter class.
 The adapter class specifies the list of available properties, and how these properties are accessed in the module.
 
 ---
 
-### Module Interface
+## Module Interface
 
 ```CPP
 #include <yloc/modules/module.h>
@@ -15,29 +17,23 @@ using yloc::Module;
 
 class ExampleModule : public Module
 {
-
 public:
     void init_graph(Graph &graph) override
     {
-        return;
+        // initialize the module:
+        //   - add / couple graph vertices for new components 
+        //     (how to access the component in the graph)
+        //   - set module adapters for vertices 
+        //     (how to access the data for components in this module)
     }
-
-    void export_graph(const Graph &graph, void **output) const override
-    {
-        output = nullptr; return;
-    }
-
-    void update_graph(Graph &graph) override
-    {
-        return;
-    }
-
 private:
 };
 
 ```
 
-### Module Adapter
+TODO: explain `Module::init_order`
+
+## Module Adapter
 
 ```CPP
 #include <yloc/modules/adapter.h>
